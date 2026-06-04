@@ -1,0 +1,46 @@
+import MobileHomeHeader from "@/components/layout/mobile/MobileHomeHeader";
+
+import MobileGreetingSection from "@/components/home/mobile/MobileGreetingSection";
+
+import MobileQuickActions from "@/components/home/mobile/MobileQuickActions";
+
+import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
+
+import MobilePopularCategories from "@/components/landing/mobile/MobilePopularCategories";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
+
+interface Task {
+  id: string;
+  title: string;
+  category: string;
+  budget: number;
+  address: string;
+  status: string;
+}
+
+interface Props {
+  tasks: Task[];
+}
+
+export default function MobileHomeView({
+  tasks,
+}: Props) {
+  return (
+    <div className="pb-32 lg:hidden">
+
+      <MobileHomeHeader />
+
+      <MobileGreetingSection />
+
+      <MobileQuickActions />
+
+      <MobileTaskFeed tasks={tasks} />
+
+      <MobilePopularCategories />
+
+      <MobileBottomNavbar />
+
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
-import HomePage from
-"@/features/tasks/pages/HomePage";
+import LandingPage from
+"@/features/landing/pages/LandingPage";
 
 export default function Page() {
-  return <HomePage />;
+  return <LandingPage />;
 }

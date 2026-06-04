@@ -1,102 +1,113 @@
 "use client";
 
+import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 
-import { useForm } from "react-hook-form";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { registerSchema } from "../validators/register.schema";
-
-import { RegisterData } from "../types/auth.types";
-
-import { registerUser } from "../services/auth.service";
+import { register } from "../services/auth.service";
 
 export default function RegisterForm() {
   const router = useRouter();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterData>({
-    resolver: zodResolver(registerSchema),
-  });
+  const [fullName, setFullName] =
+    useState("");
 
-  async function onSubmit(
-    data: RegisterData
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  async function handleRegister(
+    e: React.FormEvent
   ) {
-    const { error } =
-      await registerUser(data);
+    e.preventDefault();
 
-    if (error) {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      await register({
+        full_name: fullName,
+        email,
+        password,
+      });
+
+      alert("Register berhasil");
+
+      window.location.href = "/login";
+    } catch (error: any) {
       alert(error.message);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/login");
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleRegister}
       className="space-y-4"
     >
-      {/* FULL NAME */}
-      <div>
-        <input
-          type="text"
-          placeholder="Nama Lengkap"
-          {...register("full_name")}
-          className="w-full rounded-lg border p-3"
-        />
+      <input
+        type="text"
+        placeholder="Nama Lengkap"
+        value={fullName}
+        onChange={(e) =>
+          setFullName(e.target.value)
+        }
+        className="
+          w-full rounded-xl border
+          p-3 outline-none
+          focus:border-slate-900
+        "
+      />
 
-        {errors.full_name && (
-          <p className="text-sm text-red-500">
-            {errors.full_name.message}
-          </p>
-        )}
-      </div>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) =>
+          setEmail(e.target.value)
+        }
+        className="
+          w-full rounded-xl border
+          p-3 outline-none
+          focus:border-slate-900
+        "
+      />
 
-      {/* EMAIL */}
-      <div>
-        <input
-          type="email"
-          placeholder="Email"
-          {...register("email")}
-          className="w-full rounded-lg border p-3"
-        />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
+        className="
+          w-full rounded-xl border
+          p-3 outline-none
+          focus:border-slate-900
+        "
+      />
 
-        {errors.email && (
-          <p className="text-sm text-red-500">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-
-      {/* PASSWORD */}
-      <div>
-        <input
-          type="password"
-          placeholder="Password"
-          {...register("password")}
-          className="w-full rounded-lg border p-3"
-        />
-
-        {errors.password && (
-          <p className="text-sm text-red-500">
-            {errors.password.message}
-          </p>
-        )}
-      </div>
-
-      {/* SUBMIT BUTTON */}
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-lg bg-black p-3 text-white"
+        disabled={loading}
+        className="
+          w-full rounded-xl
+          bg-slate-900 p-3
+          text-white
+          transition
+          hover:opacity-90
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+        "
       >
-        {isSubmitting
+        {loading
           ? "Loading..."
           : "Register"}
       </button>

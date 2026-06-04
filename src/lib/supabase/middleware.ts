@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -16,22 +16,20 @@ export async function updateSession(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-
-          response = NextResponse.next({
-            request,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // 🔥 IMPORTANT: set ke response, bukan request
+            response.cookies.set(name, value, options);
           });
-
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
         },
       },
     }
   );
 
+  /**
+   * 🔥 CRITICAL DIFFERENCE:
+   * kita HARUS trigger auth.getUser()
+   * bukan getSession()
+   */
   await supabase.auth.getUser();
 
   return response;

@@ -1,88 +1,121 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { useForm } from "react-hook-form";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { loginSchema } from "../validators/login.schema";
-
-import { LoginData } from "../types/auth.types";
-
-import { loginUser } from "../services/auth.service";
+import { login } from "../services/auth.service";
 
 export default function LoginForm() {
-  const router = useRouter();
+  const [email, setEmail] =
+    useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
-  });
+  const [password, setPassword] =
+    useState("");
 
-  async function onSubmit(
-    data: LoginData
+  const [loading, setLoading] =
+    useState(false);
+
+  async function handleLogin(
+    e: React.FormEvent
   ) {
-    const { error } =
-      await loginUser(data);
+    e.preventDefault();
 
-    if (error) {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      await login({
+        email,
+        password,
+      });
+
+      window.location.href =
+        "/home";
+    } catch (error: any) {
       alert(error.message);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/home");
-
-    router.refresh();
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4"
+      onSubmit={handleLogin}
+      className="space-y-5"
     >
       {/* EMAIL */}
       <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700">
+          Email
+        </label>
+
         <input
           type="email"
-          placeholder="Email"
-          {...register("email")}
-          className="w-full rounded-lg border p-3"
+          placeholder="Masukkan email"
+          value={email}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
+          className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-slate-50
+            p-4
+            outline-none
+            transition
+            focus:border-indigo-500
+            focus:bg-white
+          "
         />
-
-        {errors.email && (
-          <p className="text-sm text-red-500">
-            {errors.email.message}
-          </p>
-        )}
       </div>
 
       {/* PASSWORD */}
       <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700">
+          Password
+        </label>
+
         <input
           type="password"
-          placeholder="Password"
-          {...register("password")}
-          className="w-full rounded-lg border p-3"
+          placeholder="Masukkan password"
+          value={password}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
+          className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-slate-50
+            p-4
+            outline-none
+            transition
+            focus:border-indigo-500
+            focus:bg-white
+          "
         />
-
-        {errors.password && (
-          <p className="text-sm text-red-500">
-            {errors.password.message}
-          </p>
-        )}
       </div>
 
-      {/* SUBMIT BUTTON */}
+      {/* BUTTON */}
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-lg bg-black p-3 text-white"
+        disabled={loading}
+        className="
+          w-full
+          rounded-2xl
+          bg-indigo-600
+          p-4
+          font-medium
+          text-white
+          transition
+          hover:opacity-90
+          disabled:opacity-50
+        "
       >
-        {isSubmitting
+        {loading
           ? "Loading..."
           : "Login"}
       </button>

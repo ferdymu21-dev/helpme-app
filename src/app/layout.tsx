@@ -1,11 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata }
+from "next";
 
 import "./globals.css";
 
-// import Navbar from "@/components/layout/Navbar";
+import AuthProvider from
+"@/features/auth/providers/AuthProvider";
 
 export const metadata: Metadata = {
   title: "HelpMe",
+
   description:
     "Marketplace bantuan harian",
 };
@@ -18,9 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-100">
-        {/* <Navbar /> */}
-
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

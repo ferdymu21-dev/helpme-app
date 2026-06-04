@@ -1,27 +1,18 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL!;
-
-const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Backward compatibility
- * Existing code can still use:
- * import { supabase }
+ * 🔥 SINGLE SOURCE CLIENT (recommended)
  */
 export const supabase = createBrowserClient(
-  supabaseUrl,
-  supabaseAnonKey
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
 
 /**
- * New SSR-safe pattern
+ * OPTIONAL factory (ONLY if needed)
  */
-export function createClient() {
-  return createBrowserClient(
-    supabaseUrl,
-    supabaseAnonKey
-  );
-}
+export const createBrowserSupabaseClient = () =>
+  createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
