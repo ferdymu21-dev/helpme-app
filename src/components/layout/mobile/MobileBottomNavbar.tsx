@@ -4,6 +4,10 @@ import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 
+import { useEffect, useState } from "react";
+
+import { supabase } from "@/lib/supabase/client";
+
 const menus = [
   {
     href: "/home",
@@ -25,26 +29,103 @@ const menus = [
   },
 
   {
+    label: "Helper",
+    href: "/helper-tasks",
+    icon: "🛠️",
+  },
+
+  {
     href: "/messages",
     label: "Chat",
     icon: "💬",
-  },  
-
-  {
-    href: "/profile",
-    label: "Profile",
-    icon: "👤",
   },
+
 ];
 
 export default function MobileBottomNavbar() {
+
+  const [hasUnread, setHasUnread] =
+    useState(false);
+
   const pathname = usePathname();
+
+  useEffect(() => {
+
+    async function loadUnread() {
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data } =
+        await supabase
+          .from("conversations")
+          .select(`
+          owner_id,
+          helper_id,
+          owner_unread_count,
+          helper_unread_count
+        `);
+
+      if (!data) return;
+
+      const hasUnreadMessage =
+        data.some((conversation) => {
+
+          const isOwner =
+            conversation.owner_id ===
+            user.id;
+
+          return isOwner
+            ? conversation.owner_unread_count > 0
+            : conversation.helper_unread_count > 0;
+        });
+
+      setHasUnread(
+        hasUnreadMessage
+      );
+    }
+
+    loadUnread();
+
+    /* =========================
+       REALTIME
+    ========================= */
+
+    const channel =
+      supabase.channel(
+        "mobile-navbar-unread"
+      );
+
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "messages",
+      },
+      () => {
+        loadUnread();
+      }
+    );
+
+    channel.subscribe();
+
+    return () => {
+      supabase.removeChannel(
+        channel
+      );
+    };
+
+  }, []);
 
   return (
     <div
       className="
         fixed
-        bottom-4
+        bottom-0
         left-1/2
         z-50
         w-[calc(100%-24px)]
@@ -54,7 +135,7 @@ export default function MobileBottomNavbar() {
         border
         border-slate-200
         bg-white/90
-        p-2
+        p-0
         shadow-[0_20px_50px_rgba(15,23,42,0.12)]
         backdrop-blur
         md:hidden
@@ -77,27 +158,47 @@ export default function MobileBottomNavbar() {
                 items-center
                 justify-center
                 rounded-2xl
-                py-3
+                py-2
                 transition
 
-                ${
-                  menu.primary
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                    : active
+                ${menu.primary
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                  : active
                     ? "bg-indigo-50 text-indigo-600"
                     : "text-slate-500 hover:bg-slate-50"
                 }
               `}
             >
 
-              <span className="text-lg">
-                {menu.icon}
-              </span>
+              <div className="relative">
+
+                <span className="text-base">
+                  {menu.icon}
+                </span>
+
+                {menu.href === "/messages" &&
+                  hasUnread && (
+
+                    <div
+                      className="
+                        absolute
+                        -right-1
+                        -top-1
+                        h-2
+                        w-2
+                        rounded-full
+                      bg-red-500
+                      "
+                    />
+
+                  )}
+
+              </div>
 
               <span
                 className="
                   mt-1
-                  text-[11px]
+                  text-[10px]
                   font-semibold
                 "
               >

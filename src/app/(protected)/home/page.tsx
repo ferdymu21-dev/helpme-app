@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import { getTasks } from "@/features/tasks/services/task.service";
+import { supabase }
+  from "@/lib/supabase/client";
+
+import {
+  getTasks,
+  expireTasks,
+} from "@/features/tasks/services/task.service";
 
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
@@ -25,20 +31,61 @@ export default function HomePage() {
     useState(true);
 
   useEffect(() => {
+
     async function loadTasks() {
+
       try {
+
+        await expireTasks();
+
         const data =
           await getTasks();
 
         setTasks(data || []);
+
       } catch (error) {
+
         console.error(error);
+
       } finally {
+
         setLoading(false);
       }
     }
 
     loadTasks();
+
+    /* =========================
+       REALTIME TASKS
+    ========================= */
+
+    const channel =
+      supabase.channel(
+        "home-tasks-realtime"
+      );
+
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "tasks",
+      },
+      () => {
+
+        loadTasks();
+      }
+    );
+
+    channel.subscribe();
+
+    return () => {
+
+      supabase.removeChannel(
+        channel
+      );
+    };
+
   }, []);
 
   if (loading) {

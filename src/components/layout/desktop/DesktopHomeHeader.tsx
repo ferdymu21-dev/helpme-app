@@ -5,13 +5,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 import DesktopGreetingSection from "@/components/home/desktop/DesktopGreetingSection";
+import Link from "next/link";
 
 export default function DesktopHomeHeader() {
 
   const [name, setName] =
     useState("User");
 
-      useEffect(() => {
+  const [ 
+    hasUnreadNotifications, 
+    setHasUnreadNotifications, 
+  ] = useState(false);
+
+  useEffect(() => {
     async function loadUser() {
       try {
         const {
@@ -26,6 +32,21 @@ export default function DesktopHomeHeader() {
         if (fullName) {
           setName(fullName);
         }
+
+        /* =========================
+           GET UNREAD NOTIFICATIONS
+        ========================= */
+
+        const { data: notifications } =
+          await supabase
+            .from("notifications")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_read", false);
+
+        setHasUnreadNotifications(
+          (notifications?.length || 0) > 0
+        );
 
       } catch (error) {
         console.error(error);
@@ -82,6 +103,7 @@ export default function DesktopHomeHeader() {
 
             <span className="text-slate-400">
               🔍
+
             </span>
 
             <input
@@ -100,7 +122,8 @@ export default function DesktopHomeHeader() {
           </div>
 
           {/* NOTIFICATION */}
-          <button
+          <Link
+            href="/notifications"
             className="
               relative
               flex
@@ -119,6 +142,8 @@ export default function DesktopHomeHeader() {
           >
             🔔
 
+            {hasUnreadNotifications && (
+
             <span
               className="
                 absolute
@@ -130,8 +155,9 @@ export default function DesktopHomeHeader() {
                 bg-rose-500
               "
             />
+            )}
 
-          </button>
+          </Link>
 
           {/* PROFILE */}
           <button

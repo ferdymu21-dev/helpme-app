@@ -13,16 +13,24 @@ interface Conversation {
 
   created_at: string;
 
+  last_message: string;
+
+  owner_unread_count: number;
+
+  helper_unread_count: number;
+
   tasks: {
     title: string;
   };
 
   owner: {
     full_name: string;
+    avatar_url?: string;
   };
 
   helper: {
     full_name: string;
+    avatar_url?: string;
   };
 }
 
@@ -55,7 +63,7 @@ export default function MobileMessagesView({
               bg-indigo-50
               px-4
               py-2
-              text-sm
+              text-xs
               font-semibold
               text-indigo-600
             "
@@ -66,7 +74,7 @@ export default function MobileMessagesView({
           <h1
             className="
               mt-6
-              text-4xl
+              text-xl
               font-bold
               tracking-tight
               text-slate-900
@@ -78,7 +86,7 @@ export default function MobileMessagesView({
         </div>
 
         {/* LIST */}
-        <div className="mt-10 grid gap-5">
+        <div className="mt-4 grid gap-1.5">
 
           {loading ? (
             <div>
@@ -103,9 +111,15 @@ export default function MobileMessagesView({
               (conversation) => {
                 const otherUser =
                   conversation.owner_id ===
-                  currentUserId
+                    currentUserId
                     ? conversation.helper
                     : conversation.owner;
+
+                const unreadCount =
+                  conversation.owner_id ===
+                    currentUserId
+                    ? conversation.owner_unread_count
+                    : conversation.helper_unread_count;
 
                 return (
                   <Link
@@ -123,39 +137,95 @@ export default function MobileMessagesView({
                     <div className="flex items-center gap-4">
 
                       {/* AVATAR */}
-                      <div
-                        className="
-                          flex
-                          h-14
-                          w-14
-                          items-center
-                          justify-center
-                          rounded-full
-                          bg-indigo-100
-                          text-lg
-                          font-bold
-                          text-indigo-700
-                        "
-                      >
-                        {otherUser?.full_name?.charAt(
-                          0
-                        ) || "U"}
-                      </div>
+
+                      {otherUser?.avatar_url ? (
+
+                        <img
+                          src={otherUser.avatar_url}
+                          alt={otherUser.full_name}
+                          className="
+      h-10
+      w-10
+      rounded-full
+      object-cover
+      border
+      border-slate-200
+      shrink-0
+    "
+                        />
+
+                      ) : (
+
+                        <div
+                          className="
+      flex
+      h-10
+      w-10
+      items-center
+      justify-center
+      rounded-full
+      bg-indigo-100
+      text-xs
+      font-bold
+      text-indigo-700
+      shrink-0
+    "
+                        >
+                          {otherUser?.full_name?.charAt(0) || "U"}
+                        </div>
+
+                      )}
 
                       {/* INFO */}
                       <div className="flex-1">
 
-                        <h2
+                        <div className="flex items-center justify-between">
+
+                          <h2
+                            className="
+        text-sm
+        font-bold
+        text-slate-900
+      "
+                          >
+                            {otherUser?.full_name}
+                          </h2>
+
+                          {unreadCount > 0 && (
+
+                            <div
+                              className="
+          flex
+          h-6
+          min-w-6
+          items-center
+          justify-center
+          rounded-full
+          bg-indigo-600
+          px-2
+          text-xs
+          font-bold
+          text-white
+        "
+                            >
+                              {unreadCount}
+                            </div>
+
+                          )}
+
+                        </div>
+
+                        <p
                           className="
-                            text-lg
-                            font-bold
-                            text-slate-900
-                          "
+      mt-2
+      truncate
+      text-sm
+      text-slate-500
+    "
                         >
-                          {
-                            otherUser?.full_name
-                          }
-                        </h2>
+                          {conversation.last_message ||
+                            "Belum ada pesan"}
+                        </p>
 
                       </div>
 

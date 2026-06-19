@@ -4,9 +4,13 @@ import MobileGreetingSection from "@/components/home/mobile/MobileGreetingSectio
 
 import MobileQuickActions from "@/components/home/mobile/MobileQuickActions";
 
-import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
+import MobileAdsBanner
+from "@/components/home/mobile/MobileAdsBanner";
 
-import MobilePopularCategories from "@/components/landing/mobile/MobilePopularCategories";
+import MobileTipsBanner
+from "@/components/home/mobile/MobileTipsBanner";
+
+import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
@@ -35,9 +39,9 @@ export default function MobileHomeView({
 
       <MobileQuickActions />
 
-      <MobileTaskFeed tasks={tasks} />
+      <MobileTipsBanner />
 
-      <MobilePopularCategories />
+      <MobileTaskFeed tasks={tasks} />
 
       <MobileBottomNavbar />
 

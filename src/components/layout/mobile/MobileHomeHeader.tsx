@@ -1,6 +1,95 @@
+"use client";
+
 import Image from "next/image";
 
+import Link from "next/link";
+
+import { useEffect, useState } from "react";
+
+import { supabase } from "@/lib/supabase/client";
+
 export default function MobileHomeHeader() {
+  const [initials, setInitials] =
+    useState("U");
+
+  const [avatarUrl, setAvatarUrl] =
+    useState("");
+
+  const [
+    hasUnreadNotifications,
+    setHasUnreadNotifications,
+  ] = useState(false);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data: profile } =
+          await supabase
+            .from("users")
+            .select(`
+      avatar_url
+    `)
+            .eq("id", user.id)
+            .single();
+
+        if (profile?.avatar_url) {
+
+          setAvatarUrl(
+            profile.avatar_url
+          );
+
+        }
+
+        const fullName =
+          user.user_metadata?.full_name;
+
+        if (!fullName) return;
+
+        /* =========================
+           GET UNREAD NOTIFICATIONS
+        ========================= */
+
+        const { data: notifications } =
+          await supabase
+            .from("notifications")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_read", false);
+
+        setHasUnreadNotifications(
+          (notifications?.length || 0) > 0
+        );
+
+        const words =
+          fullName.split(" ");
+
+        const first =
+          words[0]?.charAt(0) || "";
+
+        const second =
+          words[1]?.charAt(0) || "";
+
+        const result =
+          `${first}${second}`;
+
+        setInitials(
+          result.toUpperCase()
+        );
+
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadUser();
+  }, []);
+
   return (
     <header
       className="
@@ -37,10 +126,11 @@ export default function MobileHomeHeader() {
         />
 
         {/* RIGHT */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
 
           {/* NOTIFICATION */}
-          <button
+          <Link
+            href="/notifications"
             className="
               relative
               flex
@@ -59,37 +149,64 @@ export default function MobileHomeHeader() {
           >
             🔔
 
-            <span
-              className="
+            {hasUnreadNotifications && (
+
+              <span
+                className="
                 absolute
                 right-2
                 top-2
                 h-2
                 w-2
                 rounded-full
-                bg-red-500
+              bg-red-500
               "
-            />
+              />
+            )}
 
-          </button>
+          </Link>
 
           {/* PROFILE */}
-          <button
-            className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-full
-              bg-indigo-100
-              text-sm
-              font-bold
-              text-indigo-700
-            "
-          >
-            F
-          </button>
+
+          <Link href="/profile">
+
+            {avatarUrl ? (
+
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="
+        h-10
+        w-10
+        rounded-full
+        object-cover
+        border
+        border-slate-200
+      "
+              />
+
+            ) : (
+
+              <div
+                className="
+        flex
+        h-10
+        w-10
+        items-center
+        justify-center
+        rounded-full
+        bg-indigo-100
+        text-sm
+        font-black
+        text-indigo-700
+      "
+              >
+                {initials}
+              </div>
+
+            )}
+
+          </Link>
 
         </div>
 

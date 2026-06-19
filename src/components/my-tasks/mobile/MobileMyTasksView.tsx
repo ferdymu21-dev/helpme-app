@@ -9,8 +9,20 @@ interface Task {
   title: string;
   category: string;
   budget: number;
-  address: string;
   status: string;
+  location_type?: string;
+
+  location_name?: string;
+
+  manual_address?: string;
+
+  latitude?: number;
+
+  longitude?: number;
+
+  owner_latitude?: number;
+
+  owner_longitude?: number;
 }
 
 interface Props {
@@ -46,7 +58,7 @@ export default function MobileMyTasksView({
               bg-indigo-50
               px-4
               py-2
-              text-sm
+              text-xs
               font-semibold
               text-indigo-600
             "
@@ -56,8 +68,8 @@ export default function MobileMyTasksView({
 
           <h1
             className="
-              mt-5
-              text-xl
+              mt-3
+              text-base
               font-black
               tracking-tight
               text-slate-900
@@ -68,10 +80,10 @@ export default function MobileMyTasksView({
 
           <p
             className="
-              mt-3
-              text-sm
-              leading-7
-              text-slate-500
+              mt-2
+              text-xs
+              leading-2
+            text-slate-500
             "
           >
             Kelola task, lihat pelamar,
@@ -101,10 +113,9 @@ export default function MobileMyTasksView({
               text-left
               transition-all
 
-              ${
-                activeFilter === "OPEN"
-                  ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                  : "border border-slate-200 bg-white text-slate-900"
+              ${activeFilter === "OPEN"
+                ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                : "border border-slate-200 bg-white text-slate-900"
               }
             `}
           >
@@ -149,11 +160,10 @@ export default function MobileMyTasksView({
               text-left
               transition-all
 
-              ${
-                activeFilter ===
+              ${activeFilter ===
                 "ACCEPTED"
-                  ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                  : "border border-slate-200 bg-white text-slate-900"
+                ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                : "border border-slate-200 bg-white text-slate-900"
               }
             `}
           >
@@ -161,7 +171,7 @@ export default function MobileMyTasksView({
             <p
               className={
                 activeFilter ===
-                "ACCEPTED"
+                  "ACCEPTED"
                   ? "text-amber-100"
                   : "text-slate-500"
               }
@@ -200,11 +210,10 @@ export default function MobileMyTasksView({
               text-left
               transition-all
 
-              ${
-                activeFilter ===
+              ${activeFilter ===
                 "COMPLETED"
-                  ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                  : "border border-slate-200 bg-white text-slate-900"
+                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                : "border border-slate-200 bg-white text-slate-900"
               }
             `}
           >
@@ -212,7 +221,7 @@ export default function MobileMyTasksView({
             <p
               className={
                 activeFilter ===
-                "COMPLETED"
+                  "COMPLETED"
                   ? "text-emerald-100"
                   : "text-slate-500"
               }
@@ -241,7 +250,7 @@ export default function MobileMyTasksView({
         </div>
 
         {/* TASK LIST */}
-        <div className="mt-7 space-y-4">
+        <div className="mt-5 space-y-3">
 
           {loading ? (
             <div>
@@ -304,7 +313,7 @@ export default function MobileMyTasksView({
                       bg-indigo-50
                       px-3
                       py-1
-                      text-xs
+                      text-[10px]
                       font-semibold
                       text-indigo-600
                     "
@@ -318,7 +327,7 @@ export default function MobileMyTasksView({
                       bg-emerald-50
                       px-3
                       py-1
-                      text-xs
+                      text-[10px]
                       font-semibold
                       text-emerald-500
                     "
@@ -331,10 +340,10 @@ export default function MobileMyTasksView({
                 {/* TITLE */}
                 <h2
                   className="
-                    mt-5
-                    text-lg
+                    mt-3
+                    text-base
                     font-black
-                    leading-8
+                    leading-3
                     tracking-tight
                     text-slate-900
                   "
@@ -354,16 +363,40 @@ export default function MobileMyTasksView({
 
                   <p
                     className="
-                      text-xs
-                      text-slate-500
+                      text-[11px]
+                    text-slate-500
                     "
                   >
-                    📍 {task.address}
+                    📍 {
+
+                      (() => {
+
+                        const location =
+
+                          task.location_type ===
+                            "SEARCH"
+
+                            ? (
+                              task.location_name ||
+                              "Lokasi tidak tersedia"
+                            )
+
+                            : (
+                              task.manual_address ||
+                              "Alamat manual"
+                            );
+
+                        return location.length > 22
+                          ? `${location.slice(0, 22)}...`
+                          : location;
+
+                      })()
+                    }
                   </p>
 
                   <div
                     className="
-                      text-xl
+                      text-base
                       font-black
                       tracking-tight
                       text-amber-500

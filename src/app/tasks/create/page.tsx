@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
 } from "react";
 
@@ -11,11 +12,11 @@ import {
 } from "@/features/tasks/services/task.service";
 
 const categories = [
-  "Belanja",
-  "Dokumen",
-  "Kurir",
-  "Kampus",
   "Antri",
+  "Dokumen",
+  "Kondangan",
+  "kurir",
+  "Belanja",
   "Lainnya",
 ];
 
@@ -34,29 +35,312 @@ export default function CreateTaskPage() {
   const [budget, setBudget] =
     useState("");
 
-  const [address, setAddress] =
-    useState("");
+  const [
+    taskDate,
+    setTaskDate,
+  ] = useState("");
+
+  const [
+    taskTime,
+    setTaskTime,
+  ] = useState("");
+
+  const [
+    isUrgent,
+    setIsUrgent,
+  ] = useState(false);
 
   const [loading, setLoading] =
     useState(false);
+
+  const [
+    locationMethod,
+    setLocationMethod,
+  ] = useState<
+    "SEARCH" | "MANUAL"
+  >("SEARCH");
+
+  const [
+    locationQuery,
+    setLocationQuery,
+  ] = useState("");
+
+  const [
+    selectedLocation,
+    setSelectedLocation,
+  ] = useState<any>(null);
+
+  const [
+    latitude,
+    setLatitude,
+  ] = useState<number | null>(
+    null
+  );
+
+  const [
+    longitude,
+    setLongitude,
+  ] = useState<number | null>(
+    null
+  );
+
+  const [
+    manualAddress,
+    setManualAddress,
+  ] = useState("");
+
+  const [
+    ownerLatitude,
+    setOwnerLatitude,
+  ] = useState<number | null>(
+    null
+  );
+
+  const [
+    ownerLongitude,
+    setOwnerLongitude,
+  ] = useState<number | null>(
+    null
+  );
+
+  const [
+    searchResults,
+    setSearchResults,
+  ] = useState<any[]>([]);
+
+  const [
+    locationSearch,
+    setLocationSearch,
+  ] = useState("");
+
+  const [
+    searchingLocation,
+    setSearchingLocation,
+  ] = useState(false);
+
+  useEffect(() => {
+
+    navigator.geolocation
+      .getCurrentPosition(
+        (position) => {
+
+          setOwnerLatitude(
+            position.coords.latitude
+          );
+
+          setOwnerLongitude(
+            position.coords.longitude
+          );
+        }
+      );
+
+  }, []);
+
+  async function searchLocation(
+    query: string
+  ) {
+
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+
+      if (
+        query.trim().length < 3
+      ) {
+
+        setSearchResults([]);
+
+        return;
+      }
+
+      setSearchingLocation(
+        true
+      );
+
+      const response =
+        await fetch(
+
+          `https://nominatim.openstreetmap.org/search?format=json&q=${query}`,
+
+          {
+            headers: {
+              "Accept-Language":
+                "id",
+            },
+          }
+        );
+
+      const data =
+        await response.json();
+
+      setSearchResults(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+
+      setSearchingLocation(
+        false
+      );
+    }
+  }
 
   async function handleCreateTask(
     e: React.FormEvent
   ) {
     e.preventDefault();
 
+    /* =========================
+       VALIDATION
+    ========================= */
+
+    if (
+      locationMethod ===
+      "SEARCH"
+    ) {
+
+      if (
+        !selectedLocation ||
+        !latitude ||
+        !longitude
+      ) {
+
+        alert(
+          "Pilih lokasi terlebih dahulu"
+        );
+
+        return;
+      }
+    }
+
+    if (
+      locationMethod ===
+      "MANUAL"
+    ) {
+
+      if (
+        !manualAddress.trim()
+      ) {
+
+        alert(
+          "Masukkan alamat manual"
+        );
+
+        return;
+      }
+    }
+
     try {
+
       setLoading(true);
 
-      await createTask({
-        title,
-        description,
-        category,
-        budget: Number(budget),
-        address,
+      const scheduledAt =
+        new Date(
+          `${taskDate}T${taskTime}`
+        );
 
-        latitude: -6.200000, 
-        longitude: 106.816666,
+      if (
+        isNaN(
+          scheduledAt.getTime()
+        )
+      ) {
+
+        alert(
+          "Tanggal dan jam pelaksanaan wajib diisi"
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      if (
+        scheduledAt.getTime() <
+        Date.now()
+      ) {
+
+        alert(
+          "Waktu pelaksanaan tidak boleh di masa lalu"
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      await createTask({
+
+        title,
+
+        description,
+
+        category,
+
+        budget: Number(budget),
+
+        /* =========================
+           LOCATION TYPE
+        ========================= */
+
+        location_type:
+          locationMethod,
+
+        /* =========================
+           SEARCH LOCATION
+        ========================= */
+
+        location_name:
+          locationMethod ===
+            "SEARCH"
+
+            ? locationQuery
+            : null,
+
+        latitude:
+          locationMethod ===
+            "SEARCH"
+
+            ? latitude
+            : null,
+
+        longitude:
+          locationMethod ===
+            "SEARCH"
+
+            ? longitude
+            : null,
+
+        /* =========================
+           MANUAL ADDRESS
+        ========================= */
+
+        manual_address:
+          locationMethod ===
+            "MANUAL"
+
+            ? manualAddress
+            : null,
+
+        /* =========================
+           OWNER LOCATION
+        ========================= */
+
+        owner_latitude:
+          ownerLatitude,
+
+        owner_longitude:
+          ownerLongitude,
+
+        scheduled_at:
+          scheduledAt.toISOString(),
+
+        is_urgent:
+          isUrgent,
       });
 
       alert(
@@ -102,21 +386,21 @@ export default function CreateTaskPage() {
           <h1
             className="
               mt-6
-              text-4xl
+              text-xl
               font-bold
               tracking-tight
               text-slate-900
             "
           >
-            Apa yang kamu butuhkan?
+            Perlu bantuan apa?
           </h1>
 
           <p
             className="
-              mt-4
-              max-w-2xl
-              text-lg
-              leading-8
+              mt-2
+              max-w-xl
+              text-base
+              leading-5
               text-slate-500
             "
           >
@@ -130,8 +414,8 @@ export default function CreateTaskPage() {
         <form
           onSubmit={handleCreateTask}
           className="
-            mt-10
-            rounded-[32px]
+            mt-7
+            rounded-4xl
             border
             border-slate-200
             bg-white
@@ -235,7 +519,19 @@ export default function CreateTaskPage() {
               Kategori
             </label>
 
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div
+              className="
+    mt-4
+    flex
+    gap-3
+    overflow-x-auto
+    pb-2
+    scrollbar-hide
+
+    md:flex-wrap
+    md:overflow-visible
+  "
+            >
 
               {categories.map((item) => (
                 <button
@@ -245,17 +541,18 @@ export default function CreateTaskPage() {
                     setCategory(item)
                   }
                   className={`
+                    shrink-0
+                    whitespace-nowrap
                     rounded-2xl
-                    px-5
-                    py-3
-                    text-sm
+                    px-4
+                    py-2
+                    text-[13px]
                     font-semibold
                     transition
 
-                    ${
-                      category === item
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    ${category === item
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                      : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }
                   `}
                 >
@@ -307,45 +604,482 @@ export default function CreateTaskPage() {
 
           </div>
 
-          {/* ADDRESS */}
+          {/* SCHEDULE */}
           <div className="mt-6">
 
             <label
               className="
-                text-sm
-                font-semibold
-                text-slate-700
-              "
+      text-sm
+      font-semibold
+      text-slate-700
+    "
+            >
+              Jadwal Pelaksanaan
+            </label>
+
+            <div className="mt-3 grid grid-cols-2 gap-3">
+
+              <input
+                type="date"
+                required
+                value={taskDate}
+                onChange={(e) =>
+                  setTaskDate(
+                    e.target.value
+                  )
+                }
+                className="
+        h-14
+        rounded-2xl
+        border
+        border-slate-200
+        bg-slate-50
+        px-4
+      "
+              />
+
+              <input
+                type="time"
+                required
+                value={taskTime}
+                onChange={(e) =>
+                  setTaskTime(
+                    e.target.value
+                  )
+                }
+                className="
+        h-14
+        rounded-2xl
+        border
+        border-slate-200
+        bg-slate-50
+        px-4
+      "
+              />
+
+            </div>
+
+          </div>
+
+          {/* URGENT */}
+          <div className="mt-6">
+
+            <button
+              type="button"
+              onClick={() =>
+                setIsUrgent(!isUrgent)
+              }
+              className={`
+      w-full
+      rounded-2xl
+      border
+      p-4
+      text-left
+      transition
+
+      ${isUrgent
+                  ? `
+          border-red-500
+          bg-red-50
+        `
+                  : `
+          border-slate-200
+          bg-white
+        `
+                }
+    `}
+            >
+
+              <div className="flex items-center justify-between">
+
+                <p className="font-semibold">
+                  🔥 Urgent
+                </p>
+
+                {isUrgent && (
+                  <span
+                    className="
+            rounded-full
+            bg-red-500
+            px-2
+            py-1
+            text-[10px]
+            font-bold
+            text-white
+          "
+                  >
+                    AKTIF
+                  </span>
+                )}
+
+              </div>
+
+              <p
+                className="
+        mt-2
+        text-xs
+        text-slate-500
+      "
+              >
+                Task akan tampil lebih atas
+                di feed helper.
+              </p>
+
+            </button>
+
+          </div>
+
+          {/* LOCATION */}
+          <div className="mt-6">
+
+            <label
+              className="
+      text-sm
+      font-semibold
+      text-slate-700
+    "
             >
               Lokasi
             </label>
 
-            <input
-              type="text"
-              required
-              value={address}
-              onChange={(e) =>
-                setAddress(
-                  e.target.value
-                )
-              }
-              placeholder="Masukkan alamat task"
-              className="
-                mt-3
-                h-14
-                w-full
-                rounded-2xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-5
-                text-slate-900
-                outline-none
-                transition
-                focus:border-indigo-500
-                focus:bg-white
-              "
-            />
+            {/* METHOD TOGGLE */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+
+              {/* SEARCH */}
+              <button
+                type="button"
+                onClick={() => {
+
+                  setLocationMethod(
+                    "SEARCH"
+                  );
+
+                  setManualAddress("");
+                }}
+
+                className={`
+                  text-xs
+        rounded-2xl
+        border
+        p-4
+        text-left
+        transition
+
+        ${locationMethod ===
+                    "SEARCH"
+
+                    ? `
+              border-indigo-500
+              bg-indigo-50
+            `
+
+                    : `
+              border-slate-200
+              bg-white
+            `
+                  }
+      `}
+              >
+
+                <p className="font-bold">
+                  Cari Lokasi
+                </p>
+
+                <p
+                  className="
+          mt-1
+          text-xs
+          text-slate-500
+        "
+                >
+                  Lokasi lebih akurat
+                </p>
+
+              </button>
+
+              {/* MANUAL */}
+              <button
+                type="button"
+                onClick={() => {
+
+                  setLocationMethod(
+                    "MANUAL"
+                  );
+
+                  setSelectedLocation(
+                    null
+                  );
+
+                  setLatitude(null);
+
+                  setLongitude(null);
+
+                  setLocationQuery("");
+                }}
+
+                className={`
+                  text-xs
+        rounded-2xl
+        border
+        p-4
+        text-left
+        transition
+
+        ${locationMethod ===
+                    "MANUAL"
+
+                    ? `
+              border-indigo-500
+              bg-indigo-50
+            `
+
+                    : `
+              border-slate-200
+              bg-white
+            `
+                  }
+      `}
+              >
+
+                <p className="font-bold">
+                  Alamat Manual
+                </p>
+
+                <p
+                  className="
+          mt-1
+          text-xs
+          text-slate-500
+        "
+                >
+                  Tulis alamat sendiri
+                </p>
+
+              </button>
+
+            </div>
+
+            {/* SEARCH INPUT */}
+            {locationMethod ===
+              "SEARCH" && (
+
+                <div className="mt-4">
+
+                  <input
+                    type="text"
+                    value={locationSearch}
+
+                    onChange={(e) => {
+
+                      const value =
+                        e.target.value;
+
+                      setLocationSearch(value);
+
+                      clearTimeout(
+                        (window as any)
+                          .locationSearchTimeout
+                      );
+
+                      (window as any)
+                        .locationSearchTimeout =
+                        setTimeout(() => {
+
+                          searchLocation(value);
+
+                        }, 800);
+                    }}
+                    placeholder="
+                  Pilih lokasi..."
+                    className="
+                    text-[16px]
+                  h-14
+                  w-full
+                  rounded-2xl
+                  border
+                  border-slate-200
+                  bg-slate-50
+                  px-5
+                  text-slate-900
+                  outline-none
+                  transition
+                  focus:border-indigo-500
+                  focus:bg-white
+                  "
+                  />
+
+                  {/* SEARCH RESULTS */}
+                  {searchingLocation && (
+
+                    <div
+                      className="
+      mt-3
+      rounded-2xl
+      border
+      border-slate-200
+      bg-white
+      p-4
+      text-sm
+      text-slate-500
+    "
+                    >
+                      Mencari lokasi...
+                    </div>
+
+                  )}
+
+                  {searchResults.length > 0 && (
+
+                    <div
+                      className="
+      mt-3
+      overflow-hidden
+      rounded-2xl
+      border
+      border-slate-200
+      bg-white
+    "
+                    >
+
+                      {searchResults.map(
+                        (location) => (
+
+                          <button
+                            key={location.place_id}
+
+                            type="button"
+
+                            onClick={() => {
+
+                              setSelectedLocation(
+                                location
+                              );
+
+                              setLocationQuery(
+                                location.display_name
+                              );
+
+                              setLatitude(
+                                Number(location.lat)
+                              );
+
+                              setLongitude(
+                                Number(location.lon)
+                              );
+
+                              setSearchResults(
+                                []
+                              );
+                            }}
+
+                            className="
+          w-full
+          border-b
+          border-slate-100
+          px-4
+          py-4
+          text-left
+          transition
+          hover:bg-slate-50
+        "
+                          >
+
+                            <p
+                              className="
+            text-sm
+            font-semibold
+            text-slate-900
+          "
+                            >
+                              {location.display_name}
+                            </p>
+
+                          </button>
+
+                        ))}
+
+                    </div>
+
+                  )}
+
+                  {selectedLocation && (
+
+                    <div
+                      className="
+            mt-3
+            rounded-2xl
+            border
+            border-emerald-200
+            bg-emerald-50
+            p-4
+          "
+                    >
+
+                      <p
+                        className="
+              text-sm
+              font-semibold
+              text-emerald-700
+            "
+                      >
+                        Lokasi dipilih
+                      </p>
+
+                      <p
+                        className="
+              mt-1
+              text-sm
+              text-slate-600
+            "
+                      >
+                        {
+                          selectedLocation
+                            .display_name
+                        }
+                      </p>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              )}
+
+            {/* MANUAL INPUT */}
+            {locationMethod ===
+              "MANUAL" && (
+
+                <textarea
+                  rows={4}
+                  required
+                  value={manualAddress}
+                  onChange={(e) =>
+                    setManualAddress(
+                      e.target.value
+                    )
+                  }
+                  placeholder="
+                  Contoh: warung viral, Jl. Sudirman No. 10..."
+                  className="
+                    text-xs
+                    mt-4
+                    w-full
+                    rounded-2xl
+                    border
+                  border-slate-200
+                  bg-slate-50
+                    px-5
+                    py-4
+                  text-slate-900
+                    outline-none
+                    transition
+                  focus:border-indigo-500
+                  focus:bg-white
+      "
+                />
+
+              )}
 
           </div>
 
@@ -373,8 +1107,8 @@ export default function CreateTaskPage() {
             "
           >
             {loading
-              ? "Membuat task..."
-              : "Buat Task"}
+              ? "Cari bantuan..."
+              : "Cari bantuan"}
           </button>
 
         </form>

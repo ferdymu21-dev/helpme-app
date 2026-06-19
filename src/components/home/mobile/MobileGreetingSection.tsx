@@ -41,7 +41,7 @@ export default function MobileGreetingSection() {
         {/* TITLE */}
         <h1
           className="
-            text-xl
+            text-base
             font-bold
             tracking-tight
             text-slate-900
@@ -53,8 +53,8 @@ export default function MobileGreetingSection() {
         {/* SUBTITLE */}
         <p
           className="
-            mt-2
-            text-sm
+            mt-1
+            text-xs
             text-slate-500
           "
         >

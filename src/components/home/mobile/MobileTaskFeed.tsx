@@ -2,13 +2,39 @@
 
 import Link from "next/link";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  calculateDistance,
+} from "@/lib/location/distance";
+
 interface Task {
   id: string;
   title: string;
   category: string;
   budget: number;
-  address: string;
   status: string;
+
+  location_type?: string;
+
+  location_name?: string;
+
+  manual_address?: string;
+
+  latitude?: number;
+
+  longitude?: number;
+
+  owner_latitude?: number;
+
+  owner_longitude?: number;
+
+  scheduled_at?: string | null;
+
+  is_urgent?: boolean;
 }
 
 interface Props {
@@ -18,6 +44,78 @@ interface Props {
 export default function MobileTaskFeed({
   tasks,
 }: Props) {
+
+  const [
+    userLatitude,
+    setUserLatitude,
+  ] = useState<
+    number | null
+  >(null);
+
+  const [
+    userLongitude,
+    setUserLongitude,
+  ] = useState<
+    number | null
+  >(null);
+
+  useEffect(() => {
+
+    navigator.geolocation
+      .getCurrentPosition(
+        (position) => {
+
+          setUserLatitude(
+            position.coords.latitude
+          );
+
+          setUserLongitude(
+            position.coords.longitude
+          );
+        }
+      );
+
+  }, []);
+
+  const [
+    activeCategory,
+    setActiveCategory,
+  ] = useState("Semua");
+
+  const filteredTasks =
+
+    (
+      activeCategory ===
+        "Semua"
+
+        ? tasks
+
+        : tasks.filter(
+          (task) =>
+            task.category ===
+            activeCategory
+        )
+    )
+
+      .sort((a, b) => {
+
+        if (
+          a.is_urgent &&
+          !b.is_urgent
+        ) {
+          return -1;
+        }
+
+        if (
+          !a.is_urgent &&
+          b.is_urgent
+        ) {
+          return 1;
+        }
+
+        return 0;
+      });
+
   return (
     <section className="px-6 pt-8 pb-20">
 
@@ -30,7 +128,7 @@ export default function MobileTaskFeed({
 
             <h2
               className="
-                text-xl
+                text-sm
                 font-black
                 leading-tight
                 tracking-tight
@@ -42,8 +140,8 @@ export default function MobileTaskFeed({
 
             <p
               className="
-                mt-3
-                text-xs
+                mt-1
+                text-[11px]
               text-slate-500
               "
             >
@@ -57,7 +155,7 @@ export default function MobileTaskFeed({
         {/* FILTERS */}
         <div
           className="
-            mt-6
+            mt-3
             flex
             gap-3
             overflow-x-auto
@@ -68,14 +166,18 @@ export default function MobileTaskFeed({
 
           {[
             "Semua",
-            "Belanja",
-            "Dokumen",
             "Antri",
+            "Dokumen",
+            "Kondangan",
             "Kurir",
-            "Kampus",
+            "Belanja",
+            "Lainnya",
           ].map((item, index) => (
             <button
               key={item}
+              onClick={() =>
+                setActiveCategory(item)
+              }
               className={`
                 whitespace-nowrap
                 rounded-2xl
@@ -88,10 +190,9 @@ export default function MobileTaskFeed({
                 duration-200
                 hover:-translate-y-0.5
 
-                ${
-                  index === 0
-                    ? "bg-indigo-600 text-white"
-                    : "border border-slate-200 bg-white text-slate-600"
+                ${activeCategory === item
+                  ? "bg-indigo-600 text-white"
+                  : "border border-slate-200 bg-white text-slate-600"
                 }
               `}
             >
@@ -102,19 +203,19 @@ export default function MobileTaskFeed({
         </div>
 
         {/* TASK LIST */}
-        <div className="mt-7 space-y-4">
+        <div className="mt-2 space-y-2">
 
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <Link
               key={task.id}
               href={`/tasks/${task.id}`}
               className="
                 block
-                rounded-4xl
+                rounded-2xl
                 border
               border-slate-100
               bg-white
-                p-3
+                p-2
                 shadow-[0_10px_30px_rgba(15,23,42,0.05)]
                 transition-all
                 duration-300
@@ -131,9 +232,9 @@ export default function MobileTaskFeed({
                     inline-flex
                     rounded-full
                     bg-indigo-100
-                    px-3
+                    px-2
                     py-1
-                    text-xs
+                    text-[9px]
                     font-semibold
                     text-indigo-700
                   "
@@ -142,18 +243,40 @@ export default function MobileTaskFeed({
                 </div>
 
                 {/* STATUS */}
-                <div
-                  className="
-                    rounded-full
-                    bg-emerald-50
-                    px-3
-                    py-1
-                    text-xs
-                    font-semibold
-                    text-emerald-500
-                  "
-                >
-                  {task.status}
+                <div className="flex items-center gap-2">
+
+                  {task.is_urgent && (
+
+                    <div
+                      className="
+        rounded-full
+        bg-red-100
+        px-2
+        py-1
+        text-[10px]
+        font-bold
+        text-red-600
+      "
+                    >
+                      🔥 Mendesak
+                    </div>
+
+                  )}
+
+                  <div
+                    className="
+      rounded-full
+      bg-emerald-50
+      px-2
+      py-1
+      text-[9px]
+      font-semibold
+      text-emerald-500
+    "
+                  >
+                    {task.status}
+                  </div>
+
                 </div>
 
               </div>
@@ -161,8 +284,9 @@ export default function MobileTaskFeed({
               {/* TITLE */}
               <h3
                 className="
-                  mt-4
-                  text-xl
+                  mt-3
+                  ml-3.5
+                  text-sm
                   font-black
                   leading-5
                   tracking-tight
@@ -175,27 +299,100 @@ export default function MobileTaskFeed({
               {/* BOTTOM */}
               <div
                 className="
-                  mt-6
+                  mt-3
                   flex
                   items-center
                   justify-between
                 "
               >
 
-                {/* LOCATION */}
-                <p
-                  className="
-                    text-xs
-                    text-slate-500
-                  "
-                >
-                  📍 {task.address}
-                </p>
+                <div className="space-y-2">
+
+                  {/* LOCATION */}
+                  <p
+                    className="
+                    ml-3.5
+      text-[11px]
+      text-slate-500
+    "
+                  >
+                    📍 {
+
+                      (() => {
+
+                        const location =
+
+                          task.location_type ===
+                            "SEARCH"
+
+                            ? (
+                              task.location_name ||
+                              "Lokasi tidak tersedia"
+                            )
+
+                            : (
+                              task.manual_address ||
+                              "Alamat manual"
+                            );
+
+                        return location.length > 20
+                          ? `${location.slice(0, 20)}...`
+                          : location;
+
+                      })()
+                    }
+                  </p>
+
+                  {/* DISTANCE */}
+                  {
+                    userLatitude &&
+                    userLongitude &&
+                    (
+                      task.latitude ||
+                      task.owner_latitude
+                    ) &&
+                    (
+                      task.longitude ||
+                      task.owner_longitude
+                    ) && (
+
+                      <p
+                        className="
+                        ml-3.5
+          text-[10px]
+          text-slate-400
+        "
+                      >
+
+                        🛵 {
+
+                          calculateDistance(
+
+                            userLatitude,
+
+                            userLongitude,
+
+                            task.latitude ||
+                            task.owner_latitude!,
+
+                            task.longitude ||
+                            task.owner_longitude!
+                          )
+                            .toFixed(1)
+
+                        } km dari kamu
+
+                      </p>
+                    )}
+
+                </div>
 
                 {/* PRICE */}
                 <div
                   className="
-                    text-xl
+                    relative
+                    right-3.5
+                    text-base
                     font-black
                     tracking-tight
                   text-amber-500

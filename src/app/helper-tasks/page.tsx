@@ -19,8 +19,20 @@ interface Task {
   title: string;
   category: string;
   budget: number;
-  address: string;
   status: string;
+  location_type?: string;
+
+  location_name?: string;
+
+  manual_address?: string;
+
+  latitude?: number;
+
+  longitude?: number;
+
+  owner_latitude?: number;
+
+  owner_longitude?: number;
 }
 
 const filters = [
@@ -87,26 +99,26 @@ export default function HelperTasksPage() {
     ).length;
 
   return (
-  <>
-    <MobileHelperTasksView
-      tasks={filteredTasks}
-      loading={loading}
-      activeFilter={activeFilter}
-      setActiveFilter={
-        setActiveFilter
-      }
-      filters={filters}
-    />
+    <>
+      <MobileHelperTasksView
+        tasks={filteredTasks}
+        loading={loading}
+        activeFilter={activeFilter}
+        setActiveFilter={
+          setActiveFilter
+        }
+        filters={filters}
+      />
 
-    <DesktopHelperTasksView
-      tasks={filteredTasks}
-      loading={loading}
-      activeFilter={activeFilter}
-      setActiveFilter={
-        setActiveFilter
-      }
-      filters={filters}
-    />
-  </>
-);
+      <DesktopHelperTasksView
+        tasks={filteredTasks}
+        loading={loading}
+        activeFilter={activeFilter}
+        setActiveFilter={
+          setActiveFilter
+        }
+        filters={filters}
+      />
+    </>
+  );
 }

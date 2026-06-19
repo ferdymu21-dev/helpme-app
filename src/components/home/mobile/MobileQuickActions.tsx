@@ -17,8 +17,8 @@ export default function MobileQuickActions() {
         <Link
           href="/tasks/create"
           className="
-            min-w-38.75
-            h-37.5
+            min-w-24
+            h-24
             flex
             flex-col
             justify-between
@@ -26,9 +26,9 @@ export default function MobileQuickActions() {
             bg-linear-to-br
             from-indigo-600
             to-violet-600
-            p-4
+            p-2.5
             text-white
-            shadow-lg
+            shadow-xs
             shadow-indigo-600/15
             transition-all
             duration-200
@@ -41,13 +41,13 @@ export default function MobileQuickActions() {
           <div
             className="
               flex
-              h-11
-              w-11
+              h-9
+              w-9
               items-center
               justify-center
-              rounded-2xl
+              rounded-xl
               bg-white/20
-              text-xl
+              text-sm
               font-bold
             "
           >
@@ -59,7 +59,7 @@ export default function MobileQuickActions() {
 
             <h3
               className="
-                text-base
+                text-xs
                 font-bold
               "
             >
@@ -68,10 +68,10 @@ export default function MobileQuickActions() {
 
             <p
               className="
-                mt-2
-                text-xs
-                font-bold
-                leading-5
+                mt-1
+                text-[10px]
+                font-white
+                leading-3
                 text-indigo-100
               "
             >
@@ -87,8 +87,8 @@ export default function MobileQuickActions() {
         <Link
           href="/my-tasks"
           className="
-            min-w-38.75
-            h-37.5
+            min-w-24
+            h-24
             flex
             flex-col
             justify-between
@@ -96,8 +96,8 @@ export default function MobileQuickActions() {
             border
             border-slate-200
             bg-white
-            p-4
-            shadow-lg
+            p-2.5
+            shadow-base
             shadow-slate-200/15
             transition-all
             duration-200
@@ -110,13 +110,14 @@ export default function MobileQuickActions() {
           <div
             className="
               flex
-              h-11
-              w-11
+              h-9
+              w-9
               items-center
               justify-center
-              rounded-2xl
+              rounded-xl
               bg-amber-100
-              text-xl
+              text-sm
+              font-bold
             "
           >
             📋
@@ -127,7 +128,7 @@ export default function MobileQuickActions() {
 
             <h3
               className="
-                text-base
+                text-xs
                 font-bold
               text-slate-900
               "
@@ -137,10 +138,10 @@ export default function MobileQuickActions() {
 
             <p
               className="
-                mt-2
-                text-xs
+                mt-1
+                text-[10px]
                 font-bold
-                leading-5
+                leading-3
                 text-slate-500
               "
             >

@@ -1,114 +1,250 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { supabase } from "@/lib/supabase/client";
+import MobileProfileView
+  from "@/components/profile/mobile/MobileProfileView";
 
-interface Profile {
-  full_name: string;
-  email: string;
+import DesktopProfileView
+  from "@/components/profile/desktop/DesktopProfileView";
+
+import { supabase }
+  from "@/lib/supabase/client";
+
+import {
+  getUserReputation,
+} from "@/features/profile/services/profile.service";
+
+import {
+  getUserBadges,
+} from "@/features/badges/services/badge.service";
+
+import {
+  getUserReviews,
+} from "@/features/reviews/services/review.service";
+
+/* =========================
+   INTERFACES
+========================= */
+
+interface UserProfile {
+
+  fullName: string;
+
+  username: string;
+
+  avatarUrl: string;
+
+  bio: string;
+
+  location: string;
+
+  initials: string;
+
+  completedTasks: number;
+
+  totalReviews: number;
+
+  averageRating: string;
+  badges: {
+
+    label: string;
+
+    icon: string;
+
+    className: string;
+  }[];
 }
 
-export default function ProfilePage() {
-  const [profile, setProfile] =
-    useState<Profile | null>(null);
+interface Review {
 
-  const [loading, setLoading] =
-    useState(true);
+  id: string;
+
+  rating: number;
+
+  comment: string;
+
+  created_at: string;
+
+  reviewer: {
+    id: string;
+
+    full_name: string;
+  }[]
+}
+
+/* =========================
+   PAGE
+========================= */
+
+export default function ProfilePage() {
+
+  const [profile, setProfile] =
+    useState<UserProfile>({
+      fullName: "User",
+
+      username: "@user",
+
+      avatarUrl: "",
+
+      bio: "",
+
+      location: "",
+
+      initials: "U",
+
+      completedTasks: 0,
+
+      totalReviews: 0,
+
+      averageRating: "0.0",
+
+      badges: [],
+    });
+
+  const [reviews, setReviews] =
+    useState<Review[]>([]);
 
   useEffect(() => {
-    async function loadProfile() {
+
+    async function loadUser() {
+
       try {
+
         const {
           data: { user },
-        } = await supabase.auth.getUser();
+        } =
+          await supabase.auth.getUser();
 
         if (!user) return;
 
-        setProfile({
-          full_name:
-            user.user_metadata?.full_name ||
-            "User",
+        const { data: profileData } =
+          await supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .single();
 
-          email:
-            user.email || "",
+        /* =========================
+           USER INFO
+        ========================= */
+
+        const fullName =
+          profileData?.full_name
+          || "User";
+
+        const email =
+          user.email || "";
+
+        const username =
+          `@${profileData?.username || ""}`;
+
+        const words =
+          fullName.split(" ");
+
+        const first =
+          words[0]?.charAt(0) || "";
+
+        const second =
+          words[1]?.charAt(0) || "";
+
+        const initials =
+          `${first}${second}`
+            .toUpperCase();
+
+        /* =========================
+           REPUTATION
+        ========================= */
+
+        const reputation =
+          await getUserReputation(
+            user.id
+          );
+
+        const badges =
+          getUserBadges(
+
+            reputation.completedTasks,
+
+            Number(
+              reputation.averageRating
+            ),
+
+            profileData?.verification_status
+              ?.toUpperCase() ===
+            "VERIFIED"
+          );
+
+        /* =========================
+           REVIEWS
+        ========================= */
+
+        const reviewsData =
+          await getUserReviews(
+            user.id
+          );
+
+        setReviews(reviewsData);
+
+        /* =========================
+           SET PROFILE
+        ========================= */
+
+        setProfile({
+          fullName,
+
+          username,
+
+          avatarUrl:
+            profileData?.avatar_url
+            || "",
+
+          bio:
+            profileData?.bio || "",
+
+          location:
+            profileData?.location || "",
+
+          initials,
+
+          completedTasks:
+            reputation.completedTasks,
+
+          totalReviews:
+            reputation.totalReviews,
+
+          averageRating:
+            reputation.averageRating,
+
+          badges,
         });
 
       } catch (error) {
+
         console.error(error);
-      } finally {
-        setLoading(false);
       }
     }
 
-    loadProfile();
+    loadUser();
+
   }, []);
 
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        Memuat profile...
-      </main>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-slate-50 p-6">
+    <>
 
-      <div className="mx-auto max-w-2xl">
+      <MobileProfileView
+        profile={profile}
+        reviews={reviews}
+      />
 
-        {/* CARD */}
-        <div
-          className="
-            rounded-4xl
-            bg-white
-            p-8
-            shadow-[0_10px_40px_rgba(15,23,42,0.06)]
-          "
-        >
+      <DesktopProfileView
+        profile={profile}
+        reviews={reviews}
+      />
 
-          {/* AVATAR */}
-          <div
-            className="
-              flex
-              h-24
-              w-24
-              items-center
-              justify-center
-              rounded-full
-              bg-indigo-100
-              text-3xl
-              font-bold
-              text-indigo-700
-            "
-          >
-            {profile?.full_name?.charAt(0)}
-          </div>
-
-          {/* INFO */}
-          <div className="mt-6">
-
-            <h1
-              className="
-                text-3xl
-                font-black
-                tracking-tight
-                text-slate-900
-              "
-            >
-              {profile?.full_name}
-            </h1>
-
-            <p className="mt-2 text-slate-500">
-              {profile?.email}
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </main>
+    </>
   );
 }

@@ -4,9 +4,13 @@ import DesktopGreetingSection from "@/components/home/desktop/DesktopGreetingSec
 
 import DesktopQuickActions from "@/components/home/desktop/DesktopQuickActions";
 
-import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
+import DesktopTipsBanner
+from "@/components/home/desktop/DesktopTipsBanner";
 
-import DesktopPopularCategories from "@/components/landing/desktop/DesktopPopularCategories";
+import DesktopAdsBanner
+from "@/components/home/desktop/DesktopAdsBanner";
+
+import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
@@ -37,9 +41,9 @@ export default function DesktopHomeView({
     
         <DesktopQuickActions />
 
-        <DesktopTaskFeed tasks={tasks} />
+        <DesktopTipsBanner />
 
-        <DesktopPopularCategories />
+        <DesktopTaskFeed tasks={tasks} />
 
       </main>
 

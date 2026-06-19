@@ -17,6 +17,11 @@ interface Props {
 
   currentUserId: string;
 
+  otherUser: {
+    full_name: string;
+    avatar_url?: string;
+  } | null;
+
   message: string;
 
   sending: boolean;
@@ -34,6 +39,7 @@ export default function DesktopChatRoomView({
   loading,
   messages,
   currentUserId,
+  otherUser,
   message,
   sending,
   bottomRef,
@@ -61,24 +67,83 @@ export default function DesktopChatRoomView({
         {/* HEADER */}
         <div
           className="
-            border-b
-            border-slate-200
-            bg-white
-            px-8
-            py-5
-          "
+    border-b
+    border-slate-200
+    bg-white
+    px-8
+    py-4
+  "
         >
 
-          <h1
-            className="
-              text-2xl
-              font-black
-              tracking-tight
-              text-slate-900
-            "
-          >
-            Chat Room
-          </h1>
+          <div className="flex items-center gap-4">
+
+            {/* AVATAR */}
+
+            {otherUser?.avatar_url ? (
+
+              <img
+                src={otherUser.avatar_url}
+                alt={otherUser.full_name}
+                className="
+          h-12
+          w-12
+          rounded-full
+          object-cover
+          border
+          border-slate-200
+        "
+              />
+
+            ) : (
+
+              <div
+                className="
+          flex
+          h-12
+          w-12
+          items-center
+          justify-center
+          rounded-full
+          bg-indigo-100
+          text-sm
+          font-bold
+          text-indigo-700
+        "
+              >
+                {otherUser?.full_name
+                  ?.charAt(0)
+                  ?.toUpperCase() || "U"}
+              </div>
+
+            )}
+
+            {/* INFO */}
+
+            <div>
+
+              <h1
+                className="
+          text-lg
+          font-bold
+          text-slate-900
+        "
+              >
+                {otherUser?.full_name ||
+                  "Loading..."}
+              </h1>
+
+              <p
+                className="
+          text-sm
+          text-slate-500
+        "
+              >
+                Percakapan
+              </p>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -102,10 +167,9 @@ export default function DesktopChatRoomView({
                     key={item.id}
                     className={`
                       flex
-                      ${
-                        isMine
-                          ? "justify-end"
-                          : "justify-start"
+                      ${isMine
+                        ? "justify-end"
+                        : "justify-start"
                       }
                     `}
                   >
@@ -120,10 +184,9 @@ export default function DesktopChatRoomView({
                         leading-7
                         shadow-sm
 
-                        ${
-                          isMine
-                            ? "bg-indigo-600 text-white"
-                            : "border border-slate-200 bg-white text-slate-700"
+                        ${isMine
+                          ? "bg-indigo-600 text-white"
+                          : "border border-slate-200 bg-white text-slate-700"
                         }
                       `}
                     >
