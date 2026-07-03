@@ -119,6 +119,22 @@ export default function LoginForm() {
           ? "Loading..."
           : "Login"}
       </button>
+
+      <div className="mt-4 text-center">
+
+        <a
+          href="/forgot-password"
+          className="
+            text-sm
+            text-blue-600
+            hover:underline
+        "
+        >
+          Lupa Kata Sandi?
+        </a>
+
+      </div>
+
     </form>
   );
 }

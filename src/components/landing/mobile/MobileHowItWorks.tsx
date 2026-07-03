@@ -9,7 +9,7 @@ const steps = [
   {
     number: "2",
     icon: "🙋",
-    title: "Helper\nMelamar",
+    title: "Helper Melamar",
     color: "bg-pink-100 text-pink-600",
   },
 
@@ -37,7 +37,7 @@ const steps = [
 
 export default function MobileHowItWorks() {
   return (
-    <section className="px-0 pt-8">
+    <section className="px-4 pt-8">
 
       {/* HEADER */}
       <div className="text-center">
@@ -84,6 +84,9 @@ export default function MobileHowItWorks() {
             className="
               flex
               items-center
+              text-[10px]
+              font-semibold
+              text-slate-700
             "
           >
 
@@ -91,7 +94,7 @@ export default function MobileHowItWorks() {
             <div
               className="
                 flex
-                min-w-[58px]
+                min-w-8.5
                 flex-col
                 items-center
               "
@@ -101,8 +104,8 @@ export default function MobileHowItWorks() {
               <div
                 className={`
                   flex
-                  h-10
-                  w-10
+                  h-7
+                  w-7
                   items-center
                   justify-center
                   rounded-full
@@ -131,9 +134,9 @@ export default function MobileHowItWorks() {
                   mt-1
                   whitespace-pre-line
                   text-center
-                  text-[11px]
+                  text-[9px]
                   font-semibold
-                  leading-4
+                  leading-3
                   text-slate-700
                 "
               >
@@ -146,8 +149,8 @@ export default function MobileHowItWorks() {
             {index !== steps.length - 1 && (
               <div
                 className="
-                  mt-6
-                  px-1
+                  mt-2
+                  px-0
                   text-slate-300
                 "
               >

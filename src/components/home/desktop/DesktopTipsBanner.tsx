@@ -126,7 +126,7 @@ export default function DesktopTipsBanner() {
                 text-white
               "
             >
-              ⚡ Tips HelpMe
+              💡 Tips HelpMe
             </div>
 
             {/* TITLE */}

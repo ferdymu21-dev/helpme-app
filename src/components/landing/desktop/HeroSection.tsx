@@ -55,13 +55,12 @@ export default function HeroSection() {
                   items-center
                   justify-center
                   rounded-[14px]
-                  border
-                  border-slate-200
-                  bg-white
-                  px-7
+                  bg-amber-400
+                  px-6
                   text-sm
                   font-semibold
                   text-slate-700
+                  shadow-[0_10px_40px_rgba(79,70,229,0.25)]
                   transition
                   hover:bg-slate-50
                 "
@@ -84,9 +83,9 @@ export default function HeroSection() {
               </span>
             </h2>
 
-            <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+            <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
  
-              <div className="min-w-55 rounded-2x1 border border-slate-200 bg-white p-5">
+              <div className="min-w-55 rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="text-base font-bold text-slate-900">
                   Buat task
                 </div>

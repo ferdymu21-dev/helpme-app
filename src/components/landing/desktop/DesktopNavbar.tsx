@@ -36,7 +36,6 @@ export default function DesktopNavbar() {
             alt="HelpMe Logo"
             width={150}
             height={150}
-            className="h-auto w-35"
             priority
           />
 
@@ -111,9 +110,19 @@ export default function DesktopNavbar() {
           <Link
             href="/login"
             className="
+            flex
+              h-12
+              items-center
+              rounded-2xl
+              bg-linear-to-r
+              from-amber-500
+              to-amber-400
+              px-6
               text-sm
-              font-semibold
-              text-slate-700
+              font-bold
+              text-black
+              shadow-lg
+              shadow-amber-500/20
               transition
               hover:text-indigo-600
             "

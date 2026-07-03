@@ -268,6 +268,9 @@ export default function PublicProfilePage() {
                     badges,
                 }}
                 reviews={reviews}
+
+                profileUserId={profile.id}
+
                 isPublicProfile={true}
             />
 
@@ -303,6 +306,9 @@ export default function PublicProfilePage() {
                     badges,
                 }}
                 reviews={reviews}
+
+                profileUserId={profile.id}
+                
                 isPublicProfile={true}
             />
 

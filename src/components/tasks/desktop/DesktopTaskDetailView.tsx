@@ -1,9 +1,15 @@
 "use client";
 
+import { useState }
+    from "react";
+
 import { supabase }
     from "@/lib/supabase/client";
 
 import Link from "next/link";
+
+import ReportTaskModal
+    from "@/features/reports/components/ReportTaskModal";
 
 interface Props {
     task: any;
@@ -49,7 +55,13 @@ export default function DesktopTaskDetailView({
     handleCompleteTask,
 
     handleCancelTask,
+
 }: Props) {
+
+    const [
+        showReportModal,
+        setShowReportModal,
+    ] = useState(false);
 
     const isOwner =
         task.user_id ===
@@ -881,6 +893,7 @@ export default function DesktopTaskDetailView({
             {
                 !isOwner &&
                 !isSelectedHelper &&
+                !hasApplied &&
                 task.status === "OPEN" && (
 
                     <div
@@ -900,42 +913,104 @@ export default function DesktopTaskDetailView({
 
                         <div className="mx-auto max-w-5xl">
 
-                            <button
-                                onClick={handleApplyTask}
-                                disabled={
-                                    applying ||
-                                    alreadyApplied
-                                }
-                                className="
-          flex
-          h-14
-          w-full
-          items-center
-          justify-center
-          rounded-[20px]
-          bg-indigo-600
-          text-lg
-          font-semibold
-          text-white
-          shadow-lg
-          shadow-indigo-600/20
-          transition
-          hover:bg-indigo-700
-          disabled:bg-slate-300
+                            <div className="flex gap-3">
+
+                                <button
+                                    onClick={() =>
+                                        setShowReportModal(
+                                            true
+                                        )
+                                    }
+                                    className="
+            flex
+            h-14
+            items-center
+            justify-center
+            rounded-2xl
+            border
+            border-red-300
+            px-6
+            text-sm
+            font-bold
+            text-red-600
         "
-                            >
+                                >
+                                    Report
+                                </button>
 
-                                {alreadyApplied
-                                    ? "Anda sudah melamar task ini"
-                                    : applying
-                                        ? "Memproses..."
-                                        : "Apply Task"}
+                                <button
+                                    onClick={handleApplyTask}
+                                    disabled={applying}
+                                    className="
+            flex
+            h-14
+            flex-1
+            items-center
+            justify-center
+            rounded-2xl
+            bg-indigo-600
+            text-sm
+            font-bold
+            text-white
+        "
+                                >
+                                    {
+                                        applying
+                                            ? "Melamar..."
+                                            : "Lamar Task"
+                                    }
+                                </button>
 
-                            </button>
+                            </div>
 
                         </div>
 
                     </div>
+                )
+            }
+
+            {
+                !isOwner &&
+                !isSelectedHelper &&
+                hasApplied &&
+                task.status === "OPEN" && (
+
+                    <div
+                        className="
+                fixed
+                bottom-0
+                left-0
+                right-0
+                z-40
+                border-t
+                border-slate-200
+                bg-white
+                p-4
+            "
+                    >
+
+                        <div className="mx-auto max-w-5xl">
+
+                            <div
+                                className="
+                        flex
+                        h-14
+                        items-center
+                        justify-center
+                        rounded-2xl
+                        bg-emerald-100
+                        text-sm
+                        font-bold
+                        text-emerald-700
+                    "
+                            >
+                                ✓ Kamu sudah melamar task ini
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 )
             }
 
@@ -984,6 +1059,28 @@ export default function DesktopTaskDetailView({
 
                 )
             }
+
+            <ReportTaskModal
+
+                open={
+                    showReportModal
+                }
+
+                onClose={() =>
+                    setShowReportModal(
+                        false
+                    )
+                }
+
+                taskId={
+                    task.id
+                }
+
+                taskOwnerId={
+                    task.user_id
+                }
+
+            />
 
         </main >
     );

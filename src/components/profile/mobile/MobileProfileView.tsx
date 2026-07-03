@@ -1,6 +1,12 @@
 "use client";
 
+import {
+  useState,
+} from "react";
+
 import Link from "next/link";
+
+import Image from "next/image";
 
 import {
   SignOut,
@@ -11,6 +17,9 @@ import {
 } from "@/features/auth/services/auth.service";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
+
+import ReportUserModal
+  from "@/features/reports/components/ReportUserModal";
 
 interface Props {
   profile: {
@@ -58,14 +67,23 @@ interface Props {
     }[];
   }[];
 
+  profileUserId?: string;
+
   isPublicProfile?: boolean;
 }
 
 export default function MobileProfileView({
   profile,
   reviews,
+  profileUserId,
   isPublicProfile = false,
+
 }: Props) {
+
+  const [
+    showReportModal,
+    setShowReportModal,
+  ] = useState(false);
 
   async function handleLogout() {
 
@@ -313,24 +331,40 @@ export default function MobileProfileView({
 
               <p
                 className="
-                  text-xs
-                  font-medium
-                  text-slate-500
-                "
+    text-xs
+    font-medium
+    text-slate-500
+  "
               >
                 Rating
               </p>
 
-              <h2
+              <div
                 className="
-                  mt-2
-                  text-base
-                  font-black
-                  text-slate-900
-                "
+    mt-2
+    flex
+    items-center
+    gap-2
+  "
               >
-                ⭐ {profile.averageRating}
-              </h2>
+                <Image
+                  src="/icons/profile/star.svg"
+                  alt="Rating"
+                  width={18}
+                  height={18}
+                />
+
+                <span
+                  className="
+      text-base
+      font-black
+      text-slate-900
+    "
+                >
+                  {profile.averageRating}
+                </span>
+
+              </div>
 
             </div>
 
@@ -344,24 +378,40 @@ export default function MobileProfileView({
 
               <p
                 className="
-                  text-xs
-                  font-medium
-                  text-slate-500
-                "
+    text-xs
+    font-medium
+    text-slate-500
+  "
               >
                 Selesai
               </p>
 
-              <h2
+              <div
                 className="
-                  mt-2
-                  text-base
-                  font-black
-                  text-slate-900
-                "
+    mt-2
+    flex
+    items-center
+    gap-2
+  "
               >
-                🎯 {profile.completedTasks}
-              </h2>
+                <Image
+                  src="/icons/profile/selesai.svg"
+                  alt="Completed"
+                  width={18}
+                  height={18}
+                />
+
+                <span
+                  className="
+      text-base
+      font-black
+      text-slate-900
+    "
+                >
+                  {profile.completedTasks}
+                </span>
+
+              </div>
 
             </div>
 
@@ -375,49 +425,115 @@ export default function MobileProfileView({
 
               <p
                 className="
-                  text-xs
-                  font-medium
-                  text-slate-500
-                "
+    text-xs
+    font-medium
+    text-slate-500
+  "
               >
                 Reviews
               </p>
 
-              <h2
+              <div
                 className="
-                  mt-2
-                  text-base
-                  font-black
-                  text-slate-900
-                "
+    mt-2
+    flex
+    items-center
+    gap-2
+  "
               >
-                💬 {profile.totalReviews}
-              </h2>
+                <Image
+                  src="/icons/profile/review.svg"
+                  alt="Reviews"
+                  width={18}
+                  height={18}
+                />
+
+                <span
+                  className="
+      text-base
+      font-black
+      text-slate-900
+    "
+                >
+                  {profile.totalReviews}
+                </span>
+
+              </div>
 
             </div>
 
           </div>
 
           {/* BUTTON */}
-          {!isPublicProfile && (
+
+          {!isPublicProfile ? (
 
             <Link
               href="/profile/edit"
               className="
-              mt-6
-              flex
-              h-13
-              items-center
-              justify-center
-              rounded-2xl
-              bg-slate-900
-              text-sm
-              font-semibold
-              text-white
-            "
+    mt-3
+    flex
+    h-9
+    items-center
+    justify-center
+    rounded-2xl
+    bg-indigo-500
+    text-xs
+    font-semibold
+    text-white
+  "
             >
-              Edit Profile
+              <div className="flex items-center gap-2">
+
+                <Image
+                  src="/icons/profile/edit-profile.svg"
+                  alt="Edit Profile"
+                  width={14}
+                  height={14}
+                />
+
+                <span>Edit Profile</span>
+
+              </div>
             </Link>
+
+          ) : (
+
+            <button
+
+              onClick={() =>
+                setShowReportModal(
+                  true
+                )
+              }
+
+              className="
+    mt-6
+    flex
+    h-10
+    items-center
+    justify-center
+    rounded-2xl
+    bg-slate-100
+    px-4
+    text-[10px]
+    font-semibold
+    text-red-500
+  "
+            >
+              <div className="flex items-center gap-2">
+
+                <Image
+                  src="/icons/profile/laporkan.svg"
+                  alt="Report"
+                  width={14}
+                  height={14}
+                />
+
+                <span>Laporkan</span>
+
+              </div>
+            </button>
 
           )}
 
@@ -430,23 +546,27 @@ export default function MobileProfileView({
 
             {[
               {
-                label: "📋 Riwayat Task",
+                label: "Riwayat Task",
                 href: "/history",
+                icon: "/icons/profile/riwayat-task.svg",
               },
 
               {
-                label: "🛡️ Verifikasi Akun",
+                label: "Verifikasi Akun",
                 href: "/profile/verification",
+                icon: "/icons/profile/verifikasi-akun.svg",
               },
 
               {
-                label: "💳 Metode Pembayaran",
+                label: "Metode Pembayaran",
                 href: "/payment-method",
+                icon: "/icons/profile/payment.svg",
               },
 
               {
-                label: "⚙ Pengaturan",
+                label: "Pengaturan",
                 href: "/settings",
+                icon: "/icons/profile/pengaturan.svg",
               },
             ].map((item) => (
 
@@ -467,15 +587,26 @@ export default function MobileProfileView({
     "
               >
 
-                <span
-                  className="
-        text-sm
-        font-semibold
-        text-slate-700
-      "
-                >
-                  {item.label}
-                </span>
+                <div className="flex items-center gap-3">
+
+                  <Image
+                    src={item.icon}
+                    alt={item.label}
+                    width={20}
+                    height={20}
+                  />
+
+                  <span
+                    className="
+      text-sm
+      font-semibold
+      text-slate-700
+    "
+                  >
+                    {item.label}
+                  </span>
+
+                </div>
 
                 <span className="text-slate-400">
                   →
@@ -637,6 +768,24 @@ export default function MobileProfileView({
         </div>
 
       </div>
+
+      <ReportUserModal
+
+        open={
+          showReportModal
+        }
+
+        onClose={() =>
+          setShowReportModal(
+            false
+          )
+        }
+
+        reportedUserId={
+          profileUserId || ""
+        }
+
+      />
 
       <MobileBottomNavbar />
 

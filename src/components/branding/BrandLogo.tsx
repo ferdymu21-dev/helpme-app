@@ -17,7 +17,6 @@ export default function BrandLogo({
         width={size}
         height={size}
         priority
-        className="h-auto w-[120px]"
       />
 
       {showText && (

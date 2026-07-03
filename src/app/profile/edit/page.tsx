@@ -140,11 +140,6 @@ export default function EditProfilePage() {
 
       if (avatarFile) {
 
-        console.log(
-          "Avatar dipilih:",
-          avatarFile.name
-        );
-
         const compressedFile =
           await imageCompression(
             avatarFile,
@@ -155,18 +150,8 @@ export default function EditProfilePage() {
             }
           );
 
-        console.log(
-          "Compressed:",
-          compressedFile
-        );
-
         const filePath =
           `${user.id}.jpg`;
-
-          console.log(
-  "Upload path:",
-  filePath
-);
 
         const {
           error: uploadError,
@@ -210,11 +195,6 @@ export default function EditProfilePage() {
         avatarUrl =
           `${publicUrlData.publicUrl}?t=${Date.now()}`;
       }
-
-      console.log(
-  "Avatar URL:",
-  avatarUrl
-);
 
       const { error } =
         await supabase

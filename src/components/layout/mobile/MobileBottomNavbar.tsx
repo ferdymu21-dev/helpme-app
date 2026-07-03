@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import Image from "next/image";
+
 import { usePathname } from "next/navigation";
 
 import { useEffect, useState } from "react";
@@ -12,33 +14,68 @@ const menus = [
   {
     href: "/home",
     label: "Home",
-    icon: "🏠",
+    icon: (
+      <Image
+        src="/icons/home-icon.svg"
+        alt="Home"
+        width={25}
+        height={25}
+      />
+    ),
   },
 
   {
-    href: "/my-tasks",
-    label: "Task",
-    icon: "📋",
-  },
+  href: "/my-tasks",
+  label: "Task",
+  icon: (
+    <Image
+      src="/icons/tasks-icon.svg"
+      alt="Task"
+      width={25}
+      height={25}
+    />
+  ),
+},
 
   {
-    href: "/tasks/create",
-    label: "Create",
-    icon: "➕",
-    primary: true,
-  },
+  href: "/tasks/create",
+  label: "Create",
+  icon: (
+    <Image
+      src="/icons/create-icon.svg"
+      alt="Create"
+      width={28}
+      height={28}
+    />
+  ),
+  primary: true,
+},
 
   {
-    label: "Helper",
-    href: "/helper-tasks",
-    icon: "🛠️",
-  },
+  href: "/helper-tasks",
+  label: "Helper",
+  icon: (
+    <Image
+      src="/icons/helper-icon.svg"
+      alt="Helper"
+      width={25}
+      height={25}
+    />
+  ),
+},
 
-  {
-    href: "/messages",
-    label: "Chat",
-    icon: "💬",
-  },
+ {
+  href: "/messages",
+  label: "Chat",
+  icon: (
+    <Image
+      src="/icons/messages-icon.svg"
+      alt="Chat"
+      width={25}
+      height={25}
+    />
+  ),
+},
 
 ];
 
@@ -131,7 +168,7 @@ export default function MobileBottomNavbar() {
         w-[calc(100%-24px)]
         max-w-md
         -translate-x-1/2
-        rounded-[28px]
+        rounded-2xl
         border
         border-slate-200
         bg-white/90
@@ -162,7 +199,7 @@ export default function MobileBottomNavbar() {
                 transition
 
                 ${menu.primary
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                  ? "bg-slate-100 text-indigo-600 shadow-lg shadow-indigo-600/20"
                   : active
                     ? "bg-indigo-50 text-indigo-600"
                     : "text-slate-500 hover:bg-slate-50"

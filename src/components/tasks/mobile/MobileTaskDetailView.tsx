@@ -5,6 +5,14 @@ import { supabase }
 
 import Link from "next/link";
 
+import Image from "next/image";
+
+import { useState }
+    from "react";
+
+import ReportTaskModal
+    from "@/features/reports/components/ReportTaskModal";
+
 interface Props {
     task: any;
 
@@ -52,6 +60,11 @@ export default function MobileTaskDetailView({
     handleCancelTask,
 
 }: Props) {
+
+    const [
+        showReportModal,
+        setShowReportModal,
+    ] = useState(false);
 
     async function getConversationByTask(
         taskId: string
@@ -197,7 +210,13 @@ export default function MobileTaskDetailView({
                     >
 
                         <span className="mt-1">
-                            📍
+                            <Image
+                                src="/icons/detail-task/lokasi.svg"
+                                alt="Lokasi"
+                                width={14}
+                                height={14}
+                            />
+
                         </span>
 
                         <p
@@ -249,16 +268,24 @@ export default function MobileTaskDetailView({
                         <h2
                             className="
                               mt-1
+                              flex
+                              items-center
+                              gap-2
                               text-xl
                               font-black
                               tracking-tight
                             text-emerald-600
                             "
                         >
-                            Rp
-                            {task.budget.toLocaleString(
-                                "id-ID"
-                            )}
+                            <img
+                                src="/icons/detail-task/budget.svg"
+                                alt="Budget"
+                                className="h-8 w-8 shrink-0"
+                            />
+
+                            <span>
+                            Rp {task.budget.toLocaleString("id-ID")}
+                            </span>
                         </h2>
 
                     </div>
@@ -290,40 +317,46 @@ export default function MobileTaskDetailView({
       text-black/80
     "
                             >
-                                <span>
+                                <span className="flex items-center gap-1">
 
-                                    📅 {
+                                    <Image
+                                        src="/icons/detail-task/tanggal.svg"
+                                        alt="Tanggal"
+                                        width={14}
+                                        height={14}
+                                    />
 
-                                        new Date(
-                                            task.scheduled_at
-                                        ).toLocaleDateString(
-                                            "id-ID",
-                                            {
-                                                day: "numeric",
-                                                month: "long",
-                                                year: "numeric",
-                                            }
-                                        )
-
-                                    }
+                                    {new Date(
+                                        task.scheduled_at
+                                    ).toLocaleDateString(
+                                        "id-ID",
+                                        {
+                                            day: "numeric",
+                                            month: "long",
+                                            year: "numeric",
+                                        }
+                                    )}
 
                                 </span>
 
-                                <span>
+                                <span className="flex items-center gap-1">
 
-                                    🕒 {
+                                    <Image
+                                        src="/icons/detail-task/jam.svg"
+                                        alt="Jam"
+                                        width={14}
+                                        height={14}
+                                    />
 
-                                        new Date(
-                                            task.scheduled_at
-                                        ).toLocaleTimeString(
-                                            "id-ID",
-                                            {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            }
-                                        )
-
-                                    }
+                                    {new Date(
+                                        task.scheduled_at
+                                    ).toLocaleTimeString(
+                                        "id-ID",
+                                        {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        }
+                                    )}
 
                                 </span>
 
@@ -619,7 +652,7 @@ export default function MobileTaskDetailView({
             text-indigo-600
         "
                                                     >
-                                                       🏆 {
+                                                        🏆 {
                                                             app.reputation
                                                                 ?.completedTasks ||
                                                             0
@@ -710,28 +743,56 @@ export default function MobileTaskDetailView({
 
                             ) : (
 
-                                <button
-                                    onClick={handleApplyTask}
-                                    disabled={applying}
-                                    className="
-                            flex
-                            h-14
-                            w-full
-                            items-center
-                            justify-center
-                            rounded-2xl
-                            bg-indigo-600
-                            text-sm
-                            font-bold
-                            text-white
-                        "
-                                >
-                                    {
-                                        applying
-                                            ? "Melamar..."
-                                            : "Lamar Task"
-                                    }
-                                </button>
+                                <div className="flex gap-3">
+
+                                    <button
+                                        onClick={() =>
+                                            setShowReportModal(
+                                                true
+                                            )
+                                        }
+                                        className="
+            flex
+            h-14
+            items-center
+            justify-center
+            rounded-xl
+            bg-red-600
+            border
+            border-red-300
+            px-1
+            text-[10px]
+            font-bold
+            text-black
+        "
+                                    >
+                                        Report
+                                    </button>
+
+                                    <button
+                                        onClick={handleApplyTask}
+                                        disabled={applying}
+                                        className="
+            flex
+            h-14
+            flex-1
+            items-center
+            justify-center
+            rounded-2xl
+            bg-indigo-600
+            text-sm
+            font-bold
+            text-white
+        "
+                                    >
+                                        {
+                                            applying
+                                                ? "Melamar..."
+                                                : "Lamar Task"
+                                        }
+                                    </button>
+
+                                </div>
 
                             )
                         }
@@ -909,6 +970,28 @@ export default function MobileTaskDetailView({
 
                 )
             }
+
+            <ReportTaskModal
+
+                open={
+                    showReportModal
+                }
+
+                onClose={() =>
+                    setShowReportModal(
+                        false
+                    )
+                }
+
+                taskId={
+                    task.id
+                }
+
+                taskOwnerId={
+                    task.user_id
+                }
+
+            />
 
         </main>
     );

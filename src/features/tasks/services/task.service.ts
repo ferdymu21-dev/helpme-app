@@ -1,5 +1,9 @@
 import { supabase } from "@/lib/supabase/client";
 
+import {
+  checkUserModeration,
+} from "@/features/admin/services/moderation-check.service";
+
 import { CreateTaskPayload } from "../types/task.type";
 
 import {
@@ -13,6 +17,8 @@ import {
 export async function createTask(
   payload: CreateTaskPayload
 ) {
+
+  await checkUserModeration();
 
   const {
     data: { user },
@@ -112,19 +118,19 @@ export async function getTaskById(
 ) {
 
   const { data, error } =
-    await supabase
-      .from("tasks")
-      .select(`
-  *,
-  users (
-    id,
-    full_name,
-     avatar_url,
-    verification_status
-  )
-`)
-      .eq("id", taskId)
-      .single();
+  await supabase
+    .from("tasks")
+    .select(`
+      *,
+      users!tasks_user_id_fkey (
+        id,
+        full_name,
+        avatar_url,
+        verification_status
+      )
+    `)
+    .eq("id", taskId)
+    .single();
 
   if (error) {
     throw error;
@@ -140,6 +146,8 @@ export async function getTaskById(
 export async function applyTask(
   taskId: string
 ) {
+
+  await checkUserModeration();
 
   const {
     data: { user },
@@ -202,7 +210,7 @@ export async function applyTask(
 
   if (existing) {
     throw new Error(
-      "Sudah Mengajukan Diri"
+      "Kamu sudah melamar task ini"
     );
   }
 
@@ -338,6 +346,8 @@ export async function acceptHelper(
   taskId: string,
   helperId: string
 ) {
+
+  await checkUserModeration();
 
   const {
     data: { user },
@@ -577,6 +587,8 @@ export async function createConversation(
   helperId: string
 ) {
 
+  await checkUserModeration();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -704,6 +716,8 @@ export async function expireTasks() {
 export async function cancelTask(
   taskId: string
 ) {
+
+  await checkUserModeration();
 
   const {
     data: { user },

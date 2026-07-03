@@ -8,7 +8,18 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-export default function MobileHomeHeader() {
+interface Props {
+
+  onOpenSupport: () => void;
+
+}
+
+export default function MobileHomeHeader({
+
+  onOpenSupport,
+
+}: Props) {
+
   const [initials, setInitials] =
     useState("U");
 
@@ -121,12 +132,38 @@ export default function MobileHomeHeader() {
           alt="HelpMe Logo"
           width={120}
           height={120}
-          className="h-auto w-30"
           priority
         />
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
+
+          <button
+            onClick={onOpenSupport}
+            className="
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              rounded-full
+              border
+            border-slate-200
+            bg-white
+              text-xl
+              transition
+            hover:bg-pink-50
+            "
+            title="Support HelpMe"
+          >
+            <Image
+              src="/icons/support.svg"
+              alt="Support HelpMe"
+              width={24}
+              height={30}
+              className="h-7 w-7 object-contain"
+            />
+          </button>
 
           {/* NOTIFICATION */}
           <Link
@@ -138,7 +175,7 @@ export default function MobileHomeHeader() {
               w-11
               items-center
               justify-center
-              rounded-2xl
+              rounded-full
               border
               border-slate-200
               bg-white
@@ -147,7 +184,13 @@ export default function MobileHomeHeader() {
               hover:bg-slate-50
             "
           >
-            🔔
+            <Image
+              src="/icons/notif.svg"
+              alt="Notifications"
+              width={24}
+              height={24}
+              className="h-7 w-7 object-contain"
+            />
 
             {hasUnreadNotifications && (
 

@@ -121,29 +121,46 @@ export default function MobileMyTasksView({
           >
 
             <p
-              className={
-                activeFilter === "OPEN"
-                  ? "text-indigo-100"
-                  : "text-slate-500"
-              }
-            >
-              Task Aktif
-            </p>
+  className={
+    activeFilter === "OPEN"
+      ? "text-indigo-100"
+      : "text-slate-500"
+  }
+>
+  Task Aktif
+</p>
 
-            <h2
-              className="
-                mt-3
-                text-lg
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status === "OPEN"
-                ).length
-              }
-            </h2>
+<div className="mt-3 flex items-center gap-2">
+
+  <img
+    src="/icons/tasks/owner-aktif.svg"
+    alt="Task Aktif"
+    className={`
+      h-8
+      w-8
+
+      ${activeFilter === "OPEN"
+        ? "brightness-0 invert"
+        : ""
+      }
+    `}
+  />
+
+  <h2
+    className="
+      text-lg
+      font-black
+    "
+  >
+    {
+      tasks.filter(
+        (task) =>
+          task.status === "OPEN"
+      ).length
+    }
+  </h2>
+
+</div>
 
           </button>
 
@@ -169,31 +186,48 @@ export default function MobileMyTasksView({
           >
 
             <p
-              className={
-                activeFilter ===
-                  "ACCEPTED"
-                  ? "text-amber-100"
-                  : "text-slate-500"
-              }
-            >
-              Dikerjakan
-            </p>
+  className={
+    activeFilter ===
+      "ACCEPTED"
+      ? "text-amber-100"
+      : "text-slate-500"
+  }
+>
+  Proses
+</p>
 
-            <h2
-              className="
-                mt-3
-                text-lg
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status ===
-                    "ACCEPTED"
-                ).length
-              }
-            </h2>
+<div className="mt-3 flex items-center gap-2">
+
+  <img
+    src="/icons/tasks/owner-dikerjakan.svg"
+    alt="Dikerjakan"
+    className={`
+      h-8
+      w-8
+
+      ${activeFilter === "ACCEPTED"
+        ? "brightness-0 invert"
+        : ""
+      }
+    `}
+  />
+
+  <h2
+    className="
+      text-lg
+      font-black
+    "
+  >
+    {
+      tasks.filter(
+        (task) =>
+          task.status ===
+          "ACCEPTED"
+      ).length
+    }
+  </h2>
+
+</div>
 
           </button>
 
@@ -219,31 +253,48 @@ export default function MobileMyTasksView({
           >
 
             <p
-              className={
-                activeFilter ===
-                  "COMPLETED"
-                  ? "text-emerald-100"
-                  : "text-slate-500"
-              }
-            >
-              Selesai
-            </p>
+  className={
+    activeFilter ===
+      "COMPLETED"
+      ? "text-emerald-100"
+      : "text-slate-500"
+  }
+>
+  Selesai
+</p>
 
-            <h2
-              className="
-                mt-3
-                text-lg
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status ===
-                    "COMPLETED"
-                ).length
-              }
-            </h2>
+<div className="mt-3 flex items-center gap-2">
+
+  <img
+    src="/icons/tasks/owner-selesai.svg"
+    alt="Selesai"
+    className={`
+      h-8
+      w-8
+
+      ${activeFilter === "COMPLETED"
+        ? "brightness-0 invert"
+        : ""
+      }
+    `}
+  />
+
+  <h2
+    className="
+      text-lg
+      font-black
+    "
+  >
+    {
+      tasks.filter(
+        (task) =>
+          task.status ===
+          "COMPLETED"
+      ).length
+    }
+  </h2>
+
+</div>
 
           </button>
 

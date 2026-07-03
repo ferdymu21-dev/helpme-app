@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Core Center -->
+  <circle cx="12" cy="12" r="5" stroke="#2938F5" stroke-width="2" fill="#EFF6FF"/>
+  <circle cx="12" cy="12" r="1.5" fill="#2938F5"/>
+  <!-- 6 Orbiting Satellites -->
+  <circle cx="20" cy="12" r="1.5" fill="#F99E18"/>
+  <circle cx="4" cy="12" r="1.5" fill="#F99E18"/>
+  <circle cx="16" cy="5" r="1.5" fill="#F99E18"/>
+  <circle cx="8" cy="5" r="1.5" fill="#F99E18"/>
+  <circle cx="16" cy="19" r="1.5" fill="#F99E18"/>
+  <circle cx="8" cy="19" r="1.5" fill="#F99E18"/>
+</svg>

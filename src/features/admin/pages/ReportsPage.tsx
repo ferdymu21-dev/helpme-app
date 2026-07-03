@@ -5,6 +5,9 @@ import {
     useState,
 } from "react";
 
+import Link
+    from "next/link";
+
 import { supabase }
     from "@/lib/supabase/client";
 
@@ -102,6 +105,15 @@ export default function ReportsPage() {
             } = await supabase
                 .from("reports")
                 .select("*")
+
+                .in(
+                    "status",
+                    [
+                        "PENDING",
+                        "REVIEWED",
+                    ]
+                )
+
                 .order(
                     "created_at",
                     {
@@ -368,6 +380,26 @@ export default function ReportsPage() {
                                     ).toLocaleString()
                                 }
                             </p>
+
+                            <div className="mt-4">
+
+                                <Link
+                                    href={`/admin/reports/${report.id}`}
+                                    className="
+            inline-flex
+            rounded-xl
+            bg-indigo-600
+            px-4
+            py-2
+            text-sm
+            font-semibold
+            text-white
+        "
+                                >
+                                    Tinjau
+                                </Link>
+
+                            </div>
 
                             <button
                                 onClick={() => {

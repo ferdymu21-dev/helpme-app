@@ -2,15 +2,15 @@
 
 import {
     useEffect,
-    useState,
 } from "react";
 
 import {
     useRouter,
 } from "next/navigation";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import {
+    useAuthStore,
+} from "@/store/auth.store";
 
 export default function AdminGuard({
     children,
@@ -21,79 +21,65 @@ export default function AdminGuard({
     const router =
         useRouter();
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
+    const authUser =
+        useAuthStore(
+            (state) => state.user
+        );
 
-    const [
-        allowed,
-        setAllowed,
-    ] = useState(false);
+    const authLoading =
+        useAuthStore(
+            (state) => state.loading
+        );
+
+    const role =
+        useAuthStore(
+            (state) => state.role
+        );
 
     useEffect(() => {
 
-        async function checkAdmin() {
+        if (authLoading) {
+            return;
+        }
 
-            const {
-                data: { user },
-            } =
-                await supabase.auth.getUser();
+        if (!authUser) {
 
-            if (!user) {
+            router.replace("/login");
 
-                router.replace("/login");
-
-                setLoading(false);
-
-                return;
-            }
-
-            const {
-                data,
-                error,
-            } = await supabase
-                .from("users")
-                .select("role")
-                .eq("id", user.id)
-                .single();
-
-            if (
-                error ||
-                data?.role !== "ADMIN"
-            ) {
-
-                router.replace("/");
-
-                setLoading(false);
-
-                return;
-            }
-
-            setAllowed(true);
-
-            setLoading(false);
+            return;
 
         }
 
-        checkAdmin();
+        if (
+            role &&
+            role !== "ADMIN"
+        ) {
 
-    }, [router]);
+            router.replace("/");
 
-    if (loading) {
+        }
+
+    }, [
+        authLoading,
+        authUser,
+        role,
+        router,
+    ]);
+
+    if (authLoading) {
 
         return (
 
             <main
                 className="
-                min-h-screen
-                flex
-                items-center
-                justify-center
-            "
+            min-h-screen
+            flex
+            items-center
+            justify-center
+        "
             >
                 <p>
-                    Memeriksa akses...
+                    Memuat sesi...
                 </p>
             </main>
 
@@ -101,7 +87,34 @@ export default function AdminGuard({
 
     }
 
-    if (!allowed) {
+    if (!authUser) {
+
+        return null;
+
+    }
+
+    if (!role) {
+
+        return (
+
+            <main
+                className="
+            min-h-screen
+            flex
+            items-center
+            justify-center
+        "
+            >
+                <p>
+                    Memuat role...
+                </p>
+            </main>
+
+        );
+
+    }
+
+    if (role !== "ADMIN") {
 
         return null;
 

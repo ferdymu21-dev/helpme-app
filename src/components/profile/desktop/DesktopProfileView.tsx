@@ -1,6 +1,16 @@
 "use client";
 
+import { useState }
+  from "react";
+
 import Link from "next/link";
+
+import {
+  useAuthStore,
+} from "@/store/auth.store";
+
+import ReportUserModal
+  from "@/features/reports/components/ReportUserModal";
 
 interface Props {
   profile: {
@@ -48,14 +58,27 @@ interface Props {
     }[];
   }[];
 
+  profileUserId?: string;
+
   isPublicProfile?: boolean;
 }
 
 export default function DesktopProfileView({
   profile,
   reviews,
+  profileUserId,
   isPublicProfile = false,
 }: Props) {
+
+  const [
+    showReportModal,
+    setShowReportModal,
+  ] = useState(false);
+
+  const role =
+    useAuthStore(
+      (state) => state.role
+    );
 
   return (
     <main
@@ -165,31 +188,59 @@ export default function DesktopProfileView({
 
               )}
 
-              {!isPublicProfile && (
+              {!isPublicProfile ? (
 
                 <button
                   className="
-                    mt-3
-                    flex
-                    h-10
-                    items-center
-                    justify-center
-                    rounded-2xl
-                  bg-slate-900
-                    px-3
-                    text-sm
-                    font-semibold
-                  text-white
-                    transition
-                  hover:bg-slate-800
-                  "
-
+      mt-3
+      flex
+      h-10
+      items-center
+      justify-center
+      rounded-2xl
+      bg-slate-900
+      px-3
+      text-sm
+      font-semibold
+      text-white
+      transition
+      hover:bg-slate-800
+    "
                   onClick={() =>
                     window.location.href =
                     "/profile/edit"
                   }
                 >
                   Edit Profile
+                </button>
+
+              ) : (
+
+                <button
+
+                  onClick={() =>
+                    setShowReportModal(
+                      true
+                    )
+                  }
+
+                  className="
+      mt-3
+      flex
+      h-10
+      items-center
+      justify-center
+      rounded-2xl
+      bg-red-600
+      px-4
+      text-sm
+      font-semibold
+      text-white
+      transition
+      hover:bg-red-700
+    "
+                >
+                  Laporkan Pengguna
                 </button>
 
               )}
@@ -383,6 +434,28 @@ export default function DesktopProfileView({
                   ⚙ Pengaturan
                 </button>
 
+                {
+                  role === "ADMIN" && (
+
+                    <Link
+                      href="/admin"
+                      className="
+                        rounded-full
+                      bg-slate-900
+                        px-4
+                        py-2
+                        text-sm
+                        font-semibold
+                      text-white
+                      hover:bg-slate-800
+                      "
+                    >
+                      🛠 Admin Dashboard
+                    </Link>
+
+                  )
+                }
+
               </div>
 
             )}
@@ -545,6 +618,24 @@ export default function DesktopProfileView({
         </div>
 
       </div>
+
+      <ReportUserModal
+
+        open={
+          showReportModal
+        }
+
+        onClose={() =>
+          setShowReportModal(
+            false
+          )
+        }
+
+        reportedUserId={
+          profileUserId || ""
+        }
+
+      />
 
     </main>
   );

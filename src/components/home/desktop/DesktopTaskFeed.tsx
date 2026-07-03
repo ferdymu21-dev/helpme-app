@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import Image from "next/image";
+
 import {
   useEffect,
   useState,
@@ -38,6 +40,32 @@ interface Task {
 
 interface Props {
   tasks: Task[];
+}
+
+function getCategoryIcon(
+  category: string
+) {
+
+  switch (category) {
+
+    case "Antri":
+      return "/icons/antri.svg";
+
+    case "Dokumen":
+      return "/icons/dokumen.svg";
+
+    case "Kondangan":
+      return "/icons/kondangan.svg";
+
+    case "Kurir":
+      return "/icons/kurir.svg";
+
+    case "Belanja":
+      return "/icons/belanja.svg";
+
+    default:
+      return "/icons/lainnya.svg";
+  }
 }
 
 export default function TaskFeed({
@@ -145,40 +173,89 @@ export default function TaskFeed({
         </div>
 
         {/* FILTERS */}
-        <div className="mt-6 flex flex-wrap gap-3 pb-2 scrollbar-hide">
+        <div className="mt-6 flex flex-wrap gap-3 pb-0 scrollbar-hide">
 
-          {[
-            "Semua",
-            "Belanja",
-            "Dokumen",
-            "Antri",
-            "Kurir",
-            "Lainnya",
-          ].map((item, index) => (
-            <button
-              key={item}
-              onClick={() =>
-                setActiveCategory(item)
-              }
-              className={`
-                whitespace-nowrap
-                rounded-full
-                px-6
-                py-3
-                text-sm
-                font-semibold
-                transition
-                hover:-translate-y-0.5
+          {
+            [
+              {
+                label: "Semua",
+                icon: "/icons/semua.svg",
+              },
 
-                ${activeCategory === item
-                  ? "bg-indigo-600 text-white"
-                  : "border border-slate-200 bg-white text-slate-600"
-                }
-              `}
-            >
-              {item}
-            </button>
-          ))}
+              {
+                label: "Antri",
+                icon: "/icons/antri.svg",
+              },
+
+              {
+                label: "Dokumen",
+                icon: "/icons/dokumen.svg",
+              },
+
+              {
+                label: "Kondangan",
+                icon: "/icons/kondangan.svg",
+              },
+
+              {
+                label: "Kurir",
+                icon: "/icons/kurir.svg",
+              },
+
+              {
+                label: "Belanja",
+                icon: "/icons/belanja.svg",
+              },
+
+              {
+                label: "Lainnya",
+                icon: "/icons/lainnya.svg",
+              },
+            ]
+              .map((item, index) => (
+                <button
+                  key={item.label}
+                  onClick={() =>
+                    setActiveCategory(item.label)
+                  }
+                  className={`
+    flex
+    items-center
+    gap-2
+    whitespace-nowrap
+    rounded-full
+    px-4
+    py-1
+    text-sm
+    font-semibold
+    transition
+    hover:-translate-y-0.5
+
+    ${activeCategory === item.label
+                      ? "bg-indigo-500 text-white"
+                      : "border border-slate-200 bg-white text-slate-600"
+                    }
+  `}
+                >
+
+                  <img
+                    src={item.icon}
+                    alt={item.label}
+                    className={`
+      h-3
+      w-3
+
+      ${activeCategory === item.label
+                        ? "brightness-0 invert"
+                        : ""
+                      }
+    `}
+                  />
+
+                  {item.label}
+
+                </button>
+              ))}
 
         </div>
 
@@ -213,17 +290,29 @@ export default function TaskFeed({
                   {/* CATEGORY */}
                   <div
                     className="
-                      inline-flex
-                      rounded-full
-                      bg-indigo-100
-                      px-2
-                      py-1
-                      text-[10px]
-                      font-semibold
-                      text-indigo-600
-                    "
+    inline-flex
+    items-center
+    gap-1.5
+    rounded-full
+    bg-indigo-100
+    px-3
+    py-1
+    text-[10px]
+    font-semibold
+    text-indigo-600
+  "
                   >
+
+                    <img
+                      src={getCategoryIcon(
+                        task.category
+                      )}
+                      alt={task.category}
+                      className="h-3 w-3"
+                    />
+
                     {task.category}
+
                   </div>
 
                   {task.is_urgent && (

@@ -96,14 +96,14 @@ export default function MobilePromoBanner() {
             inline-flex
             rounded-full
             bg-white/20
-            px-3
+            px-1
             py-1
-            text-[10px]
+            text-[9px]
             font-bold
             tracking-wide
           "
                 >
-                    ⚡ Tips HelpMe
+                💡 Tips HelpMe
                 </div>
 
                 {/* TITLE */}

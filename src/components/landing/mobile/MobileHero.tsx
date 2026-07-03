@@ -96,12 +96,14 @@ export default function MobileHero() {
             items-center
             justify-center
             rounded-2xl
-            border-2
-            border-indigo-200
-            bg-white
+            bg-linear-to-br
+            from-amber-500
+            to-amber-400
             text-sm
             font-bold
-            text-indigo-600
+            text-black
+            shadow-lg
+            shadow-amber-500/20
           "
         >
           Jadi Helper

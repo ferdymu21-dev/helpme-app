@@ -182,55 +182,52 @@ export default function MobileHelperTasksView({
 
                 <p
                   className={`
-                    text-xs
-                    font-medium
+      text-xs
+      font-semibold
 
-                    ${activeFilter ===
+      ${activeFilter ===
                       "OPEN"
                       ? "text-emerald-100"
                       : "text-slate-500"
                     }
-                  `}
+    `}
                 >
                   Dilamar
                 </p>
 
-                <h2
-                  className="
-                    mt-3
-                    text-2xl
-                    font-black
-                  "
-                >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "OPEN"
-                    ).length
-                  }
-                </h2>
+                <div className="mt-3 flex items-center gap-2">
 
-              </div>
+                  <img
+                    src="/icons/tasks/helper-dilamar.svg"
+                    alt="Dilamar"
+                    className={`
+        h-8
+        w-8
 
-              <div
-                className={`
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-lg
+        ${activeFilter === "OPEN"
+                        ? "brightness-0 invert"
+                        : ""
+                      }
+      `}
+                  />
 
-                  ${activeFilter ===
-                    "OPEN"
-                    ? "bg-white/20"
-                    : "bg-emerald-50"
-                  }
-                `}
-              >
-                📨
+                  <h2
+                    className="
+        text-2xl
+        font-black
+      "
+                  >
+                    {
+                      tasks.filter(
+                        (task) =>
+                          task.status ===
+                          "OPEN"
+                      ).length
+                    }
+                  </h2>
+
+                </div>
+
               </div>
 
             </div>
@@ -269,58 +266,55 @@ export default function MobileHelperTasksView({
 
               <div>
 
-                <p
-                  className={`
-                    text-xs
-                    font-medium
+  <p
+    className={`
+      text-xs
+      font-semibold
 
-                    ${activeFilter ===
-                      "ACCEPTED"
-                      ? "text-indigo-100"
-                      : "text-slate-500"
-                    }
-                  `}
-                >
-                  Dikerjakan
-                </p>
+      ${activeFilter ===
+        "ACCEPTED"
+        ? "text-indigo-100"
+        : "text-slate-500"
+      }
+    `}
+  >
+    Dikerjakan
+  </p>
 
-                <h2
-                  className="
-                    mt-3
-                    text-2xl
-                    font-black
-                  "
-                >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "ACCEPTED"
-                    ).length
-                  }
-                </h2>
+  <div className="mt-3 flex items-center gap-2">
 
-              </div>
+    <img
+      src="/icons/tasks/helper-dikerjakan.svg"
+      alt="Dikerjakan"
+      className={`
+        h-8
+        w-8
 
-              <div
-                className={`
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-lg
+        ${activeFilter === "ACCEPTED"
+          ? "brightness-0 invert"
+          : ""
+        }
+      `}
+    />
 
-                  ${activeFilter ===
-                    "ACCEPTED"
-                    ? "bg-white/20"
-                    : "bg-indigo-50"
-                  }
-                `}
-              >
-                ⚡
-              </div>
+    <h2
+      className="
+        text-2xl
+        font-black
+      "
+    >
+      {
+        tasks.filter(
+          (task) =>
+            task.status ===
+            "ACCEPTED"
+        ).length
+      }
+    </h2>
+
+  </div>
+
+</div>
 
             </div>
 
@@ -358,58 +352,55 @@ export default function MobileHelperTasksView({
 
               <div>
 
-                <p
-                  className={`
-                    text-xs
-                    font-medium
+  <p
+    className={`
+      text-xs
+      font-semibold
 
-                    ${activeFilter ===
-                      "COMPLETED"
-                      ? "text-amber-100"
-                      : "text-slate-500"
-                    }
-                  `}
-                >
-                  Selesai
-                </p>
+      ${activeFilter ===
+        "COMPLETED"
+        ? "text-amber-100"
+        : "text-slate-500"
+      }
+    `}
+  >
+    Selesai
+  </p>
 
-                <h2
-                  className="
-                    mt-3
-                    text-2xl
-                    font-black
-                  "
-                >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "COMPLETED"
-                    ).length
-                  }
-                </h2>
+  <div className="mt-3 flex items-center gap-2">
 
-              </div>
+    <img
+      src="/icons/tasks/helper-selesai.svg"
+      alt="Selesai"
+      className={`
+        h-8
+        w-8
 
-              <div
-                className={`
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-lg
+        ${activeFilter === "COMPLETED"
+          ? "brightness-0 invert"
+          : ""
+        }
+      `}
+    />
 
-                  ${activeFilter ===
-                    "COMPLETED"
-                    ? "bg-white/20"
-                    : "bg-amber-50"
-                  }
-                `}
-              >
-                ✅
-              </div>
+    <h2
+      className="
+        text-2xl
+        font-black
+      "
+    >
+      {
+        tasks.filter(
+          (task) =>
+            task.status ===
+            "COMPLETED"
+        ).length
+      }
+    </h2>
+
+  </div>
+
+</div>
 
             </div>
 

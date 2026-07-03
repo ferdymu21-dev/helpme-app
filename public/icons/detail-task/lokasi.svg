@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Outer Pin (Primary Blue) -->
+  <path d="M12 22s-8-5.5-8-12a8 8 0 1 1 16 0c0 6.5-8 12-8 12z" stroke="#2938F5" stroke-width="2" fill="#EFF6FF"/>
+  <!-- Inner Focus Dot (Orange Accent) -->
+  <circle cx="12" cy="10" r="3" fill="#F99E18"/>
+</svg>

@@ -22,30 +22,39 @@ const menus = [
   {
     label: "Home",
     href: "/home",
-    icon: "🏠",
+    icon: "/icons/home-icon.svg",
   },
 
   {
     label: "My Tasks",
     href: "/my-tasks",
-    icon: "📋",
+    icon: "/icons/tasks-icon.svg",
   },
 
   {
     label: "Messages",
     href: "/messages",
-    icon: "💬",
+    icon: "/icons/messages-icon.svg",
   },
 
   {
     label: "Helper Tasks",
     href: "/helper-tasks",
-    icon: "🛠️",
+    icon: "/icons/helper-icon.svg",
   },
-
 ];
 
-export default function DesktopSidebar() {
+interface Props {
+
+  onOpenSupport: () => void;
+
+}
+
+export default function DesktopSidebar({
+
+  onOpenSupport,
+
+}: Props) {
 
   const [hasUnread, setHasUnread] =
     useState(false);
@@ -195,16 +204,15 @@ export default function DesktopSidebar() {
         <Image
           src="/logo.svg"
           alt="HelpMe Logo"
-          width={140}
-          height={140}
-          className="h-auto w-45"
+          width={180}
+          height={180}
           priority
         />
 
       </div>
 
       {/* MENU */}
-      <nav className="mt-10 flex-1 space-y-2">
+      <nav className="mt-6 flex-1 space-y-2">
 
         {menus.map((menu) => {
           const active =
@@ -226,15 +234,25 @@ export default function DesktopSidebar() {
                 transition
 
                 ${active
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                  ? "bg-indigo-300 text-indigo-500 shadow-lg shadow-indigo-600/20"
                   : "text-slate-600 hover:bg-slate-100"
                 }
               `}
             >
 
-              <span className="text-lg">
-                {menu.icon}
-              </span>
+              <Image
+                src={menu.icon}
+                alt={menu.label}
+                width={22}
+                height={22}
+                className={`
+                h-5.5
+                w-5.5
+                object-contain
+
+               ${active ? "brightness-0 invert" : ""}
+               `}
+              />
 
               <div className="flex items-center gap-2">
 
@@ -261,6 +279,39 @@ export default function DesktopSidebar() {
         })}
 
       </nav>
+
+      <button
+        onClick={onOpenSupport}
+        className="
+    mt-6
+    flex
+    w-full
+    items-center
+    gap-4
+    rounded-xl
+    px-4
+    py-3
+    text-slate-700
+    transition
+    hover:bg-slate-100
+  "
+      >
+        <Image
+          src="/icons/support.svg"
+          alt="Support HelpMe"
+          width={24}
+          height={24}
+        />
+
+        <span 
+        className="
+        text-base
+        text-slate-500
+        "
+        >
+          Support HelpMe
+        </span>
+      </button>
 
       <Link
         href="/profile"

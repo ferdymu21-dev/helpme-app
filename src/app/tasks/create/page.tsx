@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import Image from "next/image";
+
 import { useRouter } from "next/navigation";
 
 import {
@@ -12,12 +14,30 @@ import {
 } from "@/features/tasks/services/task.service";
 
 const categories = [
-  "Antri",
-  "Dokumen",
-  "Kondangan",
-  "kurir",
-  "Belanja",
-  "Lainnya",
+  {
+    name: "Antri",
+    icon: "/icons/antri.svg",
+  },
+  {
+    name: "Dokumen",
+    icon: "/icons/dokumen.svg",
+  },
+  {
+    name: "Kondangan",
+    icon: "/icons/kondangan.svg",
+  },
+  {
+    name: "Kurir",
+    icon: "/icons/kurir.svg",
+  },
+  {
+    name: "Belanja",
+    icon: "/icons/belanja.svg",
+  },
+  {
+    name: "Lainnya",
+    icon: "/icons/lainnya.svg",
+  },
 ];
 
 export default function CreateTaskPage() {
@@ -535,28 +555,40 @@ export default function CreateTaskPage() {
 
               {categories.map((item) => (
                 <button
-                  key={item}
+                  key={item.name}
                   type="button"
                   onClick={() =>
-                    setCategory(item)
+                    setCategory(item.name)
                   }
                   className={`
-                    shrink-0
-                    whitespace-nowrap
-                    rounded-2xl
-                    px-4
-                    py-2
-                    text-[13px]
-                    font-semibold
-                    transition
+    shrink-0
+    whitespace-nowrap
+    rounded-2xl
+    px-4
+    py-2
+    text-[13px]
+    font-semibold
+    transition
+    flex
+    items-center
+    gap-2
 
-                    ${category === item
+    ${category === item.name
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
                       : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }
-                  `}
+  `}
                 >
-                  {item}
+
+                  <Image
+                    src={item.icon}
+                    alt={item.name}
+                    width={18}
+                    height={18}
+                  />
+
+                  {item.name}
+
                 </button>
               ))}
 

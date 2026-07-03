@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import Image from "next/image";
+
 import {
   useEffect,
   useState,
@@ -159,26 +161,59 @@ export default function MobileTaskFeed({
             flex
             gap-3
             overflow-x-auto
+            whitespace-nowrap
             pb-2
             scrollbar-hide
           "
         >
 
-          {[
-            "Semua",
-            "Antri",
-            "Dokumen",
-            "Kondangan",
-            "Kurir",
-            "Belanja",
-            "Lainnya",
-          ].map((item, index) => (
-            <button
-              key={item}
-              onClick={() =>
-                setActiveCategory(item)
-              }
-              className={`
+          {
+
+            [
+              {
+                label: "Semua",
+                icon: "/icons/semua.svg",
+              },
+
+              {
+                label: "Antri",
+                icon: "/icons/antri.svg",
+              },
+
+              {
+                label: "Dokumen",
+                icon: "/icons/dokumen.svg",
+              },
+
+              {
+                label: "Kondangan",
+                icon: "/icons/kondangan.svg",
+              },
+
+              {
+                label: "Kurir",
+                icon: "/icons/kurir.svg",
+              },
+
+              {
+                label: "Belanja",
+                icon: "/icons/belanja.svg",
+              },
+
+              {
+                label: "Lainnya",
+                icon: "/icons/lainnya.svg",
+              },
+            ]
+
+              .map((item, index) => (
+                <button
+                  key={item.label}
+                  onClick={() =>
+                    setActiveCategory(item.label)
+                  }
+                  className={`
+                shrink-0
                 whitespace-nowrap
                 rounded-2xl
                 px-3
@@ -190,20 +225,45 @@ export default function MobileTaskFeed({
                 duration-200
                 hover:-translate-y-0.5
 
-                ${activeCategory === item
-                  ? "bg-indigo-600 text-white"
-                  : "border border-slate-200 bg-white text-slate-600"
-                }
+                ${activeCategory === item.label
+                      ? "bg-indigo-600 text-white"
+                      : "border border-slate-200 bg-white text-slate-600"
+                    }
               `}
-            >
-              {item}
-            </button>
-          ))}
+                >
+
+                  <div
+                    className="
+      flex
+      items-center
+      gap-2
+    "
+                  >
+
+                    {item.icon && (
+
+                      <Image
+                        src={item.icon}
+                        alt={item.label}
+                        width={14}
+                        height={14}
+                      />
+
+                    )}
+
+                    <span>
+                      {item.label}
+                    </span>
+
+                  </div>
+
+                </button>
+              ))}
 
         </div>
 
         {/* TASK LIST */}
-        <div className="mt-2 space-y-2">
+        <div className="mt-3.5 space-y-2.5">
 
           {filteredTasks.map((task) => (
             <Link
@@ -395,7 +455,7 @@ export default function MobileTaskFeed({
                     text-base
                     font-black
                     tracking-tight
-                  text-amber-500
+                  text-green-500
                   "
                 >
                   Rp

@@ -23,13 +23,14 @@ export default function MobileQuickActions() {
             flex-col
             justify-between
             rounded-2xl
+            border
             bg-linear-to-br
             from-indigo-600
             to-violet-600
             p-2.5
             text-white
             shadow-xs
-            shadow-indigo-600/15
+            shadow-slate-600/15
             transition-all
             duration-200
             active:scale-[0.98]
@@ -63,7 +64,7 @@ export default function MobileQuickActions() {
                 font-bold
               "
             >
-              Buat Task
+              Butuh bantuan
             </h3>
 
             <p
@@ -75,8 +76,7 @@ export default function MobileQuickActions() {
                 text-indigo-100
               "
             >
-              Temukan helper 
-              terbaik di sekitarmu.
+              Temukan helper terbaik di sekitarmu.
             </p>
 
           </div>
@@ -95,10 +95,12 @@ export default function MobileQuickActions() {
             rounded-2xl
             border
             border-slate-200
-            bg-white
+            bg-linear-to-br
+            from-amber-100
+            to-amber-200
             p-2.5
-            shadow-base
-            shadow-slate-200/15
+            shadow-xs
+            shadow-slate-600/15
             transition-all
             duration-200
             active:scale-[0.98]
