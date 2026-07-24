@@ -1,16 +1,10 @@
 import {
-
     NextResponse,
-
 } from "next/server";
 
 import {
-
     paymentStatusController,
-
-}
-
-from "@/features/payments/controllers/paymentStatus.controller";
+} from "@/features/payments/controllers/paymentStatus.controller";
 
 interface Context {
 

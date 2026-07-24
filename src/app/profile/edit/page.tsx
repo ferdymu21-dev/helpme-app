@@ -13,6 +13,8 @@ import DesktopEditProfileView from "@/components/profile/desktop/DesktopEditProf
 
 import { supabase } from "@/lib/supabase/client";
 
+import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
+
 import imageCompression
   from "browser-image-compression";
 
@@ -27,6 +29,12 @@ interface ProfileData {
 export default function EditProfilePage() {
 
   const router = useRouter();
+
+  const {
+  user,
+  loading: currentUserLoading,
+  refresh,
+} = useCurrentUser();
 
   const [profile, setProfile] =
     useState<ProfileData>({
@@ -53,60 +61,32 @@ export default function EditProfilePage() {
   ] = useState("");
 
   useEffect(() => {
-    async function loadUser() {
-      try {
 
-        const {
-          data: { user },
-        } =
-          await supabase.auth.getUser();
+    if (currentUserLoading) return;
 
-        if (!user) return;
-
-        const { data: profileData } =
-          await supabase
-            .from("users")
-            .select(`
-              full_name,
-              username,
-              bio,
-              location,
-              avatar_url
-            `)
-            .eq("id", user.id)
-            .single();
-
-        setProfile({
-          fullName:
-            profileData?.full_name || "",
-
-          username:
-            profileData?.username || "",
-
-          bio:
-            profileData?.bio || "",
-
-          location:
-            profileData?.location || "",
-
-          avatarUrl:
-            profileData?.avatar_url || "",
-        });
-
-        setAvatarPreview(
-          profileData?.avatar_url || ""
-        );
-
-      } catch (error) {
-        console.error(error);
-
-      } finally {
-        setLoading(false);
-      }
+    if (!user) {
+      setLoading(false);
+      return;
     }
 
-    loadUser();
-  }, []);
+    setProfile({
+      fullName: user.fullName || "",
+      username: user.username || "",
+      bio: user.bio || "",
+      location: user.location || "",
+      avatarUrl: user.avatarUrl || "",
+    });
+
+    setAvatarPreview(
+      user.avatarUrl || ""
+    );
+
+    setLoading(false);
+
+  }, [
+    user,
+    currentUserLoading,
+  ]);
 
   function handleAvatarChange(
     file: File
@@ -127,11 +107,6 @@ export default function EditProfilePage() {
   async function handleSaveProfile() {
 
     try {
-
-      const {
-        data: { user },
-      } =
-        await supabase.auth.getUser();
 
       if (!user) return;
 
@@ -196,36 +171,38 @@ export default function EditProfilePage() {
           `${publicUrlData.publicUrl}?t=${Date.now()}`;
       }
 
-      const { error } =
-        await supabase
-          .from("users")
-          .update({
+      const { error } = await supabase
 
-            full_name:
-              profile.fullName,
+        .from("users")
+        .update({
 
-            username:
-              profile.username,
+          full_name:
+            profile.fullName,
 
-            bio:
-              profile.bio,
+          username:
+            profile.username,
 
-            location:
-              profile.location,
+          bio:
+            profile.bio,
 
-            avatar_url:
-              avatarUrl,
+          location:
+            profile.location,
 
-            updated_at:
-              new Date().toISOString(),
-          })
+          avatar_url:
+            avatarUrl,
 
-          .eq("id", user.id);
+          updated_at:
+            new Date().toISOString(),
+        })
+
+        .eq("id", user.id);
 
       if (error) {
         console.error(error);
         return;
       }
+
+      await refresh();
 
       alert(
         "Profile berhasil diperbarui!"

@@ -1,32 +1,43 @@
 "use client";
 
 import {
+    createPayment as createPaymentService,
+} from "../services/payment.service";
 
-    createDonationPayment,
-
-}
-
-from "@/lib/payments/client/payment.client";
+import type {
+    CreatePaymentPayload,
+} from "../types/payment";
 
 export function usePayment() {
 
-    async function donate(
-
-        amount: number
-
+    async function createPayment(
+        payload: CreatePaymentPayload
     ) {
 
-        return await
+        return await createPaymentService(
+            payload
+        );
 
-            createDonationPayment(
+    }
 
-                amount
+    // Backward compatibility
+    async function donate(
+        amount: number
+    ) {
 
-            );
+        return await createPayment({
+
+            paymentType: "DONATION",
+
+            amount,
+
+        });
 
     }
 
     return {
+
+        createPayment,
 
         donate,
 

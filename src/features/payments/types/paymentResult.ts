@@ -8,7 +8,9 @@ export type PaymentResultStatus =
 
     | "FAILED"
 
-    | "EXPIRED";
+    | "EXPIRED"
+
+    | "CANCELLED";
 
 export interface PaymentResult {
 
@@ -17,5 +19,9 @@ export interface PaymentResult {
     orderId: string;
 
     amount: number;
+
+    paymentType?: string;
+
+    taskId?: string | null;
 
 }

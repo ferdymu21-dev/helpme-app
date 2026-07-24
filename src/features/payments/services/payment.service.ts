@@ -6,92 +6,80 @@ import type {
     DonationResponse,
 } from "@/lib/payments/types/donation";
 
-export async function createDonation(
+import type {
+    CreatePaymentPayload,
+    CreatePaymentResponse,
+} from "../types/payment";
 
-    amount: number
-
-): Promise<DonationResponse>
-
-{
+export async function createPayment(
+    payload: CreatePaymentPayload
+): Promise<CreatePaymentResponse> {
 
     const {
-
         data: {
-
             session,
-
         },
+    } = await supabase.auth.getSession();
 
-    }
-
-    =
-
-    await supabase.auth.getSession();
-
-    if (
-
-        !session
-
-    ) {
+    if (!session) {
 
         throw new Error(
-
             "User is not authenticated."
-
         );
 
     }
 
-    const response =
+    const response = await fetch(
 
-        await fetch(
+        "/api/payments/create",
 
-            "/api/payments/donate",
+        {
 
-            {
+            method: "POST",
 
-                method: "POST",
+            headers: {
 
-                headers: {
+                "Content-Type":
+                    "application/json",
 
-                    "Content-Type":
+                Authorization:
+                    `Bearer ${session.access_token}`,
 
-                        "application/json",
+            },
 
-                    Authorization:
+            body: JSON.stringify(payload),
 
-                        `Bearer ${session.access_token}`,
+        }
 
-                },
+    );
 
-                body: JSON.stringify({
-
-                    amount,
-
-                }),
-
-            }
-
-        );
-
-    if (
-
-        !response.ok
-
-    ) {
+    if (!response.ok) {
 
         const error =
-
             await response.json();
 
         throw new Error(
-
             error.message
-
         );
 
     }
 
     return await response.json();
+
+}
+
+export async function createDonation(
+
+    amount: number
+
+): Promise<DonationResponse> {
+
+    return await createPayment({
+
+        paymentType: "DONATION",
+
+        amount,
+
+    });
 
 }

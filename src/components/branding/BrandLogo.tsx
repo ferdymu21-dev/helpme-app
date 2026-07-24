@@ -12,7 +12,7 @@ export default function BrandLogo({
   return (
     <div className="flex items-center gap-3">
       <Image
-        src="/logo.svg"
+        src="/logo_brand.svg"
         alt="HelpMe Logo"
         width={size}
         height={size}

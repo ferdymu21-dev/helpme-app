@@ -4,6 +4,8 @@ export enum PaymentType {
 
     DONATION = "DONATION",
 
+    URGENT_TASK = "URGENT_TASK",
+
     FEATURED_TASK = "FEATURED_TASK",
 
     SUBSCRIPTION = "SUBSCRIPTION",

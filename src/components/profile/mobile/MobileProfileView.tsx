@@ -172,7 +172,7 @@ export default function MobileProfileView({
 
                   <h1
                     className="
-                    text-xl
+                    text-sm
                     font-black
                     tracking-tight
                     text-slate-900
@@ -186,7 +186,7 @@ export default function MobileProfileView({
                 <p
                   className="
                   mt-1
-                  text-xs
+                  text-[11px]
                   text-slate-500
                 "
                 >
@@ -211,7 +211,7 @@ export default function MobileProfileView({
                   <p
                     className="
       mt-1
-      text-[11px]
+      text-[9px]
       leading-3
       text-slate-500
     "
@@ -227,7 +227,7 @@ export default function MobileProfileView({
                   <div
                     className="
       mt-1
-      text-[10px]
+      text-[8px]
       font-medium
       text-slate-500
     "
@@ -558,8 +558,8 @@ export default function MobileProfileView({
               },
 
               {
-                label: "Metode Pembayaran",
-                href: "/payment-method",
+                label: "Riwayat Pembayaran",
+                href: "/payments/history",
                 icon: "/icons/profile/payment.svg",
               },
 
@@ -567,6 +567,12 @@ export default function MobileProfileView({
                 label: "Pengaturan",
                 href: "/settings",
                 icon: "/icons/profile/pengaturan.svg",
+              },
+
+              {
+                label: "Lihat Semua Review",
+                href: "/profile/reviews",
+                icon: "/icons/profile/review.svg",
               },
             ].map((item) => (
 
@@ -619,153 +625,6 @@ export default function MobileProfileView({
           </div>
 
         )}
-
-        {/* REVIEWS */}
-        <div className="mt-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <h2
-                className="
-          text-sm
-          font-bold
-          text-slate-900
-        "
-              >
-                Reviews
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Feedback dari user lain
-              </p>
-
-            </div>
-
-            <div
-              className="
-        rounded-xl
-        bg-amber-100
-        px-3
-        py-2
-        text-xs
-        font-bold
-        text-amber-600
-      "
-            >
-              {reviews.length} Reviews
-            </div>
-
-          </div>
-
-          {/* EMPTY */}
-          {reviews.length === 0 && (
-
-            <div
-              className="
-        mt-4
-        rounded-3xl
-        border
-        border-dashed
-        border-slate-200
-        bg-white
-        p-8
-        text-center
-      "
-            >
-
-              <p className="text-sm text-slate-500">
-                Belum ada review
-              </p>
-
-            </div>
-
-          )}
-
-          {/* REVIEW LIST */}
-          <div className="mt-3 grid gap-4">
-
-            {reviews.map((review) => (
-
-              <div
-                key={review.id}
-                className="
-          rounded-2xl
-          bg-white
-          p-5
-          shadow-sm
-        "
-              >
-
-                {/* TOP */}
-                <div className="flex items-center justify-between">
-
-                  <div>
-
-                    <h3
-                      className="
-                      text-sm
-                font-semibold
-                text-slate-900
-              "
-                    >
-                      {review.reviewer?.[0]
-                        ?.full_name ||
-                        "Anonymous"}
-                    </h3>
-
-                    <p
-                      className="
-                mt-1
-                text-[10px]
-                text-slate-400
-              "
-                    >
-                      {new Date(
-                        review.created_at
-                      ).toLocaleDateString(
-                        "id-ID"
-                      )}
-                    </p>
-
-                  </div>
-
-                  <div
-                    className="
-              rounded-xl
-            bg-amber-100
-              px-3
-              py-2
-              text-xs
-              font-bold
-            text-amber-600
-            "
-                  >
-                    ⭐ {review.rating}/5
-                  </div>
-
-                </div>
-
-                {/* COMMENT */}
-                <p
-                  className="
-            mt-2
-            text-sm
-            leading-3
-            text-slate-600
-          "
-                >
-                  {review.comment}
-                </p>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
 
       </div>
 

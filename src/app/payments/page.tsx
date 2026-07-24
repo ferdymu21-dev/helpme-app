@@ -1,31 +1,18 @@
 "use client";
 
 import {
-
     usePaymentHistory,
-
-}
-
-from "@/features/payments/hooks/usePaymentHistory";
+} from "@/features/payments/hooks/usePaymentHistory";
 
 export default function PaymentPage() {
 
     const {
-
         history,
-
         loading,
-
         error,
-
-    }
-
-    =
-
-    usePaymentHistory();
+    } = usePaymentHistory();
 
     if (
-
         loading
 
     ) {

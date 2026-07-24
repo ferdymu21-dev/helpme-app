@@ -1,56 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { supabase } from "@/lib/supabase/client";
+import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 
 export default function MobileGreetingSection() {
 
-  const [name, setName] =
-    useState("User");
+  const {
+    user,
+    loading,
 
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) return;
-
-        const fullName =
-          user.user_metadata?.full_name;
-
-        if (fullName) {
-          setName(fullName);
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadUser();
-  }, []);
+  } = useCurrentUser();
 
   return (
+
     <section className="px-6 pt-4">
 
       <div>
 
-        {/* TITLE */}
         <h1
           className="
-            text-base
+            text-[14px]
             font-bold
             tracking-tight
             text-slate-900
           "
         >
-          Halo, {name}! 👋
+
+          Halo, {loading ? "..." : user?.fullName || "User"}! 👋
+
         </h1>
 
-        {/* SUBTITLE */}
         <p
           className="
             mt-1
@@ -64,5 +42,6 @@ export default function MobileGreetingSection() {
       </div>
 
     </section>
+
   );
 }

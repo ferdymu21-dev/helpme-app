@@ -4,8 +4,8 @@ import {
 } from "next/server";
 
 import {
-    getCurrentUser,
-} from "@/lib/auth/server/getCurrentUser";
+    createServerSupabaseClient,
+} from "@/lib/supabase/server";
 
 import {
     paymentHistoryController,
@@ -19,23 +19,23 @@ export async function GET(
 
     try {
 
-        const authorization =
+        const supabase =
 
-            request.headers.get(
+            await createServerSupabaseClient();
 
-                "authorization"
+        const {
 
-            );
+            data: {
+
+                user,
+
+            },
+
+        } = await supabase.auth.getUser();
 
         if (
 
-            !authorization ||
-
-            !authorization.startsWith(
-
-                "Bearer "
-
-            )
+            !user
 
         ) {
 
@@ -53,35 +53,51 @@ export async function GET(
 
                     status: 401,
 
-                }
+                },
 
             );
 
         }
 
-        const accessToken =
+        const searchParams =
 
-            authorization.replace(
+            request.nextUrl.searchParams;
 
-                "Bearer ",
+        const cursor =
 
-                ""
+            searchParams.get(
 
-            );
+                "cursor",
 
-        const user =
+            )
 
-            await getCurrentUser(
+            ||
 
-                accessToken
+            undefined;
 
-            );
+        const limit = Number(
+
+            searchParams.get(
+
+                "limit",
+
+            )
+
+            ||
+
+            10,
+
+        );
 
         const history =
 
             await paymentHistoryController(
 
-                user.id
+                user.id,
+
+                cursor,
+
+                limit,
 
             );
 
@@ -101,7 +117,7 @@ export async function GET(
 
     catch (
 
-        error
+    error
 
     ) {
 

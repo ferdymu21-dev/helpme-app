@@ -1,10 +1,6 @@
 import {
-
     getPaymentStatus,
-
-}
-
-from "./paymentStatus.repository";
+} from "./paymentStatus.repository";
 
 export async function fetchPaymentStatus(
 
@@ -12,16 +8,8 @@ export async function fetchPaymentStatus(
 
 ) {
 
-    return {
-
-        status:
-
-            await getPaymentStatus(
-
-                orderId,
-
-            ),
-
-    };
+    return await getPaymentStatus(
+        orderId,
+    );
 
 }

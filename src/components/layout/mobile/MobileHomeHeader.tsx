@@ -8,6 +8,16 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
+import { useRouter } from "next/navigation";
+
+import {
+  useNotificationBadge,
+} from "@/features/notifications/hooks/useNotificationBadge";
+
+import {
+  useNotifications,
+} from "@/features/notifications/hooks/useNotifications";
+
 interface Props {
 
   onOpenSupport: () => void;
@@ -26,10 +36,16 @@ export default function MobileHomeHeader({
   const [avatarUrl, setAvatarUrl] =
     useState("");
 
-  const [
-    hasUnreadNotifications,
-    setHasUnreadNotifications,
-  ] = useState(false);
+  const {
+    hasUnread,
+    unreadCount,
+  } = useNotificationBadge();
+
+  const {
+    notifications,
+  } = useNotifications();
+
+  const router = useRouter();
 
   useEffect(() => {
     async function loadUser() {
@@ -61,21 +77,6 @@ export default function MobileHomeHeader({
           user.user_metadata?.full_name;
 
         if (!fullName) return;
-
-        /* =========================
-           GET UNREAD NOTIFICATIONS
-        ========================= */
-
-        const { data: notifications } =
-          await supabase
-            .from("notifications")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("is_read", false);
-
-        setHasUnreadNotifications(
-          (notifications?.length || 0) > 0
-        );
 
         const words =
           fullName.split(" ");
@@ -128,11 +129,12 @@ export default function MobileHomeHeader({
 
         {/* LEFT */}
         <Image
-          src="/logo.svg"
+          src="/logo_brand.svg"
           alt="HelpMe Logo"
-          width={120}
-          height={120}
+          width={1170}
+          height={332}
           priority
+          className="h-auto w-30"
         />
 
         {/* RIGHT */}
@@ -166,48 +168,68 @@ export default function MobileHomeHeader({
           </button>
 
           {/* NOTIFICATION */}
-          <Link
-            href="/notifications"
-            className="
-              relative
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-slate-200
-              bg-white
-              text-lg
-              transition
-              hover:bg-slate-50
-            "
-          >
-            <Image
-              src="/icons/notif.svg"
-              alt="Notifications"
-              width={24}
-              height={24}
-              className="h-7 w-7 object-contain"
-            />
+          <div className="relative">
 
-            {hasUnreadNotifications && (
+            <button
+              onClick={() => router.push("/notifications")}
 
-              <span
-                className="
-                absolute
-                right-2
-                top-2
-                h-2
-                w-2
-                rounded-full
-              bg-red-500
-              "
+              className="
+relative
+flex
+h-11
+w-11
+items-center
+justify-center
+rounded-full
+border
+border-slate-200
+bg-white
+hover:bg-slate-50
+"
+
+            >
+
+              <Image
+                src="/icons/notif.svg"
+                alt="Notifications"
+                width={24}
+                height={24}
+                className="h-7 w-7"
               />
-            )}
 
-          </Link>
+              {hasUnread && (
+
+                <span
+                  className="
+absolute
+-right-1
+-top-1
+flex
+min-h-5
+min-w-5
+items-center
+justify-center
+rounded-full
+bg-red-500
+px-1
+text-[10px]
+font-bold
+leading-none
+text-white
+"
+                >
+
+                  {unreadCount > 99
+                    ? "99+"
+                    : unreadCount}
+
+                </span>
+
+              )}
+
+            </button>
+
+          </div>
 
           {/* PROFILE */}
 

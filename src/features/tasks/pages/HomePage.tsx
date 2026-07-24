@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/auth.store";
 
 import AppShell from "@/components/layout/AppShell";
 
-import { getTasks } from "../services/task.service";
+import { getTasks } from "../services/client/task.service";
 
 interface Task {
   id: string;

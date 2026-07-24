@@ -18,8 +18,8 @@ import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
-import SupportModal
-  from "@/features/payments/components/SupportModal";
+import PaymentRoot
+from "@/features/payments/components/PaymentRoot";
 
 interface Task {
   id: string;
@@ -70,13 +70,16 @@ export default function DesktopHomeView({
 
       </main>
 
-      <SupportModal
-        open={openSupport}
-        onClose={() =>
-          setOpenSupport(
-            false
-          )
+      <PaymentRoot
+
+        supportOpen={openSupport}
+
+        onCloseSupport={() =>
+
+          setOpenSupport(false)
+
         }
+
       />
 
     </div>

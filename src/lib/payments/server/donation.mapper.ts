@@ -1,10 +1,6 @@
 import type {
-
     DonationResult,
-
-}
-
-from "../types/donation";
+} from "../types/donation";
 
 export function buildDonationResponse(
 

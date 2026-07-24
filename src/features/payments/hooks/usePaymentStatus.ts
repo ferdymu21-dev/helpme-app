@@ -29,6 +29,16 @@ interface Options {
 
 }
 
+interface PaymentStatusResponse {
+
+    status: PaymentStatus;
+
+    paymentType: "DONATION" | "URGENT_TASK";
+
+    taskId?: string | null;
+
+}
+
 export function usePaymentStatus({
 
     enabled,
@@ -40,32 +50,24 @@ export function usePaymentStatus({
 }: Options) {
 
     const [
-
         status,
-
         setStatus,
-
-    ]
-
-    =
-
-    useState<PaymentStatus>(
-
-        "PENDING"
-
-    );
+    ] = useState<PaymentStatus>("PENDING");
 
     const [
+        paymentType,
+        setPaymentType,
+    ] = useState<string | null>(null);
 
+    const [
+        taskId,
+        setTaskId,
+    ] = useState<string | null>(null);
+
+    const [
         loading,
-
         setLoading,
-
-    ]
-
-    =
-
-    useState(false);
+    ] = useState(false);
 
     const timerRef =
 
@@ -118,13 +120,28 @@ export function usePaymentStatus({
                     }
 
                     const data =
-
                         await response.json();
 
-                    setStatus(
+                    console.log(
+                        "[PaymentStatus API]",
+                        data
+                    );
 
+                    console.log(
+                        "[PaymentStatus Value]",
                         data.status
+                    );
 
+                    setStatus(
+                        data.status
+                    );
+
+                    setPaymentType(
+                        data.paymentType ?? null
+                    );
+
+                    setTaskId(
+                        data.taskId ?? null
                     );
 
                 }
@@ -253,7 +270,15 @@ export function usePaymentStatus({
 
         status,
 
+        paymentType,
+
+        taskId,
+
         loading,
+
+        reload:
+
+            fetchStatus,
 
     };
 

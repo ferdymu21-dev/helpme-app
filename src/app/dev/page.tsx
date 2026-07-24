@@ -4,104 +4,57 @@ import {
     useState,
 } from "react";
 
-import DonateButton
-from "@/features/payments/components/DonateButton";
-
 import SupportModal
-from "@/features/payments/components/SupportModal";
+    from "@/features/payments/components/SupportModal";
+
+import {
+    useDonationFlow,
+} from "@/features/payments/hooks/useDonationFlow";
 
 export default function DevPage() {
 
     const [
-
         open,
-
         setOpen,
+    ] = useState(false);
 
-    ]
-
-    =
-
-    useState(
-
-        false
-
-    );
+    const donation = useDonationFlow();
 
     return (
 
         <main className="p-10">
 
             <h1
-
                 className="
-
                     mb-8
-
                     text-3xl
-
                     font-bold
-
                 "
-
             >
-
                 Payment Sandbox
-
             </h1>
 
             <div className="space-y-6">
 
                 <button
-
-                    onClick={() =>
-
-                        setOpen(
-
-                            true
-
-                        )
-
-                    }
-
+                    onClick={() => setOpen(true)}
                     className="
-
                         rounded-xl
-
                         bg-indigo-600
-
                         px-6
-
                         py-3
-
                         text-white
-
                     "
-
                 >
-
                     Buka Support Modal
-
                 </button>
-
-                <DonateButton />
 
             </div>
 
             <SupportModal
-
+                donation={donation}
                 open={open}
-
-                onClose={() =>
-
-                    setOpen(
-
-                        false
-
-                    )
-
-                }
-
+                onClose={() => setOpen(false)}
             />
 
         </main>

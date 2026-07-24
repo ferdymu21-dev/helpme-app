@@ -40,11 +40,11 @@ export default function MobileLandingNavbar() {
       >
         {/* LOGO */}
         <Image
-          src="/logo.svg"
+          src="/logo_brand.svg"
           alt="HelpMe Logo"
           width={120}
           height={120}
-          priority
+          className="w-28 h-auto"
         />
 
         {/* MENU BUTTON */}

@@ -1,10 +1,6 @@
 import {
-
     fetchPaymentStatus,
-
-}
-
-from "@/lib/payments/server/paymentStatus.service";
+} from "@/lib/payments/server/paymentStatus.service";
 
 export async function paymentStatusController(
 

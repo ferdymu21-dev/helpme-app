@@ -7,8 +7,7 @@ import { supabase }
 
 import {
   getTasks,
-  expireTasks,
-} from "@/features/tasks/services/task.service";
+} from "@/features/tasks/services/client/task.client";
 
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
@@ -35,8 +34,6 @@ export default function HomePage() {
     async function loadTasks() {
 
       try {
-
-        await expireTasks();
 
         const data =
           await getTasks();

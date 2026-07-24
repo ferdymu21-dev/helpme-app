@@ -66,8 +66,8 @@ export async function processWebhook(
 
     return await handlePaymentNotification(
 
-    notification
+        notification
 
-);
+    );
 
 }

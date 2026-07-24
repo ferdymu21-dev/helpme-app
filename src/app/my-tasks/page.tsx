@@ -6,7 +6,7 @@ import MobileMyTasksView from "@/components/my-tasks/mobile/MobileMyTasksView";
 
 import DesktopMyTasksView from "@/components/my-tasks/desktop/DesktopMyTasksView";
 
-import { getMyTasks } from "@/features/tasks/services/task.service";
+import { getMyTasks } from "@/features/tasks/services/client/task.service";
 
 interface Task {
   id: string;

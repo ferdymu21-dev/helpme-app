@@ -1,8 +1,6 @@
 import type { Metadata }
   from "next";
 
-import Script from "next/script";
-
 import ModerationGuard
   from "@/components/moderation/ModerationGuard";
 
@@ -41,7 +39,7 @@ export default function RootLayout({
         </AuthProvider>
 
       </body>
-      
+
     </html>
   );
 }

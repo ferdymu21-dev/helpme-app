@@ -1,10 +1,6 @@
 import {
-
     adminSupabase,
-
-}
-
-from "@/lib/supabase/admin";
+} from "@/lib/supabase/admin";
 
 export async function getPaymentHistory(
 
@@ -12,27 +8,12 @@ export async function getPaymentHistory(
 
 ) {
 
-    const {
+    const { data, error } =
+     await adminSupabase
 
-        data,
+        .from("support_donations")
 
-        error,
-
-    }
-
-    =
-
-    await adminSupabase
-
-        .from(
-
-            "support_donations"
-
-        )
-
-        .select(
-
-            `
+        .select(`
             id,
             amount,
             payment_status,
@@ -40,25 +21,12 @@ export async function getPaymentHistory(
             midtrans_order_id,
             created_at,
             paid_at
-            `
-        )
+        `)
 
-        .eq(
+        .eq("user_id", userId)
 
-            "user_id",
-
-            userId,
-
-        )
-
-        .order(
-
-            "created_at",
-
-            {
-
+        .order("created_at", {
                 ascending: false,
-
             }
 
         );

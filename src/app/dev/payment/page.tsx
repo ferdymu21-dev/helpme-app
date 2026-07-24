@@ -3,7 +3,7 @@ import {
 } from "next/navigation";
 
 import PaymentWebhookSimulator
-from "@/features/payments/components/PaymentWebhookSimulator";
+from "@/features/payments/simulator/components/PaymentWebhookSimulator";
 
 export default function DeveloperPaymentPage() {
 
@@ -38,5 +38,4 @@ export default function DeveloperPaymentPage() {
         </main>
 
     );
-
 }

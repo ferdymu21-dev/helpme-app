@@ -4,6 +4,10 @@ import {
     useDonationForm,
 } from "../hooks/useDonationForm";
 
+import {
+    useDonationFlow,
+} from "../hooks/useDonationFlow";
+
 import DonationHeader
     from "./DonationHeader";
 
@@ -19,15 +23,13 @@ import PaymentMethodCard
 import DonationFooter
     from "./DonationFooter";
 
-import {
-    useSupportDonation,
-} from "../hooks/useSupportDonation";
+type DonationFlowState =
 
-import {
-    useMidtrans,
-} from "../hooks/useMidtrans";
+    ReturnType<typeof useDonationFlow>;
 
 interface Props {
+
+    donation: DonationFlowState;
 
     open: boolean;
 
@@ -37,6 +39,8 @@ interface Props {
 
 export default function SupportModal({
 
+    donation,
+
     open,
 
     onClose,
@@ -45,69 +49,30 @@ export default function SupportModal({
 
     const {
         selectedAmount,
+
         customAmount,
+
         finalAmount,
+
         error,
+
         isValid,
+
         handleSelectAmount,
+
         handleCustomAmountChange,
-    }
-        =
 
-        useDonationForm();
+    } = useDonationForm();
 
     const {
-        donate,
+
+        handleDonate,
+
         loading,
-        error:
-        donationError,
-    }
-        =
-        useSupportDonation();
 
-    const {
-        openPayment,
-    } = useMidtrans();
+        error: donationError,
 
-    async function handleDonate() {
-
-        try {
-
-            const payment =
-
-                await donate(
-
-                    finalAmount
-
-                );
-
-            await openPayment(
-
-                payment.snapToken
-
-            );
-
-            onClose();
-
-        }
-
-        catch (
-
-        error
-
-        ) {
-
-            console.error(
-
-                "DONATION ERROR",
-
-                error
-
-            );
-
-        }
-
-    }
+    } = donation;
 
     if (!open) {
 
@@ -218,7 +183,17 @@ export default function SupportModal({
 
                     disabled={!isValid}
 
-                    onDonate={handleDonate}
+                    onDonate={async () => {
+
+                        await handleDonate(
+
+                            finalAmount
+
+                        );
+
+                        onClose();
+
+                    }}
 
                 />
 

@@ -12,7 +12,7 @@ import DesktopHelperTasksView from "@/components/helper-tasks/desktop/DesktopHel
 
 import {
   getHelperTasks,
-} from "@/features/tasks/services/task.service";
+} from "@/features/tasks/services/client/task.service";
 
 interface Task {
   id: string;

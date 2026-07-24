@@ -1,20 +1,24 @@
 import {
-
-    fetchPaymentHistory,
-
-}
-
-from "@/lib/payments/server/paymentHistory.service";
+    getTransactionHistory,
+} from "@/lib/payments/server/history.service";
 
 export async function paymentHistoryController(
 
     userId: string,
 
+    cursor?: string,
+
+    limit: number = 10,
+
 ) {
 
-    return await fetchPaymentHistory(
+    return await getTransactionHistory(
 
         userId,
+
+        cursor,
+
+        limit,
 
     );
 

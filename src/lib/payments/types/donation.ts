@@ -1,3 +1,7 @@
+import type {
+    CreatePaymentResponse,
+} from "@/features/payments/types/payment";
+
 /*
 |--------------------------------------------------------------------------
 | REQUEST
@@ -49,12 +53,5 @@ export interface DonationResult {
 | Response yang dikembalikan ke Frontend
 */
 
-export interface DonationResponse {
-
-    orderId: string;
-
-    snapToken: string;
-
-    redirectUrl: string;
-
-}
+export type DonationResponse =
+    CreatePaymentResponse;

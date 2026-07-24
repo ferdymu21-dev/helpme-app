@@ -1,39 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { supabase } from "@/lib/supabase/client";
+import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 
 export default function DesktopGreetingSection() {
-    
-  const [name, setName] =
-    useState("User");
 
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) return;
-
-        const fullName =
-          user.user_metadata?.full_name;
-
-        if (fullName) {
-          setName(fullName);
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadUser();
-  }, []);
+  const {
+    user,
+    loading,
+  } = useCurrentUser();
 
   return (
+
     <section>
 
       <div>
@@ -41,13 +18,13 @@ export default function DesktopGreetingSection() {
         {/* TITLE */}
         <h1
           className="
-            text-xl 
+            text-xl
             font-bold
             tracking-tight
             text-slate-900
           "
         >
-          Halo, {name}! 👋
+          Halo, {loading ? "..." : user?.fullName || "User"}! 👋
         </h1>
 
         {/* SUBTITLE */}
@@ -64,5 +41,6 @@ export default function DesktopGreetingSection() {
       </div>
 
     </section>
+
   );
 }

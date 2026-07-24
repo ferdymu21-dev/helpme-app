@@ -1,21 +1,40 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-import DesktopGreetingSection from "@/components/home/desktop/DesktopGreetingSection";
-import Link from "next/link";
+import {
+  useNotificationBadge,
+} from "@/features/notifications/hooks/useNotificationBadge";
+
+import NotificationDropdown
+  from "@/features/notifications/components/NotificationDropdown";
+
+import {
+  useNotificationDropdown,
+} from "@/features/notifications/hooks/useNotificationDropdown";
+
+import DesktopGreetingSection
+  from "@/components/home/desktop/DesktopGreetingSection";
 
 export default function DesktopHomeHeader() {
 
   const [name, setName] =
     useState("User");
 
-  const [ 
-    hasUnreadNotifications, 
-    setHasUnreadNotifications, 
-  ] = useState(false);
+  const {
+    hasUnread,
+    unreadCount,
+  } = useNotificationBadge();
+
+  const {
+    open,
+    toggle,
+    ref: containerRef,
+  } = useNotificationDropdown();
 
   useEffect(() => {
     async function loadUser() {
@@ -32,21 +51,6 @@ export default function DesktopHomeHeader() {
         if (fullName) {
           setName(fullName);
         }
-
-        /* =========================
-           GET UNREAD NOTIFICATIONS
-        ========================= */
-
-        const { data: notifications } =
-          await supabase
-            .from("notifications")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("is_read", false);
-
-        setHasUnreadNotifications(
-          (notifications?.length || 0) > 0
-        );
 
       } catch (error) {
         console.error(error);
@@ -122,60 +126,74 @@ export default function DesktopHomeHeader() {
           </div>
 
           {/* NOTIFICATION */}
-          <Link
-            href="/notifications"
-            className="
-              relative
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-2xl
-              border
-              border-slate-200
-              bg-white
-              text-xl
-              transition
-              hover:bg-slate-50
-            "
+          <div
+            ref={containerRef}
+            className="relative"
           >
-            🔔
 
-            {hasUnreadNotifications && (
+            <button
 
-            <span
+              onClick={toggle}
+
               className="
-                absolute
-                right-3
-                top-3
-                h-2
-                w-2
-                rounded-full
-                bg-rose-500
-              "
-            />
+      relative
+      flex
+      h-12
+      w-12
+      items-center
+      justify-center
+      rounded-2xl
+      border
+      border-slate-200
+      bg-white
+      text-xl
+      transition
+      hover:bg-slate-50
+    "
+
+            >
+
+              🔔
+
+              {hasUnread && (
+
+                <span
+                  className="
+          absolute
+          -right-1
+          -top-1
+          flex
+          min-h-5
+          min-w-5
+          items-center
+          justify-center
+          rounded-full
+          bg-rose-500
+          px-1
+          text-[10px]
+          font-bold
+          leading-none
+          text-white
+        "
+                >
+
+                  {unreadCount > 99
+                    ? "99+"
+                    : unreadCount}
+
+                </span>
+
+              )}
+
+            </button>
+
+            {open && (
+
+              <NotificationDropdown />
+
             )}
 
-          </Link>
-
-          {/* PROFILE */}
-          <button
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-full
-              bg-indigo-100
-              text-sm
-              font-black
-              text-indigo-700
-            "
-          >
-            F
-          </button>
+          </div>
 
         </div>
 

@@ -1,26 +1,26 @@
 import {
-
     parseNotification,
-
 } from "./notification.parser";
 
 import {
-
     resolvePaymentStatus,
-
 } from "./paymentStatus.mapper";
 
 import {
-
-    updateDonationPayment,
-
-} from "./webhook.repository";
+    findPaymentByOrderId,
+} from "./payment.repository";
 
 import type {
-
     MidtransNotification,
-
 } from "./midtrans.types";
+
+import {
+    handleDonationPayment,
+} from "./handlers/donation.handler";
+
+import {
+    handleUrgentTaskPayment,
+} from "./handlers/urgent-task.handler";
 
 export async function handlePaymentNotification(
 
@@ -36,13 +36,20 @@ export async function handlePaymentNotification(
 
         );
 
-    console.log(
+    const paymentRecord =
+        await findPaymentByOrderId(
+            payment.orderId
+        );
 
-        "[PAYMENT]",
+    if (!paymentRecord) {
 
-        payment
+        throw new Error(
 
-    );
+            "Payment tidak ditemukan."
+
+        );
+
+    }
 
     const paymentStatus =
 
@@ -52,53 +59,89 @@ export async function handlePaymentNotification(
 
         );
 
-    console.log(
+    switch (
 
-        "[STATUS]",
+    paymentRecord.paymentType
 
-        paymentStatus
+    ) {
 
-    );
+        case "DONATION":
 
-    await updateDonationPayment({
+            await handleDonationPayment({
 
-        orderId:
+                orderId:
 
-            payment.orderId,
+                    payment.orderId,
 
-        paymentStatus,
+                paymentStatus,
 
-        transactionId:
+                transactionId:
 
-            payment.transactionId,
+                    payment.transactionId,
 
-        paymentMethod:
+                paymentMethod:
 
-            payment.paymentMethod,
+                    payment.paymentMethod,
 
-        paidAt:
+                paidAt:
 
-            paymentStatus === "PAID"
+                    paymentStatus === "PAID"
 
-                ? payment.settlementTime
+                        ? payment.settlementTime
 
-                : undefined,
+                        : undefined,
 
-        expiredAt:
+                expiredAt:
 
-            paymentStatus === "EXPIRED"
+                    paymentStatus === "EXPIRED"
 
-                ? payment.expiryTime
+                        ? payment.expiryTime
 
-                : undefined,
+                        : undefined,
 
-    });
+            });
 
-    console.log(
+            break;
 
-        "[DATABASE UPDATED]"
+        case "URGENT_TASK":
 
-    );
+            await handleUrgentTaskPayment({
+
+                orderId:
+
+                    payment.orderId,
+
+                paymentStatus,
+
+                transactionId:
+
+                    payment.transactionId,
+
+                paymentMethod:
+
+                    payment.paymentMethod,
+
+                paidAt:
+
+                    paymentStatus === "PAID"
+
+                        ? payment.settlementTime
+
+                        : undefined,
+
+                expiredAt:
+
+                    paymentStatus === "EXPIRED"
+
+                        ? payment.expiryTime
+
+                        : undefined,
+
+            });
+
+            break;
+
+    }
 
     return {
 

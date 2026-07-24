@@ -1,10 +1,6 @@
 import {
-
     PAYMENT_LIMIT,
-
-}
-
-from "@/lib/payments/constants/payment";
+} from "@/lib/payments/constants/payment";
 
 export function validateDonationAmount(
 

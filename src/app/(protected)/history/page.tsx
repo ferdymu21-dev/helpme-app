@@ -12,7 +12,7 @@ import {
 import {
   getTaskHistory,
   getHelperHistory,
-} from "@/features/tasks/services/task.service";
+} from "@/features/tasks/services/client/task.service";
 
 import MobileHistoryView
   from "@/components/history/mobile/MobileHistoryView";

@@ -2,6 +2,20 @@
 
 import { useCallback } from "react";
 
+interface OpenPaymentOptions {
+
+    snapToken: string;
+
+    onSuccess?: (result: unknown) => void;
+
+    onPending?: (result: unknown) => void;
+
+    onError?: (result: unknown) => void;
+
+    onClose?: () => void;
+
+}
+
 declare global {
 
     interface Window {
@@ -50,15 +64,13 @@ export function useMidtrans() {
 
         (
 
-            snapToken: string
+            options: OpenPaymentOptions
 
         ) => {
 
             return new Promise((
 
-                resolve,
-
-                reject
+                resolve
 
             ) => {
 
@@ -66,13 +78,13 @@ export function useMidtrans() {
 
                     "OPEN MIDTRANS",
 
-                    snapToken
+                    options.snapToken
 
                 );
 
                 window.snap.pay(
 
-                    snapToken,
+                    options.snapToken,
 
                     {
 
@@ -86,15 +98,14 @@ export function useMidtrans() {
 
                             );
 
+                            options.onSuccess?.(result);
+
                             resolve(result);
 
                         },
 
-                        onPending(
+                        onPending(result) {
 
-                            result
-
-                        ) {
                             console.log(
 
                                 "PENDING",
@@ -102,6 +113,8 @@ export function useMidtrans() {
                                 result
 
                             );
+
+                            options.onPending?.(result);
 
                             resolve(
 
@@ -111,11 +124,7 @@ export function useMidtrans() {
 
                         },
 
-                        onError(
-
-                            result
-
-                        ) {
+                        onError(result) {
 
                             console.error(
 
@@ -125,11 +134,13 @@ export function useMidtrans() {
 
                             );
 
-                            reject(
+                            options.onError?.(
 
                                 result
 
                             );
+
+                            resolve(result);
 
                         },
 
@@ -141,15 +152,9 @@ export function useMidtrans() {
 
                             );
 
-                            reject(
+                            options.onClose?.();
 
-                                new Error(
-
-                                    "Payment popup closed."
-
-                                )
-
-                            );
+                            resolve(null);
 
                         },
 

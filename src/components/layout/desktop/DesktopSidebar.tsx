@@ -202,11 +202,12 @@ export default function DesktopSidebar({
       <div className="flex justify-center">
 
         <Image
-          src="/logo.svg"
+          src="/logo_brand.svg"
           alt="HelpMe Logo"
           width={180}
-          height={180}
+          height={51}
           priority
+          className="h-auto w-45"
         />
 
       </div>
@@ -303,8 +304,8 @@ export default function DesktopSidebar({
           height={24}
         />
 
-        <span 
-        className="
+        <span
+          className="
         text-base
         text-slate-500
         "

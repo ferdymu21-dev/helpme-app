@@ -32,7 +32,7 @@ export default function DesktopNavbar() {
         <Link href="/">
 
           <Image
-            src="/logo.svg"
+            src="/logo_brand.svg"
             alt="HelpMe Logo"
             width={150}
             height={150}

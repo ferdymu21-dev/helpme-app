@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import {
+    useCallback,
+    useState,
+} from "react";
 
 import type {
     PaymentResult,
@@ -25,41 +28,53 @@ export function usePaymentResult() {
 
     });
 
-    function openResult(
+    const openResult = useCallback(
 
-        status: PaymentResultStatus,
+        (
 
-        orderId: string,
+            status: PaymentResultStatus,
 
-        amount: number,
+            orderId: string,
 
-    ) {
+            amount: number,
 
-        setResult({
+        ) => {
 
-            status,
+            setResult({
 
-            orderId,
+                status,
 
-            amount,
+                orderId,
 
-        });
+                amount,
 
-    }
+            });
 
-    function closeResult() {
+        },
 
-        setResult({
+        []
 
-            status: "IDLE",
+    );
 
-            orderId: "",
+    const closeResult = useCallback(
 
-            amount: 0,
+        () => {
 
-        });
+            setResult({
 
-    }
+                status: "IDLE",
+
+                orderId: "",
+
+                amount: 0,
+
+            });
+
+        },
+
+        []
+
+    );
 
     return {
 

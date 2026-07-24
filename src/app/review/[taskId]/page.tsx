@@ -10,11 +10,11 @@ import {
 } from "next/navigation";
 
 import { supabase }
-from "@/lib/supabase/client";
+  from "@/lib/supabase/client";
 
 import {
-  createNotification,
-} from "@/features/notifications/services/notification.service";
+    notifyReviewCreated,
+} from "@/features/notifications/actions";
 
 export default function ReviewPage() {
 
@@ -91,18 +91,11 @@ export default function ReviewPage() {
 
       /* ========================= 
          CREATE NOTIFICATION 
-      ========================= */ 
-      
-      await createNotification({ 
-        userId: 
-          task.selected_helper_id, 
-          
-        title: "Review Baru", 
-        message: 
-          "Terima kasih! Anda menerima ulasan baru", 
-        
-        type: "NEW_REVIEW", 
-      });
+      ========================= */
+
+      await notifyReviewCreated(
+        task.selected_helper_id,
+      );
 
 
       alert(
@@ -182,7 +175,7 @@ export default function ReviewPage() {
 
             <div className="mt-4 flex gap-3">
 
-              {[1,2,3,4,5].map((star) => (
+              {[1, 2, 3, 4, 5].map((star) => (
 
                 <button
                   key={star}
@@ -193,10 +186,9 @@ export default function ReviewPage() {
                     text-4xl
                     transition
 
-                    ${
-                      rating >= star
-                        ? "opacity-100"
-                        : "opacity-30"
+                    ${rating >= star
+                      ? "opacity-100"
+                      : "opacity-30"
                     }
                   `}
                 >

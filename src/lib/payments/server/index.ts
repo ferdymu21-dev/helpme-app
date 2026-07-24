@@ -19,3 +19,5 @@ export * from "./paymentNotification.service";
 export * from "./paymentStatus.repository";
 
 export * from "./paymentStatus.service";
+
+export * from "./payment.repository";

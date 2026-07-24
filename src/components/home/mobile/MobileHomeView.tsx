@@ -20,7 +20,8 @@ import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
-import SupportModal from "@/features/payments/components/SupportModal";
+import PaymentRoot
+  from "@/features/payments/components/PaymentRoot";
 
 interface Task {
   id: string;
@@ -70,14 +71,16 @@ export default function MobileHomeView({
 
       <MobileBottomNavbar />
 
-      <SupportModal
+      <PaymentRoot
 
-        open={openSupport}
-        onClose={() =>
-          setOpenSupport(
-            false
-          )
+        supportOpen={openSupport}
+
+        onCloseSupport={() =>
+
+          setOpenSupport(false)
+
         }
+
       />
 
     </div>

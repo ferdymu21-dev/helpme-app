@@ -14,6 +14,9 @@ import DesktopProfileView
 import { supabase }
   from "@/lib/supabase/client";
 
+import { useCurrentUser }
+  from "@/features/profile/hooks/useCurrentUser";
+
 import {
   getUserReputation,
 } from "@/features/profile/services/profile.service";
@@ -82,6 +85,11 @@ interface Review {
 
 export default function ProfilePage() {
 
+  const {
+    user,
+    loading,
+  } = useCurrentUser();
+
   const [profile, setProfile] =
     useState<UserProfile>({
       fullName: "User",
@@ -114,33 +122,19 @@ export default function ProfilePage() {
 
       try {
 
-        const {
-          data: { user },
-        } =
-          await supabase.auth.getUser();
+        if (loading) return;
 
         if (!user) return;
-
-        const { data: profileData } =
-          await supabase
-            .from("users")
-            .select("*")
-            .eq("id", user.id)
-            .single();
 
         /* =========================
            USER INFO
         ========================= */
 
         const fullName =
-          profileData?.full_name
-          || "User";
-
-        const email =
-          user.email || "";
+          user.fullName || "User";
 
         const username =
-          `@${profileData?.username || ""}`;
+          `@${user.username}`;
 
         const words =
           fullName.split(" ");
@@ -173,7 +167,7 @@ export default function ProfilePage() {
               reputation.averageRating
             ),
 
-            profileData?.verification_status
+            user.verificationStatus
               ?.toUpperCase() ===
             "VERIFIED"
           );
@@ -199,14 +193,13 @@ export default function ProfilePage() {
           username,
 
           avatarUrl:
-            profileData?.avatar_url
-            || "",
+            user.avatarUrl,
 
           bio:
-            profileData?.bio || "",
+            user.bio,
 
           location:
-            profileData?.location || "",
+            user.location,
 
           initials,
 
@@ -230,7 +223,7 @@ export default function ProfilePage() {
 
     loadUser();
 
-  }, []);
+  }, [user, loading]);
 
   return (
     <>
