@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  Flag,
+  MapPin,
+  Pencil,
+} from "lucide-react";
+
 interface Props {
   profile: {
     fullName: string;
@@ -11,21 +17,26 @@ interface Props {
   };
 
   isPublicProfile?: boolean;
+
   onEdit(): void;
   onReport(): void;
 }
 
 export default function DesktopProfileSidebar({
   profile,
-
   isPublicProfile = false,
-
   onEdit,
-
   onReport,
 }: Props) {
   return (
-    <aside className="overflow-hidden rounded-[36px] bg-white shadow-[0_12px_40px_rgba(15,23,42,.06)]">
+    <aside
+      className="
+        overflow-hidden
+        rounded-[36px]
+        bg-white
+        shadow-[0_12px_40px_rgba(15,23,42,.06)]
+      "
+    >
       {/* COVER */}
       <div
         className="
@@ -37,6 +48,7 @@ export default function DesktopProfileSidebar({
           to-violet-400
         "
       >
+        {/* DECORATION */}
         <div
           className="
             absolute
@@ -63,29 +75,47 @@ export default function DesktopProfileSidebar({
         />
 
         {/* AVATAR */}
-        <div className="absolute left-1/2 bottom-0 z-20 -translate-x-1/2 translate-y-1/2">
-
+        <div
+          className="
+            absolute
+            bottom-0
+            left-1/2
+            z-20
+            -translate-x-1/2
+            translate-y-1/2
+          "
+        >
           {profile.avatarUrl ? (
             <img
               src={profile.avatarUrl}
-              alt="Avatar"
-              className="h-45 w-45 rounded-full border-[6px] border-white object-cover shadow-xl"/>
+              alt={`Avatar ${profile.fullName}`}
+              className="
+                h-40
+                w-40
+                rounded-full
+                border-[6px]
+                border-white
+                object-cover
+                shadow-xl
+              "
+            />
           ) : (
             <div
               className="
-        flex
-        h-32
-        w-32
-        items-center
-        justify-center
-        rounded-full
-        border-[6px]
-        border-white
-        bg-indigo-100
-        text-5xl
-        font-black
-        text-indigo-700
-      "
+                flex
+                h-40
+                w-40
+                items-center
+                justify-center
+                rounded-full
+                border-[6px]
+                border-white
+                bg-indigo-100
+                text-5xl
+                font-black
+                text-indigo-700
+                shadow-xl
+              "
             >
               {profile.initials}
             </div>
@@ -96,36 +126,42 @@ export default function DesktopProfileSidebar({
       {/* CONTENT */}
       <div
         className="
-         pt-20
-         flex
-         flex-col
-         items-center
-         px-8
-         pb-8
-         "
+          flex
+          flex-col
+          items-center
+          px-8
+          pb-8
+          pt-24
+        "
       >
         {/* NAME */}
-        <div
-          className="mt-10 w-full text-center">
-            
+        <div className="w-full text-center">
           <h1
-            className="text-xl font-black tracking-tight text-slate-900">
-
+            className="
+              text-2xl
+              font-black
+              tracking-tight
+              text-slate-900
+            "
+          >
             {profile.fullName}
           </h1>
 
-          <p
-            className="mt-2 text-lg text-slate-500">
-            {profile.username}
-          </p>
+          {/* USERNAME */}
+          {profile.username && (
+            <p className="mt-2 text-base text-slate-500">
+              {profile.username}
+            </p>
+          )}
         </div>
 
         {/* BIO */}
         <p
           className="
-            mt-8
+            mt-6
             text-center
-            leading-8
+            text-sm
+            leading-7
             text-slate-500
           "
         >
@@ -134,12 +170,12 @@ export default function DesktopProfileSidebar({
         </p>
 
         {/* LOCATION */}
-
         {profile.location && (
           <div
             className="
-              mt-6
+              mt-5
               flex
+              max-w-full
               items-center
               justify-center
               gap-2
@@ -148,23 +184,34 @@ export default function DesktopProfileSidebar({
               text-slate-500
             "
           >
-            📍 {profile.location}
+            <MapPin
+              className="
+                h-4
+                w-4
+                shrink-0
+                text-slate-400
+              "
+            />
+
+            <span className="truncate">
+              {profile.location}
+            </span>
           </div>
         )}
 
-        
-
-        {/* BUTTON */}
+        {/* ACTION */}
         {!isPublicProfile ? (
           <button
+            type="button"
             onClick={onEdit}
             className="
-              mt-10
+              mt-8
               flex
               h-14
               w-full
               items-center
               justify-center
+              gap-2
               rounded-2xl
               bg-slate-900
               text-base
@@ -172,12 +219,19 @@ export default function DesktopProfileSidebar({
               text-white
               transition
               hover:bg-slate-800
+              active:scale-[0.99]
             "
           >
-            ✏ Edit Profile
+            <Pencil
+              className="h-4 w-4"
+              strokeWidth={2.2}
+            />
+
+            <span>Edit Profile</span>
           </button>
         ) : (
           <button
+            type="button"
             onClick={onReport}
             className="
               mt-8
@@ -186,18 +240,27 @@ export default function DesktopProfileSidebar({
               w-full
               items-center
               justify-center
+              gap-2
               rounded-2xl
               border
-              border-red-300
+              border-red-200
               bg-red-50
               text-base
               font-semibold
               text-red-600
               transition
               hover:bg-red-100
+              active:scale-[0.99]
             "
           >
-            🚩 Laporkan Pengguna
+            <Flag
+              className="h-4 w-4"
+              strokeWidth={2.2}
+            />
+
+            <span>
+              Laporkan Pengguna
+            </span>
           </button>
         )}
       </div>

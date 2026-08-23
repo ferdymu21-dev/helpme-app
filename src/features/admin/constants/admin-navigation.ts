@@ -95,20 +95,20 @@ export const AdminNavigation: AdminNavigationItem[] = [
   },
 
   {
-  id: "ads",
+    id: "ads",
 
-  label: "Ads",
+    label: "Ads",
 
-  description: "Kelola iklan platform",
+    description: "Kelola iklan platform",
 
-  href: "/admin/ads",
+    href: "/admin/ads",
 
-  icon: Image,
+    icon: Image,
 
-  enabled: true,
+    enabled: true,
 
-  showOnDashboard: true,
-},
+    showOnDashboard: true,
+  },
 
   {
     id: "campaigns",

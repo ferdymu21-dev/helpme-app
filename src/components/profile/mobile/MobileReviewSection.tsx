@@ -2,20 +2,22 @@
 
 import ProfileReviewList from "../shared/ProfileReviewList";
 
+interface Reviewer {
+  id: string;
+  full_name: string;
+  avatar_url?: string | null;
+}
+
 interface Review {
   id: string;
-
   rating: number;
-
   comment: string;
-
   created_at: string;
 
-  reviewer: {
-    id: string;
-
-    full_name: string;
-  }[];
+  reviewer:
+    | Reviewer
+    | Reviewer[]
+    | null;
 }
 
 interface Props {

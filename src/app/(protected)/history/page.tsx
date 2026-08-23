@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import {
   getTaskHistory,
@@ -110,32 +109,7 @@ export default function HistoryPage() {
 
   return (
     <>
-      {/* MOBILE BACK BUTTON */}
-      <button
-        onClick={() => router.back()}
-        aria-label="Kembali"
-        className="
-          inline-flex
-          h-10
-          w-10
-          items-center
-          justify-center
-          rounded-full
-          border
-          border-slate-200
-          bg-white
-          text-slate-700
-          shadow-sm
-          transition
-          hover:bg-slate-50
-          active:scale-95
-        "
-      >
-        <ArrowLeft
-          className="h-5 w-5"
-          strokeWidth={2}
-        />
-      </button>
+      
 
       <MobileHistoryView
         tasks={tasks}

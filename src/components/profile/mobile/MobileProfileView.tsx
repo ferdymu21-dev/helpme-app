@@ -253,23 +253,12 @@ export default function MobileProfileView({
               "
             >
               <p
-                className="
-    text-xs
-    font-medium
-    text-slate-500
-  "
-              >
+                className="text-xs font-medium text-slate-500">
                 Rating
               </p>
 
               <div
-                className="
-    mt-2
-    flex
-    items-center
-    gap-2
-  "
-              >
+                className="mt-2 flex items-center gap-2">
                 <Image
                   src="/icons/profile/star.svg"
                   alt="Rating"

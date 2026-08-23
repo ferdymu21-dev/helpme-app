@@ -1,5 +1,7 @@
 import { Send } from "lucide-react";
 
+import { formatChatMessageTime } from "@/features/messages/utils/format-message-time";
+
 interface Message {
   id: string;
 
@@ -166,22 +168,62 @@ export default function MobileChatRoomView({
                 >
 
                   <div
-                    className={`
-                      max-w-[80%]
-                      rounded-2xl
-                      px-3
-                      py-2
-                      text-[14px]
-                      leading-5
+  className={`
+    max-w-[80%]
+    rounded-2xl
+    px-3
+    py-2
+    text-[14px]
 
-                      ${isMine
-                        ? "bg-indigo-600 text-white"
-                        : "border border-slate-200 bg-white text-slate-700"
-                      }
-                    `}
-                  >
-                    {item.content}
-                  </div>
+    ${
+      isMine
+        ? "bg-indigo-600 text-white"
+        : "border border-slate-200 bg-white text-slate-700"
+    }
+  `}
+>
+  <div
+    className="
+      flex
+      items-end
+      gap-2
+    "
+  >
+    {/* MESSAGE */}
+    <p
+      className="
+        min-w-0
+        whitespace-pre-wrap
+        wrap-break-word
+        leading-5
+      "
+    >
+      {item.content}
+    </p>
+
+    {/* TIME */}
+    <time
+      dateTime={item.created_at}
+      className={`
+        mb-0.5
+        shrink-0
+        whitespace-nowrap
+        text-[8.5px]
+        leading-none
+
+        ${
+          isMine
+            ? "text-indigo-200"
+            : "text-slate-400"
+        }
+      `}
+    >
+      {formatChatMessageTime(
+        item.created_at,
+      )}
+    </time>
+  </div>
+</div>
 
                 </div>
               );

@@ -1,10 +1,24 @@
+"use client";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import { ArrowLeft } from "lucide-react";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
+
 import type { HistoryTask } from "@/features/tasks/types/history";
 
 interface Props {
   tasks: HistoryTask[];
   loading: boolean;
   activeTab: "OWNER" | "HELPER";
-  setActiveTab: (value: "OWNER" | "HELPER") => void;
+  setActiveTab: (
+    value: "OWNER" | "HELPER",
+  ) => void;
   router: {
     push: (href: string) => void;
   };
@@ -17,27 +31,162 @@ export default function MobileHistoryView({
   setActiveTab,
   router,
 }: Props) {
+  const [
+    showMobileNavbar,
+    setShowMobileNavbar,
+  ] = useState(true);
+
+  const lastScrollYRef =
+    useRef(0);
+
+  /* =========================
+      MOBILE NAVBAR SCROLL
+  ========================= */
+
+  useEffect(() => {
+    lastScrollYRef.current =
+      window.scrollY;
+
+    function handleScroll() {
+      const currentScrollY =
+        window.scrollY;
+
+      const previousScrollY =
+        lastScrollYRef.current;
+
+      /*
+       * Saat berada dekat bagian atas,
+       * navbar selalu ditampilkan.
+       */
+      if (currentScrollY <= 16) {
+        setShowMobileNavbar(true);
+
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      /*
+       * Scroll ke bawah
+       * -> sembunyikan navbar.
+       */
+      if (
+        currentScrollY >
+        previousScrollY + 8
+      ) {
+        setShowMobileNavbar(false);
+
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      /*
+       * Scroll ke atas
+       * -> tampilkan navbar.
+       */
+      if (
+        currentScrollY <
+        previousScrollY - 8
+      ) {
+        setShowMobileNavbar(true);
+
+        lastScrollYRef.current =
+          currentScrollY;
+      }
+    }
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
+  }, []);
+
   return (
     <main
       className="
+        min-h-screen
+        bg-slate-50
         p-6
+        pb-32
         lg:hidden
       "
     >
-      {/* HEADER */}
-      <h1
-        className="
-          text-xl
-          font-black
-        "
-      >
-        Riwayat Task
-      </h1>
+      {/* =========================
+          HEADER
+      ========================= */}
+      <div className="relative flex h-10 items-center">
+        {/* BACK */}
+        <button
+          type="button"
+          onClick={() =>
+            router.push("/profile")
+          }
+          aria-label="Kembali ke profil"
+          className="
+            relative
+            z-10
+            inline-flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-full
+            border
+            border-slate-200
+            bg-white
+            text-slate-700
+            shadow-sm
+            transition
+            hover:bg-slate-50
+            active:scale-95
+          "
+        >
+          <ArrowLeft
+            className="h-5 w-5"
+            strokeWidth={2}
+          />
+        </button>
 
-      {/* TABS */}
+        {/* TITLE */}
+        <h1
+          className="
+            pointer-events-none
+            absolute
+            left-1/2
+            -translate-x-1/2
+            whitespace-nowrap
+            text-base
+            font-black
+            tracking-tight
+            text-slate-900
+          "
+        >
+          Riwayat Task
+        </h1>
+      </div>
+
+      {/* =========================
+          TABS
+      ========================= */}
       <div className="mt-6 flex gap-3">
         <button
-          onClick={() => setActiveTab("OWNER")}
+          type="button"
+          onClick={() =>
+            setActiveTab("OWNER")
+          }
           className={`
             rounded-full
             px-4
@@ -57,7 +206,10 @@ export default function MobileHistoryView({
         </button>
 
         <button
-          onClick={() => setActiveTab("HELPER")}
+          type="button"
+          onClick={() =>
+            setActiveTab("HELPER")
+          }
           className={`
             rounded-full
             px-4
@@ -77,13 +229,18 @@ export default function MobileHistoryView({
         </button>
       </div>
 
-      {/* LIST */}
+      {/* =========================
+          LIST
+      ========================= */}
       <div className="mt-6">
-        {loading && <p>Memuat...</p>}
+        {loading && (
+          <p>Memuat...</p>
+        )}
 
-        {!loading && tasks.length === 0 && (
-          <div
-            className="
+        {!loading &&
+          tasks.length === 0 && (
+            <div
+              className="
                 rounded-3xl
                 border
                 border-dashed
@@ -92,16 +249,23 @@ export default function MobileHistoryView({
                 p-8
                 text-center
               "
-          >
-            <p className="text-slate-500">Belum ada riwayat</p>
-          </div>
-        )}
+            >
+              <p className="text-slate-500">
+                Belum ada riwayat
+              </p>
+            </div>
+          )}
 
         {!loading &&
           tasks.map((task) => (
             <button
               key={task.id}
-              onClick={() => router.push(`/tasks/${task.id}`)}
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/tasks/${task.id}`,
+                )
+              }
               className="
                 mb-4
                 w-full
@@ -113,13 +277,12 @@ export default function MobileHistoryView({
                 text-left
                 shadow-sm
                 transition
-
                 hover:border-indigo-300
                 hover:shadow-md
               "
             >
               <div className="flex items-start justify-between">
-                <div>
+                <div className="min-w-0">
                   <h2
                     className="
                       text-base
@@ -141,7 +304,7 @@ export default function MobileHistoryView({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <span
                     className="
                       text-lg
@@ -160,17 +323,21 @@ export default function MobileHistoryView({
                       font-bold
 
                       ${
-                        task.status === "COMPLETED"
+                        task.status ===
+                        "COMPLETED"
                           ? "bg-emerald-100 text-emerald-700"
-                          : task.status === "CANCELLED"
+                          : task.status ===
+                              "CANCELLED"
                             ? "bg-red-100 text-red-700"
                             : "bg-amber-100 text-amber-700"
                       }
                     `}
                   >
-                    {task.status === "COMPLETED"
+                    {task.status ===
+                    "COMPLETED"
                       ? "Selesai"
-                      : task.status === "CANCELLED"
+                      : task.status ===
+                          "CANCELLED"
                         ? "Dibatalkan"
                         : "Kadaluarsa"}
                   </div>
@@ -186,12 +353,21 @@ export default function MobileHistoryView({
                   "
                 >
                   Rp
-                  {task.budget?.toLocaleString("id-ID")}
+                  {task.budget?.toLocaleString(
+                    "id-ID",
+                  )}
                 </p>
               </div>
             </button>
           ))}
       </div>
+
+      {/* =========================
+          MOBILE BOTTOM NAVBAR
+      ========================= */}
+      {showMobileNavbar && (
+        <MobileBottomNavbar />
+      )}
     </main>
   );
 }

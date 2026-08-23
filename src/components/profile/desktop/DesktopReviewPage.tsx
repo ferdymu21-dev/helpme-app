@@ -1,28 +1,22 @@
 "use client";
 
-
 import DesktopReviewsView from "@/components/profile/desktop/DesktopReviewsView";
 
+import type { UserReview } from "@/features/reviews/services/review.service";
+
 interface Props {
-  reviews: {
-    id: string;
-    rating: number;
-    comment: string;
-    created_at: string;
-    reviewer: {
-      id: string;
-      full_name: string;
-    }[];
-  }[];
-  
+  reviews: UserReview[];
   hasMore: boolean;
-
   loading: boolean;
-
   onLoadMore: () => void;
 }
 
-export default function DesktopReviewPage({ reviews, hasMore, loading, onLoadMore }: Props) {
+export default function DesktopReviewPage({
+  reviews,
+  hasMore,
+  loading,
+  onLoadMore,
+}: Props) {
   return (
     <main className="hidden lg:block">
       <div className="mx-auto max-w-5xl p-10">

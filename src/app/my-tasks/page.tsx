@@ -16,12 +16,35 @@ interface Task {
   status: string;
 }
 
+type TaskFilter =
+  | "ALL"
+  | "OPEN"
+  | "ACCEPTED"
+  | "WAITING_CONFIRMATION"
+  | "COMPLETED";
+
+const WORKING_STATUSES = ["ACCEPTED", "ON_PROGRESS"];
+
+const FINISHED_STATUSES = ["COMPLETED", "EXPIRED"];
+
+function isWorkingStatus(status: string) {
+  return WORKING_STATUSES.includes(status);
+}
+
+function isFinishedStatus(
+  status: string,
+) {
+  return FINISHED_STATUSES.includes(
+    status,
+  );
+}
+
 export default function MyTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const [loading, setLoading] = useState(true);
 
-  const [activeFilter, setActiveFilter] = useState("ALL");
+  const [activeFilter, setActiveFilter] = useState<TaskFilter>("ALL");
 
   useEffect(() => {
     async function loadTasks() {
@@ -30,64 +53,87 @@ export default function MyTasksPage() {
 
         setTasks(data || []);
       } catch (error) {
-        console.error(error);
+        console.error("Gagal memuat task Owner:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    loadTasks();
+    void loadTasks();
   }, []);
 
   /* =========================
      FILTERED TASK LIST
   ========================= */
-
   const filteredTasks = useMemo(() => {
     if (activeFilter === "ALL") {
       return tasks;
     }
 
+    if (activeFilter === "ACCEPTED") {
+      return tasks.filter((task) => isWorkingStatus(task.status));
+    }
+
+    if (activeFilter === "COMPLETED") {
+      return tasks.filter((task) => isFinishedStatus(task.status,),);
+    }
+   
     return tasks.filter((task) => task.status === activeFilter);
   }, [tasks, activeFilter]);
 
   /* =========================
      TASK STATISTICS
   ========================= */
+  const openCount = tasks.filter((task) => task.status === "OPEN").length;
 
-  const openCount = tasks.filter(
-    (task) => task.status === "OPEN",
+  const acceptedCount = tasks.filter((task) =>
+    isWorkingStatus(task.status),
   ).length;
 
-  const acceptedCount = tasks.filter(
-    (task) => task.status === "ACCEPTED",
+  const waitingConfirmationCount = tasks.filter(
+    (task) => task.status === "WAITING_CONFIRMATION",
   ).length;
 
-  const completedCount = tasks.filter(
-    (task) => task.status === "COMPLETED",
+  const completedCount =
+  tasks.filter(
+    (task) =>
+      isFinishedStatus(
+        task.status,
+      ),
   ).length;
+
+  /* =========================
+     FILTER HANDLER
+  ========================= */
+
+  function handleFilterChange(value: string) {
+    if (
+      value === "ALL" ||
+      value === "OPEN" ||
+      value === "ACCEPTED" ||
+      value === "WAITING_CONFIRMATION" ||
+      value === "COMPLETED"
+    ) {
+      setActiveFilter(value);
+    }
+  }
+
+  const viewProps = {
+    tasks: filteredTasks,
+    loading,
+    activeFilter,
+    setActiveFilter: handleFilterChange,
+    openCount,
+    acceptedCount,
+    waitingConfirmationCount,
+    completedCount,
+  };
 
   return (
     <>
-      <MobileMyTasksView
-        tasks={filteredTasks}
-        loading={loading}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
-        openCount={openCount}
-        acceptedCount={acceptedCount}
-        completedCount={completedCount}
-      />
+      <MobileMyTasksView {...viewProps} />
 
-      <DesktopMyTasksView
-        tasks={filteredTasks}
-        loading={loading}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
-        openCount={openCount}
-        acceptedCount={acceptedCount}
-        completedCount={completedCount}
-      />
+      <DesktopMyTasksView {...viewProps} />
     </>
   );
 }

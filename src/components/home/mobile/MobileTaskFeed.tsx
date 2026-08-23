@@ -1,74 +1,42 @@
 "use client";
 
-import Link from "next/link";
-
 import Image from "next/image";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 
-import { calculateDistance } from "@/lib/location/distance";
-
-interface Task {
-  id: string;
-  title: string;
-  category: string;
-  budget: number;
-  status: string;
-
-  location_type?: string;
-
-  location_name?: string;
-
-  manual_address?: string;
-
-  latitude?: number;
-
-  longitude?: number;
-
-  owner_latitude?: number;
-
-  owner_longitude?: number;
-
-  scheduled_at?: string | null;
-
-  is_urgent?: boolean;
-}
+import type { NearbyTask } from "@/features/tasks/types/nearby-task";
 
 interface Props {
-  tasks: Task[];
+  tasks: NearbyTask[];
+
+  loadingTasks: boolean;
+
+  locationError: string | null;
+
+  activeCategory: string;
+
+  currentPage: number;
+
+  totalPages: number;
+
+  onCategoryChange: (category: string) => void;
+
+  onPreviousPage: () => void;
+
+  onNextPage: () => void;
 }
 
-export default function MobileTaskFeed({ tasks }: Props) {
-  const [userLatitude, setUserLatitude] = useState<number | null>(null);
-
-  const [userLongitude, setUserLongitude] = useState<number | null>(null);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      setUserLatitude(position.coords.latitude);
-
-      setUserLongitude(position.coords.longitude);
-    });
-  }, []);
-
-  const [activeCategory, setActiveCategory] = useState("Semua");
-
-  const filteredTasks = (
-    activeCategory === "Semua"
-      ? tasks
-      : tasks.filter((task) => task.category === activeCategory)
-  ).sort((a, b) => {
-    if (a.is_urgent && !b.is_urgent) {
-      return -1;
-    }
-
-    if (!a.is_urgent && b.is_urgent) {
-      return 1;
-    }
-
-    return 0;
-  });
-
+export default function MobileTaskFeed({
+  tasks,
+  loadingTasks,
+  locationError,
+  activeCategory,
+  currentPage,
+  totalPages,
+  onCategoryChange,
+  onPreviousPage,
+  onNextPage,
+}: Props) {
   return (
     <section className="px-6 pt-8 pb-20">
       <div className="mx-auto max-w-300">
@@ -91,7 +59,7 @@ export default function MobileTaskFeed({ tasks }: Props) {
               className="
                 mt-1
                 text-[11px]
-              text-slate-500
+                text-slate-500
               "
             >
               Temukan task di sekitar kamu
@@ -116,40 +84,35 @@ export default function MobileTaskFeed({ tasks }: Props) {
               label: "Semua",
               icon: "/icons/semua.svg",
             },
-
             {
               label: "Antri",
               icon: "/icons/antri.svg",
             },
-
             {
               label: "Dokumen",
               icon: "/icons/dokumen.svg",
             },
-
             {
               label: "Kondangan",
               icon: "/icons/kondangan.svg",
             },
-
             {
               label: "Kurir",
               icon: "/icons/kurir.svg",
             },
-
             {
               label: "Belanja",
               icon: "/icons/belanja.svg",
             },
-
             {
               label: "Lainnya",
               icon: "/icons/lainnya.svg",
             },
-          ].map((item, index) => (
+          ].map((item) => (
             <button
               key={item.label}
-              onClick={() => setActiveCategory(item.label)}
+              type="button"
+              onClick={() => onCategoryChange(item.label)}
               className={`
                 shrink-0
                 whitespace-nowrap
@@ -172,19 +135,20 @@ export default function MobileTaskFeed({ tasks }: Props) {
             >
               <div
                 className="
-      flex
-      items-center
-      gap-2
-    "
+                  flex
+                  items-center
+                  gap-2
+                "
               >
-                {item.icon && (
-                  <Image
-                    src={item.icon}
-                    alt={item.label}
-                    width={14}
-                    height={14}
-                  />
-                )}
+                <Image
+                  src={item.icon}
+                  alt={item.label}
+                  width={14}
+                  height={14}
+                  className={
+                    activeCategory === item.label ? "brightness-0 invert" : ""
+                  }
+                />
 
                 <span>{item.label}</span>
               </div>
@@ -192,168 +156,311 @@ export default function MobileTaskFeed({ tasks }: Props) {
           ))}
         </div>
 
-        {/* TASK LIST */}
-        <div className="mt-3.5 space-y-2.5">
-          {filteredTasks.map((task) => (
-            <Link
-              key={task.id}
-              href={`/tasks/${task.id}`}
-              className="
-                block
-                rounded-2xl
-                border
-              border-slate-100
+        {/* =========================
+            TASK FEED STATE
+        ========================= */}
+
+        {locationError ? (
+          /*
+           * KONDISI 1
+           * Lokasi Helper tidak tersedia.
+           */
+          <div
+            className="
+              mt-4
+              rounded-2xl
+              border
+              border-amber-200
+              bg-amber-50
+              p-4
+              text-xs
+              text-amber-700
+            "
+          >
+            {locationError}
+          </div>
+        ) : loadingTasks ? (
+          /*
+           * KONDISI 2
+           * RPC sedang mengambil nearby task.
+           */
+          <div
+            className="
+              mt-4
+              rounded-2xl
+              border
+              border-slate-200
               bg-white
-                p-2
-                shadow-[0_10px_30px_rgba(15,23,42,0.05)]
-                transition-all
-                duration-300
-                active:scale-[0.98]
-              "
-            >
-              {/* TOP */}
-              <div className="flex items-center justify-between">
-                {/* CATEGORY */}
-                <div
+              p-4
+              text-xs
+              text-slate-500
+            "
+          >
+            Memuat task di sekitar kamu...
+          </div>
+        ) : tasks.length === 0 ? (
+          /*
+           * KONDISI 3
+           * Query berhasil tetapi tidak
+           * menemukan task.
+           */
+          <div
+            className="
+              mt-4
+              rounded-2xl
+              border
+              border-slate-200
+              bg-white
+              p-4
+              text-xs
+              text-slate-500
+            "
+          >
+            Belum ada task yang tersedia di sekitar kamu.
+          </div>
+        ) : (
+          /*
+           * KONDISI 4
+           * Nearby task tersedia.
+           */
+          <>
+            {/* TASK LIST */}
+            <div className="mt-3.5 space-y-2.5">
+              {tasks.map((task) => (
+                <Link
+                  key={task.id}
+                  href={`/tasks/${task.id}`}
                   className="
-                    inline-flex
-                    rounded-full
-                    bg-indigo-100
-                    px-2
-                    py-1
-                    text-[9px]
-                    font-semibold
-                    text-indigo-700
+                    block
+                    rounded-2xl
+                    border
+                    border-slate-100
+                    bg-white
+                    p-2
+                    shadow-[0_10px_30px_rgba(15,23,42,0.05)]
+                    transition-all
+                    duration-300
+                    active:scale-[0.98]
                   "
                 >
-                  {task.category}
-                </div>
-
-                {/* STATUS */}
-                <div className="flex items-center gap-2">
-                  {task.is_urgent && (
+                  {/* TOP */}
+                  <div className="flex items-center justify-between">
+                    {/* CATEGORY */}
                     <div
                       className="
-        rounded-full
-        bg-red-100
-        px-2
-        py-1
-        text-[10px]
-        font-bold
-        text-red-600
-      "
+                        inline-flex
+                        rounded-full
+                        bg-indigo-100
+                        ml-2
+                        mt-1
+                        px-2
+                        py-1
+                        text-[9px]
+                        font-semibold
+                        text-indigo-700
+                      "
                     >
-                      🔥 Mendesak
+                      {task.category}
                     </div>
-                  )}
 
+                    {/* STATUS */}
+                    <div className="flex items-center gap-2">
+                      {task.is_urgent && (
+                        <div
+                          className="
+                            rounded-full
+                            bg-red-100
+                            -ml-5
+                            mt-1
+                            px-2
+                            py-1
+                            text-[10px]
+                            font-bold
+                            text-red-600
+                          "
+                        >
+                          🔥 Mendesak
+                        </div>
+                      )}
+
+                      <div
+                        className="
+                          rounded-full
+                          bg-emerald-50
+                          mt-1
+                          px-2
+                          py-1
+                          text-[9px]
+                          font-semibold
+                          text-emerald-500
+                        "
+                      >
+                        {task.status}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* TITLE */}
+                  <h3
+                    className="
+                      mt-3
+                      ml-3.5
+                      text-sm
+                      font-black
+                      leading-5
+                      tracking-tight
+                      text-slate-900
+                    "
+                  >
+                    {task.title}
+                  </h3>
+
+                  {/* BOTTOM */}
                   <div
                     className="
-      rounded-full
-      bg-emerald-50
-      px-2
-      py-1
-      text-[9px]
-      font-semibold
-      text-emerald-500
-    "
+                      mt-3
+                      flex
+                      items-center
+                      justify-between
+                    "
                   >
-                    {task.status}
+                    <div className="space-y-2">
+                      {/* LOCATION */}
+                      <p
+                        className="
+                          ml-3.5
+                          text-[11px]
+                          text-slate-500
+                        "
+                      >
+                        📍{" "}
+                        {(() => {
+                          const location =
+                            task.location_type === "SEARCH"
+                              ? task.location_name || "Lokasi tidak tersedia"
+                              : task.manual_address || "Alamat manual";
+
+                          return location.length > 20
+                            ? `${location.slice(0, 20)}...`
+                            : location;
+                        })()}
+                      </p>
+
+                      {/* SCHEDULE */}
+                      {task.scheduled_at && (
+                        <p
+                          className="ml-3.5 text-[10px] text-slate-400">
+                          📅{" "}
+                          {new Date(task.scheduled_at).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "numeric",
+                              month: "short",
+                            },
+                          )}
+                          {" • "}
+                          🕒{" "}
+                          {new Date(task.scheduled_at).toLocaleTimeString(
+                            "id-ID",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </p>
+                      )}
+
+                      {/* DISTANCE */}
+                      <p
+                        className="
+                          ml-3.5
+                          text-[10px]
+                          text-slate-400
+                        "
+                      >
+                        🛵 {task.distance_km.toFixed(1)} km dari kamu
+                      </p>
+                    </div>
+
+                    {/* PRICE */}
+                    <div
+                      className="
+                        relative
+                        right-3.5
+                        text-base
+                        font-black
+                        tracking-tight
+                        text-green-500
+                      "
+                    >
+                      Rp
+                      {task.budget.toLocaleString("id-ID")}
+                    </div>
                   </div>
-                </div>
-              </div>
+                </Link>
+              ))}
+            </div>
 
-              {/* TITLE */}
-              <h3
-                className="
-                  mt-3
-                  ml-3.5
-                  text-sm
-                  font-black
-                  leading-5
-                  tracking-tight
-                  text-slate-900
-                "
-              >
-                {task.title}
-              </h3>
-
-              {/* BOTTOM */}
+            {/* PAGINATION */}
+            {totalPages > 1 && (
               <div
                 className="
-                  mt-3
+                  mt-5
                   flex
                   items-center
                   justify-between
+                  gap-3
                 "
               >
-                <div className="space-y-2">
-                  {/* LOCATION */}
-                  <p
-                    className="
-                    ml-3.5
-      text-[11px]
-      text-slate-500
-    "
-                  >
-                    📍{" "}
-                    {(() => {
-                      const location =
-                        task.location_type === "SEARCH"
-                          ? task.location_name || "Lokasi tidak tersedia"
-                          : task.manual_address || "Alamat manual";
-
-                      return location.length > 20
-                        ? `${location.slice(0, 20)}...`
-                        : location;
-                    })()}
-                  </p>
-
-                  {/* DISTANCE */}
-                  {userLatitude &&
-                    userLongitude &&
-                    (task.latitude || task.owner_latitude) &&
-                    (task.longitude || task.owner_longitude) && (
-                      <p
-                        className="
-                        ml-3.5
-          text-[10px]
-          text-slate-400
-        "
-                      >
-                        🛵{" "}
-                        {calculateDistance(
-                          userLatitude,
-
-                          userLongitude,
-
-                          task.latitude || task.owner_latitude!,
-
-                          task.longitude || task.owner_longitude!,
-                        ).toFixed(1)}{" "}
-                        km dari kamu
-                      </p>
-                    )}
-                </div>
-
-                {/* PRICE */}
-                <div
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={onPreviousPage}
                   className="
-                    relative
-                    right-3.5
-                    text-base
-                    font-black
-                    tracking-tight
-                  text-green-500
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    px-3
+                    py-2
+                    text-xs
+                    font-semibold
+                    text-slate-600
+                    disabled:cursor-not-allowed
+                    disabled:opacity-40
                   "
                 >
-                  Rp
-                  {task.budget.toLocaleString("id-ID")}
-                </div>
+                  Sebelumnya
+                </button>
+
+                <span className="text-[11px] text-slate-500">
+                  {currentPage} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={onNextPage}
+                  className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    px-3
+                    py-2
+                    text-xs
+                    font-semibold
+                    text-slate-600
+                    disabled:cursor-not-allowed
+                    disabled:opacity-40
+                  "
+                >
+                  Berikutnya
+                </button>
               </div>
-            </Link>
-          ))}
-        </div>
+            )}
+          </>
+        )}
       </div>
     </section>
   );

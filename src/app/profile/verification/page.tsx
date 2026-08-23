@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import { ArrowLeft } from "lucide-react";
 
 import imageCompression from "browser-image-compression";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -19,6 +29,12 @@ export default function VerificationPage() {
   const [ktpPreview, setKtpPreview] = useState("");
   const [selfiePreview, setSelfiePreview] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [
+  showMobileNavbar,
+  setShowMobileNavbar,
+] = useState(true);
+
+const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -87,6 +103,77 @@ export default function VerificationPage() {
 
     loadStatus();
   }, []);
+
+  useEffect(() => {
+  lastScrollYRef.current =
+    window.scrollY;
+
+  function handleScroll() {
+    const currentScrollY =
+      window.scrollY;
+
+    const previousScrollY =
+      lastScrollYRef.current;
+
+    /*
+     * Saat berada dekat bagian paling atas,
+     * navbar selalu ditampilkan.
+     */
+    if (currentScrollY <= 16) {
+      setShowMobileNavbar(true);
+
+      lastScrollYRef.current =
+        currentScrollY;
+
+      return;
+    }
+
+    /*
+     * Scroll cukup jauh ke bawah
+     * -> sembunyikan navbar.
+     */
+    if (
+      currentScrollY >
+      previousScrollY + 8
+    ) {
+      setShowMobileNavbar(false);
+
+      lastScrollYRef.current =
+        currentScrollY;
+
+      return;
+    }
+
+    /*
+     * Scroll cukup jauh ke atas
+     * -> tampilkan navbar.
+     */
+    if (
+      currentScrollY <
+      previousScrollY - 8
+    ) {
+      setShowMobileNavbar(true);
+
+      lastScrollYRef.current =
+        currentScrollY;
+    }
+  }
+
+  window.addEventListener(
+    "scroll",
+    handleScroll,
+    {
+      passive: true,
+    },
+  );
+
+  return () => {
+    window.removeEventListener(
+      "scroll",
+      handleScroll,
+    );
+  };
+}, []);
 
   async function handleKtpChange(file: File) {
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -293,17 +380,75 @@ export default function VerificationPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 pb-28 lg:pb-0">
       <div className="mx-auto max-w-2xl px-6 py-8">
-        <h1
-          className="
-            text-lg
-            font-black
-            text-slate-900
-          "
-        >
-          Verifikasi Akun
-        </h1>
+  {/* =========================
+      MOBILE HEADER
+  ========================= */}
+  <div className="lg:hidden">
+    <div className="relative flex h-10 items-center">
+      {/* BACK */}
+      <Link
+        href="/profile"
+        aria-label="Kembali ke sebelumnya"
+        className="
+          relative
+          z-10
+          -ml-1
+          inline-flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-slate-200
+          bg-white
+          text-slate-700
+          shadow-sm
+          transition
+          active:scale-95
+        "
+      >
+        <ArrowLeft
+          className="h-5 w-5"
+          strokeWidth={2}
+        />
+      </Link>
+
+      {/* TITLE */}
+      <h1
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          -translate-x-1/2
+          whitespace-nowrap
+          text-base
+          font-black
+          tracking-tight
+          text-slate-900
+        "
+      >
+        Verifikasi Akun
+      </h1>
+    </div>
+  </div>
+
+  {/* =========================
+      DESKTOP HEADER
+  ========================= */}
+  <h1
+    className="
+      hidden
+      text-lg
+      font-black
+      text-slate-900
+      lg:block
+    "
+  >
+    Verifikasi Akun
+  </h1>
 
         {verificationStatus === "UNVERIFIED" && (
           <>
@@ -347,22 +492,9 @@ export default function VerificationPage() {
 
         {verificationStatus === "PENDING" && (
           <div
-            className="
-            text-center
-        "
-          >
+            className="text-center">
             <div
-              className="
-            mt-10
-                mx-auto
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                text-4xl
-            "
-            >
+              className="mt-10 mx-auto flex h-10 w-10 items-center justify-center text-4xl">
               ⏳
             </div>
 
@@ -383,24 +515,12 @@ export default function VerificationPage() {
             </div>
 
             <h2
-              className="
-                mt-5
-                text-lg
-                font-black
-                text-slate-900
-            "
-            >
+              className="mt-5 text-lg font-black text-slate-900">
               Dokumen sedang ditinjau
             </h2>
 
             <p
-              className="
-                mt-3
-                text-sm
-                leading-7
-                text-slate-500
-            "
-            >
+              className="mt-3 text-sm leading-7 text-slate-500">
               Tim HelpMe sedang memeriksa dokumen Anda.
               <br />
               Estimasi proses 1–3 hari kerja.
@@ -426,22 +546,12 @@ export default function VerificationPage() {
             </div>
 
             <h2
-              className="
-                mt-4
-                text-xl
-                font-bold
-                text-slate-900
-            "
-            >
+              className="mt-4 text-xl font-bold text-slate-900">
               Selamat 🎉
             </h2>
 
             <p
-              className="
-                mt-2
-                text-slate-500
-            "
-            >
+              className="mt-2 text-slate-500">
               Badge verified sudah aktif. Akun Anda akan lebih dipercaya oleh
               pemilik task dan helper lain.
             </p>
@@ -466,22 +576,12 @@ export default function VerificationPage() {
             </div>
 
             <h2
-              className="
-                mt-4
-                text-xl
-                font-bold
-                text-slate-900
-            "
-            >
+              className="mt-4 text-xl font-bold text-slate-900">
               Dokumen perlu diperbaiki
             </h2>
 
             <p
-              className="
-                mt-2
-                text-slate-500
-            "
-            >
+              className="mt-2 text-slate-500">
               Silakan upload ulang dokumen yang lebih jelas agar dapat
               diverifikasi.
             </p>
@@ -490,56 +590,26 @@ export default function VerificationPage() {
 
         {rejectionReason && (
           <div
-            className="
-            mt-4
-            rounded-2xl
-            bg-red-50
-            border
-            border-red-200
-            p-4
-        "
-          >
+            className="mt-4 rounded-2xl bg-red-50 border border-red-200 p-4">
             <p
-              className="
-                font-bold
-                text-red-700
-            "
-            >
+              className="font-bold text-red-700">
               Alasan Penolakan
             </p>
 
             <p
-              className="
-                mt-2
-                text-sm
-                text-red-600
-            "
-            >
+              className="mt-2 text-sm text-red-600">
               {rejectionReason}
             </p>
           </div>
         )}
 
         {/* UPLOAD DOCUMENTS */}
-
         {(verificationStatus === "UNVERIFIED" ||
           verificationStatus === "REJECTED") && (
           <div
-            className="
-    mt-6
-    rounded-3xl
-    bg-white
-    p-6
-    shadow-sm
-  "
-          >
+            className="mt-6 rounded-3xl bg-white p-6 shadow-sm">
             <h2
-              className="
-      text-lg
-      font-bold
-      text-slate-900
-    "
-            >
+              className="text-lg font-bold text-slate-900">
               Upload Dokumen
             </h2>
 
@@ -547,12 +617,7 @@ export default function VerificationPage() {
 
             <div className="mt-6">
               <p
-                className="
-        text-sm
-        font-semibold
-        text-slate-700
-      "
-              >
+                className="text-sm font-semibold text-slate-700">
                 Foto KTP
               </p>
 
@@ -560,13 +625,7 @@ export default function VerificationPage() {
                 <img
                   src={ktpPreview}
                   alt="KTP"
-                  className="
-          mt-3
-          h-48
-          w-full
-          rounded-2xl
-          object-cover
-        "
+                  className="mt-3 h-48 w-full rounded-2xl object-cover"
                 />
               )}
 
@@ -588,12 +647,7 @@ export default function VerificationPage() {
 
             <div className="mt-8">
               <p
-                className="
-        text-sm
-        font-semibold
-        text-slate-700
-      "
-              >
+                className="text-sm font-semibold text-slate-700">
                 Foto Selfie
               </p>
 
@@ -601,13 +655,7 @@ export default function VerificationPage() {
                 <img
                   src={selfiePreview}
                   alt="Selfie"
-                  className="
-          mt-3
-          h-48
-          w-full
-          rounded-2xl
-          object-cover
-        "
+                  className="mt-3 h-48 w-full rounded-2xl object-cover"
                 />
               )}
 
@@ -626,7 +674,6 @@ export default function VerificationPage() {
             </div>
 
             {/* SUBMIT BUTTON */}
-
             <button
               onClick={handleSubmitVerification}
               disabled={uploading}
@@ -648,7 +695,16 @@ export default function VerificationPage() {
             </button>
           </div>
         )}
-      </div>
+            </div>
+
+      {/* =========================
+          MOBILE BOTTOM NAVBAR
+      ========================= */}
+      {showMobileNavbar && (
+        <div className="lg:hidden">
+          <MobileBottomNavbar />
+        </div>
+      )}
     </main>
   );
 }

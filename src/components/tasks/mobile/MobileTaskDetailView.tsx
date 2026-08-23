@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   BadgeAlert,
   CalendarDays,
-  Camera,
   CheckCircle2,
   ChevronDown,
   ChevronRight,

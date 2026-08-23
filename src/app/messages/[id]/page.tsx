@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useParams } from "next/navigation";
 
@@ -8,6 +12,8 @@ import MobileChatRoomView from "@/components/messages/mobile/MobileChatRoomView"
 import DesktopChatRoomView from "@/components/messages/desktop/DesktopChatRoomView";
 
 import { supabase } from "@/lib/supabase/client";
+
+import type { Conversation } from "@/features/messages/types/conversation.types";
 
 interface Message {
   id: string;
@@ -25,29 +31,61 @@ interface ChatUser {
 export default function ChatRoomPage() {
   const params = useParams();
 
-  const conversationId = params.id as string;
+  const conversationId =
+    params.id as string;
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [
+    messages,
+    setMessages,
+  ] = useState<Message[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [
+    conversations,
+    setConversations,
+  ] = useState<Conversation[]>([]);
 
-  const [sending, setSending] = useState(false);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [message, setMessage] = useState("");
+  const [
+    sending,
+    setSending,
+  ] = useState(false);
 
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [
+    message,
+    setMessage,
+  ] = useState("");
 
-  const [otherUser, setOtherUser] =
-    useState<ChatUser | null>(null);
+  const [
+    currentUserId,
+    setCurrentUserId,
+  ] = useState("");
+
+  const [
+    otherUser,
+    setOtherUser,
+  ] =
+    useState<ChatUser | null>(
+      null,
+    );
 
   /* =========================
        SEND MESSAGE
-    ========================= */
+  ========================= */
 
   async function handleSendMessage() {
-    if (!message.trim()) {
+    const trimmedMessage =
+      message.trim();
+
+    if (!trimmedMessage) {
       return;
     }
 
@@ -56,75 +94,100 @@ export default function ChatRoomPage() {
 
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } =
+        await supabase.auth.getUser();
 
       if (!user) {
         return;
       }
 
       /* =========================
-             INSERT MESSAGE
-          ========================= */
+           INSERT MESSAGE
+      ========================= */
 
-      const { error } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          sender_id: user.id,
-          content: message,
-        });
+      const { error } =
+        await supabase
+          .from("messages")
+          .insert({
+            conversation_id:
+              conversationId,
+
+            sender_id:
+              user.id,
+
+            content:
+              trimmedMessage,
+          });
 
       if (error) {
         throw error;
       }
 
       /* =========================
-             GET CONVERSATION
-          ========================= */
+           GET CONVERSATION
+      ========================= */
 
       const {
         data: conversation,
-        error: conversationError,
+        error:
+          conversationError,
       } = await supabase
         .from("conversations")
         .select("*")
-        .eq("id", conversationId)
+        .eq(
+          "id",
+          conversationId,
+        )
         .single();
 
-      if (conversationError || !conversation) {
-        console.error(conversationError);
+      if (
+        conversationError ||
+        !conversation
+      ) {
+        console.error(
+          conversationError,
+        );
 
         return;
       }
 
       /* =========================
-             UPDATE CONVERSATION
-          ========================= */
+           UPDATE CONVERSATION
+      ========================= */
 
       const isOwner =
-        user.id === conversation.owner_id;
+        user.id ===
+        conversation.owner_id;
 
-      const { error: updateError } =
-        await supabase
-          .from("conversations")
-          .update({
-            last_message: message,
+      const {
+        error: updateError,
+      } = await supabase
+        .from("conversations")
+        .update({
+          last_message:
+            trimmedMessage,
 
-            last_message_at:
-              new Date().toISOString(),
+          last_message_at:
+            new Date().toISOString(),
 
-            owner_unread_count: isOwner
-              ? conversation.owner_unread_count || 0
+          owner_unread_count:
+            isOwner
+              ? conversation.owner_unread_count ||
+                0
               : (conversation.owner_unread_count ||
                   0) + 1,
 
-            helper_unread_count: isOwner
+          helper_unread_count:
+            isOwner
               ? (conversation.helper_unread_count ||
                   0) + 1
               : conversation.helper_unread_count ||
                 0,
-          })
-          .eq("id", conversationId);
+        })
+        .eq(
+          "id",
+          conversationId,
+        );
 
       if (updateError) {
         console.error(
@@ -132,8 +195,49 @@ export default function ChatRoomPage() {
           updateError,
         );
 
-        alert(JSON.stringify(updateError));
+        alert(
+          JSON.stringify(
+            updateError,
+          ),
+        );
       }
+
+      /*
+       * Update sidebar langsung
+       * setelah kita mengirim pesan.
+       *
+       * Tidak perlu query ulang.
+       */
+      setConversations(
+        (previous) =>
+          previous
+            .map(
+              (conversation) =>
+                conversation.id ===
+                conversationId
+                  ? {
+                      ...conversation,
+
+                      last_message:
+                        trimmedMessage,
+
+                      last_message_at:
+                        new Date().toISOString(),
+                    }
+                  : conversation,
+            )
+            .sort(
+              (a, b) =>
+                new Date(
+                  b.last_message_at ||
+                    b.created_at,
+                ).getTime() -
+                new Date(
+                  a.last_message_at ||
+                    a.created_at,
+                ).getTime(),
+            ),
+      );
 
       setMessage("");
     } catch (error) {
@@ -148,26 +252,155 @@ export default function ChatRoomPage() {
 
   /* =========================
        INITIAL LOAD + REALTIME
-    ========================= */
+  ========================= */
 
   useEffect(() => {
     let cancelled = false;
 
     /* =========================
-         LOAD USER + CONVERSATION
-      ========================= */
+         LOAD CONVERSATIONS
+    ========================= */
+
+    async function loadConversations(
+      userId: string,
+    ) {
+      try {
+        /* OWNER */
+        const {
+          data:
+            ownerConversations,
+          error: ownerError,
+        } = await supabase
+          .from("conversations")
+          .select(
+            `
+              *,
+              owner:users!conversations_owner_id_fkey (
+                full_name,
+                avatar_url
+              ),
+              helper:users!conversations_helper_id_fkey (
+                full_name,
+                avatar_url
+              )
+            `,
+          )
+          .eq(
+            "owner_id",
+            userId,
+          );
+
+        if (ownerError) {
+          throw ownerError;
+        }
+
+        /* HELPER */
+        const {
+          data:
+            helperConversations,
+          error: helperError,
+        } = await supabase
+          .from("conversations")
+          .select(
+            `
+              *,
+              owner:users!conversations_owner_id_fkey (
+                full_name,
+                avatar_url
+              ),
+              helper:users!conversations_helper_id_fkey (
+                full_name,
+                avatar_url
+              )
+            `,
+          )
+          .eq(
+            "helper_id",
+            userId,
+          );
+
+        if (helperError) {
+          throw helperError;
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const merged = [
+          ...(
+            ownerConversations ||
+            []
+          ),
+
+          ...(
+            helperConversations ||
+            []
+          ),
+        ];
+
+        merged.sort(
+          (a, b) =>
+            new Date(
+              b.last_message_at ||
+                b.created_at,
+            ).getTime() -
+            new Date(
+              a.last_message_at ||
+                a.created_at,
+            ).getTime(),
+        );
+
+        setConversations(
+          merged,
+        );
+      } catch (error) {
+        if (!cancelled) {
+          console.error(
+            "LOAD CONVERSATIONS ERROR:",
+            error,
+          );
+        }
+      }
+    }
+
+    /* =========================
+         LOAD USER + ROOM
+    ========================= */
 
     async function loadUser() {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } =
+        await supabase.auth.getUser();
 
-      if (!user || cancelled) {
+      if (
+        !user ||
+        cancelled
+      ) {
         return;
       }
 
-      setCurrentUserId(user.id);
+      setCurrentUserId(
+        user.id,
+      );
 
+      /*
+       * Load sidebar conversation
+       * untuk Desktop.
+       */
+      await loadConversations(
+        user.id,
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      /*
+       * Load room yang sedang
+       * aktif.
+       */
       const {
         data: conversation,
         error,
@@ -188,7 +421,10 @@ export default function ChatRoomPage() {
             )
           `,
         )
-        .eq("id", conversationId)
+        .eq(
+          "id",
+          conversationId,
+        )
         .single();
 
       if (error) {
@@ -200,32 +436,41 @@ export default function ChatRoomPage() {
         return;
       }
 
-      if (!conversation || cancelled) {
+      if (
+        !conversation ||
+        cancelled
+      ) {
         return;
       }
 
       const other =
-        user.id === conversation.owner_id
+        user.id ===
+        conversation.owner_id
           ? conversation.helper
           : conversation.owner;
 
       if (!other) {
         setOtherUser(null);
+
         return;
       }
 
       setOtherUser({
         id: other.id,
+
         full_name:
-          other.full_name || "User",
+          other.full_name ||
+          "User",
+
         avatar_url:
-          other.avatar_url || undefined,
+          other.avatar_url ||
+          undefined,
       });
     }
 
     /* =========================
          LOAD MESSAGES
-      ========================= */
+    ========================= */
 
     async function loadMessages() {
       try {
@@ -239,9 +484,12 @@ export default function ChatRoomPage() {
             "conversation_id",
             conversationId,
           )
-          .order("created_at", {
-            ascending: true,
-          });
+          .order(
+            "created_at",
+            {
+              ascending: true,
+            },
+          );
 
         if (error) {
           throw error;
@@ -251,27 +499,37 @@ export default function ChatRoomPage() {
           return;
         }
 
-        setMessages(data || []);
+        setMessages(
+          data || [],
+        );
 
         /* =========================
              RESET UNREAD COUNT
-          ========================= */
+        ========================= */
 
         const {
           data: { user },
-        } = await supabase.auth.getUser();
+        } =
+          await supabase.auth.getUser();
 
-        if (!user || cancelled) {
+        if (
+          !user ||
+          cancelled
+        ) {
           return;
         }
 
         const {
           data: conversation,
-          error: conversationError,
+          error:
+            conversationError,
         } = await supabase
           .from("conversations")
           .select("*")
-          .eq("id", conversationId)
+          .eq(
+            "id",
+            conversationId,
+          )
           .single();
 
         if (
@@ -283,20 +541,61 @@ export default function ChatRoomPage() {
         }
 
         const isOwner =
-          user.id === conversation.owner_id;
+          user.id ===
+          conversation.owner_id;
 
         await supabase
           .from("conversations")
           .update({
-            owner_unread_count: isOwner
-              ? 0
-              : conversation.owner_unread_count,
+            owner_unread_count:
+              isOwner
+                ? 0
+                : conversation.owner_unread_count,
 
-            helper_unread_count: isOwner
-              ? conversation.helper_unread_count
-              : 0,
+            helper_unread_count:
+              isOwner
+                ? conversation.helper_unread_count
+                : 0,
           })
-          .eq("id", conversationId);
+          .eq(
+            "id",
+            conversationId,
+          );
+
+        /*
+         * Badge unread room aktif
+         * langsung dibuat 0
+         * di sidebar lokal.
+         */
+        if (!cancelled) {
+          setConversations(
+            (previous) =>
+              previous.map(
+                (item) => {
+                  if (
+                    item.id !==
+                    conversationId
+                  ) {
+                    return item;
+                  }
+
+                  return {
+                    ...item,
+
+                    owner_unread_count:
+                      isOwner
+                        ? 0
+                        : item.owner_unread_count,
+
+                    helper_unread_count:
+                      isOwner
+                        ? item.helper_unread_count
+                        : 0,
+                  };
+                },
+              ),
+          );
+        }
       } catch (error) {
         if (!cancelled) {
           console.error(
@@ -313,11 +612,12 @@ export default function ChatRoomPage() {
 
     /* =========================
          REALTIME CHANNEL
-      ========================= */
+    ========================= */
 
-    const channel = supabase.channel(
-      `chat-${conversationId}`,
-    );
+    const channel =
+      supabase.channel(
+        `chat-${conversationId}`,
+      );
 
     channel.on(
       "postgres_changes",
@@ -325,17 +625,59 @@ export default function ChatRoomPage() {
         event: "INSERT",
         schema: "public",
         table: "messages",
-        filter: `conversation_id=eq.${conversationId}`,
+        filter:
+          `conversation_id=eq.${conversationId}`,
       },
       (payload) => {
         if (cancelled) {
           return;
         }
 
-        setMessages((prev) => [
-          ...prev,
-          payload.new as Message,
-        ]);
+        const newMessage =
+          payload.new as Message;
+
+        setMessages(
+          (previous) => [
+            ...previous,
+            newMessage,
+          ],
+        );
+
+        /*
+         * Update preview sidebar
+         * tanpa membuat realtime
+         * subscription kedua.
+         */
+        setConversations(
+          (previous) =>
+            previous
+              .map(
+                (conversation) =>
+                  conversation.id ===
+                  conversationId
+                    ? {
+                        ...conversation,
+
+                        last_message:
+                          newMessage.content,
+
+                        last_message_at:
+                          newMessage.created_at,
+                      }
+                    : conversation,
+              )
+              .sort(
+                (a, b) =>
+                  new Date(
+                    b.last_message_at ||
+                      b.created_at,
+                  ).getTime() -
+                  new Date(
+                    a.last_message_at ||
+                      a.created_at,
+                  ).getTime(),
+              ),
+        );
       },
     );
 
@@ -343,7 +685,7 @@ export default function ChatRoomPage() {
 
     /* =========================
          INITIAL LOAD
-      ========================= */
+    ========================= */
 
     void (async () => {
       if (cancelled) {
@@ -361,49 +703,69 @@ export default function ChatRoomPage() {
 
     /* =========================
          CLEANUP
-      ========================= */
+    ========================= */
 
     return () => {
       cancelled = true;
 
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(
+        channel,
+      );
     };
   }, [conversationId]);
 
   /* =========================
        AUTO SCROLL
-    ========================= */
+  ========================= */
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    bottomRef.current?.scrollIntoView(
+      {
+        behavior: "smooth",
+      },
+    );
   }, [messages]);
 
   return (
     <>
+      {/* MOBILE */}
       <MobileChatRoomView
         loading={loading}
         messages={messages}
-        currentUserId={currentUserId}
+        currentUserId={
+          currentUserId
+        }
         otherUser={otherUser}
         message={message}
         sending={sending}
         bottomRef={bottomRef}
         setMessage={setMessage}
-        handleSendMessage={handleSendMessage}
+        handleSendMessage={
+          handleSendMessage
+        }
       />
 
+      {/* DESKTOP */}
       <DesktopChatRoomView
         loading={loading}
         messages={messages}
-        currentUserId={currentUserId}
+        conversations={
+          conversations
+        }
+        conversationId={
+          conversationId
+        }
+        currentUserId={
+          currentUserId
+        }
         otherUser={otherUser}
         message={message}
         sending={sending}
         bottomRef={bottomRef}
         setMessage={setMessage}
-        handleSendMessage={handleSendMessage}
+        handleSendMessage={
+          handleSendMessage
+        }
       />
     </>
   );

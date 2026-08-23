@@ -1,4 +1,3 @@
-
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
 import DesktopConversationSidebar from "@/components/messages/shared/DesktopConversationSidebar";
@@ -22,15 +21,16 @@ export default function DesktopMessagesView({
 
       {/* CONTENT */}
       <main
-        className="
-          ml-70
-          flex
-          h-screen
-          flex-1
-          overflow-hidden
-          bg-slate-50
-        "
-      >
+  className="
+    ml-70
+    flex
+    h-screen
+    min-h-0
+    flex-1
+    overflow-hidden
+    bg-slate-50
+  "
+>
         <DesktopConversationSidebar
           conversations={conversations}
           currentUserId={currentUserId}

@@ -43,20 +43,22 @@ interface UserProfile {
   avatar_url?: string;
 }
 
+interface Reviewer {
+  id: string;
+  full_name: string;
+  avatar_url?: string | null;
+}
+
 interface Review {
   id: string;
-
   rating: number;
-
   comment: string;
-
   created_at: string;
 
-  reviewer: {
-    id: string;
-
-    full_name: string;
-  }[];
+  reviewer:
+    | Reviewer
+    | Reviewer[]
+    | null;
 }
 
 export default function PublicProfilePage() {
@@ -213,39 +215,48 @@ setTotalReviews(reputation.totalReviews);
       />
 
       <DesktopProfileView
-        profile={{
-          fullName: profile.full_name,
+  profile={{
+    fullName: profile.full_name,
 
-          username: `@${profile.username || ""}`,
+    username: profile.username
+      ? `@${profile.username}`
+      : "",
 
-          bio: profile.bio || "",
+    bio: profile.bio || "",
 
-          location: profile.location || "",
+    location:
+      profile.location || "",
 
-          avatarUrl: profile.avatar_url || "",
+    avatarUrl:
+      profile.avatar_url || "",
 
-          initials: profile.full_name?.charAt(0),
+    initials:
+      profile.full_name
+        ?.charAt(0)
+        .toUpperCase() || "U",
 
-          completedTasks,
+    completedTasks,
 
-          totalReviews: reviews.length,
+    totalReviews: reviews.length,
 
-          averageRating: rating.toFixed(1),
+    averageRating:
+      rating.toFixed(1),
 
-          badges,
-        }}
-        profileUserId={profile.id}
-        isPublicProfile={true}
-      />
+    badges,
+  }}
+  profileUserId={profile.id}
+  isPublicProfile={true}
+  reviewSection={
+    <DesktopReviewSection
+      reviews={reviews}
+      hasMore={hasMoreReviews}
+      loading={loadingMoreReviews}
+      onLoadMore={loadMoreReviews}
+    />
+  }
+/>
 
       <MobileReviewSection
-        reviews={reviews}
-        hasMore={hasMoreReviews}
-        loading={loadingMoreReviews}
-        onLoadMore={loadMoreReviews}
-      />
-
-      <DesktopReviewSection
         reviews={reviews}
         hasMore={hasMoreReviews}
         loading={loadingMoreReviews}

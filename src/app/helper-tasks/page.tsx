@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import MobileHelperTasksView from "@/components/helper-tasks/mobile/MobileHelperTasksView";
 import DesktopHelperTasksView from "@/components/helper-tasks/desktop/DesktopHelperTasksView";
@@ -23,54 +27,110 @@ interface Task {
 
   owner_latitude?: number;
   owner_longitude?: number;
+
+  scheduled_at?: string | null;
+  is_urgent?: boolean;
 }
 
-const filters = ["ALL", "OPEN", "ACCEPTED", "COMPLETED"];
+type TaskFilter =
+  | "ALL"
+  | "OPEN"
+  | "ACCEPTED"
+  | "WAITING_CONFIRMATION"
+  | "COMPLETED";
+
+const WORKING_STATUSES = [
+  "ACCEPTED",
+  "ON_PROGRESS",
+];
+
+function isWorkingStatus(
+  status: string,
+) {
+  return WORKING_STATUSES.includes(
+    status,
+  );
+}
 
 export default function HelperTasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] =
+    useState<Task[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [activeFilter, setActiveFilter] = useState("ALL");
+  const [
+    activeFilter,
+    setActiveFilter,
+  ] =
+    useState<TaskFilter>("ALL");
 
   useEffect(() => {
     async function loadTasks() {
       try {
-        const data = await getHelperTasks();
+        const data =
+          await getHelperTasks();
 
-        const normalizedTasks: Task[] = data.map((task) => ({
-          id: task.id,
-          title: task.title,
-          category: task.category ?? "",
-          budget: task.budget ?? 0,
-          status: task.status,
+        const normalizedTasks: Task[] =
+          data.map((task) => ({
+            id: task.id,
+            title: task.title,
 
-          location_type:
-            task.location_type ?? undefined,
+            category:
+              task.category ?? "",
 
-          location_name:
-            task.location_name ?? undefined,
+            budget:
+              task.budget ?? 0,
 
-          manual_address:
-            task.manual_address ?? undefined,
+            status:
+              task.status,
 
-          latitude:
-            task.latitude ?? undefined,
+            location_type:
+              task.location_type ??
+              undefined,
 
-          longitude:
-            task.longitude ?? undefined,
+            location_name:
+              task.location_name ??
+              undefined,
 
-          owner_latitude:
-            task.owner_latitude ?? undefined,
+            manual_address:
+              task.manual_address ??
+              undefined,
 
-          owner_longitude:
-            task.owner_longitude ?? undefined,
-        }));
+            latitude:
+              task.latitude ??
+              undefined,
 
-        setTasks(normalizedTasks);
+            longitude:
+              task.longitude ??
+              undefined,
+
+            owner_latitude:
+              task.owner_latitude ??
+              undefined,
+
+            owner_longitude:
+              task.owner_longitude ??
+              undefined,
+
+            scheduled_at:
+              task.scheduled_at ??
+              null,
+
+            is_urgent:
+              task.is_urgent ??
+              false,
+          }));
+
+        setTasks(
+          normalizedTasks,
+        );
       } catch (error) {
-        console.error(error);
+        console.error(
+          "Gagal memuat helper tasks:",
+          error,
+        );
+
         setTasks([]);
       } finally {
         setLoading(false);
@@ -80,48 +140,103 @@ export default function HelperTasksPage() {
     void loadTasks();
   }, []);
 
-  const filteredTasks = useMemo(() => {
-    if (activeFilter === "ALL") {
-      return tasks;
+  const filteredTasks =
+    useMemo(() => {
+      if (
+        activeFilter === "ALL"
+      ) {
+        return tasks;
+      }
+
+      if (
+        activeFilter ===
+        "ACCEPTED"
+      ) {
+        return tasks.filter(
+          (task) =>
+            isWorkingStatus(
+              task.status,
+            ),
+        );
+      }
+
+      return tasks.filter(
+        (task) =>
+          task.status ===
+          activeFilter,
+      );
+    }, [
+      tasks,
+      activeFilter,
+    ]);
+
+  /*
+   * Counter selalu dihitung dari
+   * seluruh tasks, bukan filteredTasks.
+   */
+  const appliedCount =
+    tasks.filter(
+      (task) =>
+        task.status === "OPEN",
+    ).length;
+
+  const acceptedCount =
+    tasks.filter((task) =>
+      isWorkingStatus(
+        task.status,
+      ),
+    ).length;
+
+  const waitingConfirmationCount =
+  tasks.filter(
+    (task) =>
+      task.status ===
+      "WAITING_CONFIRMATION",
+  ).length;
+
+  const completedCount =
+    tasks.filter(
+      (task) =>
+        task.status ===
+        "COMPLETED",
+    ).length;
+
+  const handleFilterChange = (
+    value: string,
+  ) => {
+    if (
+      value === "ALL" ||
+      value === "OPEN" ||
+      value === "ACCEPTED" ||
+      value === "WAITING_CONFIRMATION" ||
+      value === "COMPLETED"
+    ) {
+      setActiveFilter(value);
     }
+  };
 
-    return tasks.filter(
-      (task) => task.status === activeFilter,
-    );
-  }, [tasks, activeFilter]);
+  const viewProps = {
+    tasks: filteredTasks,
+    loading,
+    activeFilter,
 
-  const appliedCount = tasks.filter(
-    (task) => task.status === "OPEN",
-  ).length;
+    setActiveFilter:
+      handleFilterChange,
 
-  const acceptedCount = tasks.filter(
-    (task) => task.status === "ACCEPTED",
-  ).length;
-
-  const completedCount = tasks.filter(
-    (task) => task.status === "COMPLETED",
-  ).length;
-
-  void appliedCount;
-  void acceptedCount;
-  void completedCount;
+    appliedCount,
+    acceptedCount,
+    waitingConfirmationCount,
+    completedCount,
+  };
 
   return (
     <>
       <MobileHelperTasksView
-        tasks={filteredTasks}
-        loading={loading}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
-        filters={filters}
+        {...viewProps}
       />
 
       <DesktopHelperTasksView
-        tasks={filteredTasks}
-        loading={loading}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
-        filters={filters}
+        {...viewProps}
       />
     </>
   );

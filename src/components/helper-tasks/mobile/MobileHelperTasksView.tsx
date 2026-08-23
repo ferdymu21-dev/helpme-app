@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 
+import { ArrowLeft, CalendarDays, Clock3, MapPin } from "lucide-react";
+
 import { useEffect, useState } from "react";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import { calculateDistance } from "@/lib/location/distance";
+
+import {
+  getTaskStatusBadgeClass,
+  getTaskStatusLabel,
+} from "@/features/tasks/utils/task-status";
 
 interface Task {
   id: string;
@@ -15,19 +22,13 @@ interface Task {
   budget: number;
   status: string;
   location_type?: string;
-
   location_name?: string;
-
   manual_address?: string;
-
   latitude?: number;
-
   longitude?: number;
-
   owner_latitude?: number;
-
   owner_longitude?: number;
-
+  scheduled_at?: string | null;
   is_urgent?: boolean;
 }
 
@@ -36,7 +37,10 @@ interface Props {
   loading: boolean;
   activeFilter: string;
   setActiveFilter: (value: string) => void;
-  filters: string[];
+  appliedCount: number;
+  acceptedCount: number;
+  waitingConfirmationCount: number;
+  completedCount: number;
 }
 
 export default function MobileHelperTasksView({
@@ -44,7 +48,10 @@ export default function MobileHelperTasksView({
   loading,
   activeFilter,
   setActiveFilter,
-  filters,
+  appliedCount,
+  acceptedCount,
+  waitingConfirmationCount,
+  completedCount,
 }: Props) {
   const [userLatitude, setUserLatitude] = useState<number | null>(null);
 
@@ -63,60 +70,71 @@ export default function MobileHelperTasksView({
       {/* CONTAINER */}
       <div className="mx-auto max-w-5xl px-6 py-7">
         {/* HEADER */}
-        <div>
-          {/* BADGE */}
-          <div
-            className="
-              inline-flex
-              items-center
-              gap-2
-              rounded-full
-              bg-emerald-50
-              px-4
-              py-2
-              text-xs
-              font-semibold
-              text-emerald-600
-            "
-          >
-            🛠️ Helper Dashboard
-          </div>
+<div>
+  <div className="relative flex h-10 items-center">
+    {/* BACK TO HOME */}
+    <Link
+      href="/home"
+      aria-label="Kembali ke halaman utama"
+      className="
+        relative
+        z-10
+        inline-flex
+        h-10
+        w-10
+        items-center
+        justify-center
+        rounded-full
+        border
+        border-slate-200
+        bg-white
+        text-slate-700
+        shadow-sm
+        transition
+        hover:bg-slate-50
+        active:scale-95
+      "
+    >
+      <ArrowLeft
+        className="h-5 w-5"
+        strokeWidth={2}
+      />
+    </Link>
 
-          {/* TITLE */}
-          <h1
-            className="
-              mt-5
-              text-xl
-              font-black
-              tracking-tight
-              text-slate-900
-            "
-          >
-            Task Helper
-          </h1>
+    {/* TITLE */}
+    <h1
+      className="
+        pointer-events-none
+        absolute
+        left-1/2
+        -translate-x-1/2
+        whitespace-nowrap
+        text-base
+        font-black
+        tracking-tight
+        text-slate-900
+      "
+    >
+      Task Helper
+    </h1>
+  </div>
 
-          {/* SUBTITLE */}
-          <p
-            className="
-              mt-2
-              text-sm
-              leading-5
-              text-slate-500
-            "
-          >
-            Pantau tugas yang sedang kamu kerjakan.
-          </p>
-        </div>
+  {/* SUBTITLE */}
+  <p
+    className="
+      mt-4
+      text-center
+      text-xs
+      leading-5
+      text-slate-500
+    "
+  >
+    Pantau tugas yang sedang kamu kerjakan.
+  </p>
+</div>
 
         {/* STATS */}
-        <div
-          className="
-            mt-7
-            grid
-            grid-cols-3
-            gap-3
-          "
-        >
+        <div className="mt-7 grid grid-cols-4 gap-1">
           {/* OPEN */}
           <button
             onClick={() => setActiveFilter("OPEN")}
@@ -129,25 +147,19 @@ export default function MobileHelperTasksView({
 
               ${
                 activeFilter === "OPEN"
-                  ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                  ? "bg-linear-to-br from-emerald-500 to-emerald-400 text-white shadow-lg shadow-emerald-500/20"
                   : "border border-slate-200 bg-white"
               }
             `}
           >
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-              "
-            >
+            <div className="flex items-center justify-between">
               <div>
                 <p
                   className={`
-      text-xs
-      font-semibold
+                      text-xs
+                      font-semibold
 
-      ${activeFilter === "OPEN" ? "text-emerald-100" : "text-slate-500"}
+                      ${activeFilter === "OPEN" ? "text-emerald-100" : "text-slate-500"}
     `}
                 >
                   Dilamar
@@ -158,21 +170,13 @@ export default function MobileHelperTasksView({
                     src="/icons/tasks/helper-dilamar.svg"
                     alt="Dilamar"
                     className={`
-        h-8
-        w-8
-
-        ${activeFilter === "OPEN" ? "brightness-0 invert" : ""}
-      `}
+                      h-8
+                      w-8
+                      ${activeFilter === "OPEN" ? "brightness-0 invert" : ""}
+                    `}
                   />
 
-                  <h2
-                    className="
-        text-2xl
-        font-black
-      "
-                  >
-                    {tasks.filter((task) => task.status === "OPEN").length}
-                  </h2>
+                  <h2 className="text-2xl font-black">{appliedCount}</h2>
                 </div>
               </div>
             </div>
@@ -190,7 +194,7 @@ export default function MobileHelperTasksView({
 
               ${
                 activeFilter === "ACCEPTED"
-                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                  ? "bg-linear-to-br from-violet-500 to-violet-400 text-white shadow-lg shadow-violet-500/20"
                   : "border border-slate-200 bg-white"
               }
             `}
@@ -226,13 +230,57 @@ export default function MobileHelperTasksView({
       `}
                   />
 
-                  <h2
-                    className="
-        text-2xl
-        font-black
-      "
-                  >
-                    {tasks.filter((task) => task.status === "ACCEPTED").length}
+                  <h2 className="text-2xl font-black">{acceptedCount}</h2>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* WAITING CONFIRMATION */}
+          <button
+            onClick={() => setActiveFilter("WAITING_CONFIRMATION")}
+            className={`
+    rounded-3xl
+    p-3.5
+    text-left
+    transition-all
+    duration-300
+
+    ${
+      activeFilter === "WAITING_CONFIRMATION"
+        ? "bg-linear-to-br from-amber-500 to-amber-400 text-white shadow-lg shadow-amber-500/20"
+        : "border border-slate-200 bg-white"
+    }
+  `}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p
+                  className={`
+                     text-xs
+                     font-semibold
+                     ${
+                       activeFilter === "WAITING_CONFIRMATION"
+                         ? "text-violet-100"
+                         : "text-slate-500"
+                     }
+                  `}
+                >
+                  Konfirmasi
+                </p>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <img
+                    src="/icons/tasks/helper-konfirmasi.svg"
+                    alt="konfirmasi"
+                    className={`
+                       h-8
+                       w-8
+                       ${activeFilter === "WAITING_CONFIRMATION" ? "brightness-0 invert" : ""}
+                    `}
+                  />
+                  <h2 className="text-2xl font-black">
+                    {waitingConfirmationCount}
                   </h2>
                 </div>
               </div>
@@ -251,26 +299,23 @@ export default function MobileHelperTasksView({
 
               ${
                 activeFilter === "COMPLETED"
-                  ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                  ? "bg-linear-to-br from-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/20"
                   : "border border-slate-200 bg-white"
               }
             `}
           >
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-              "
-            >
+            <div className="flex items-center justify-between">
               <div>
                 <p
                   className={`
-      text-xs
-      font-semibold
-
-      ${activeFilter === "COMPLETED" ? "text-amber-100" : "text-slate-500"}
-    `}
+                    text-xs 
+                    font-semibold
+                    ${
+                      activeFilter === "COMPLETED"
+                        ? "text-amber-100"
+                        : "text-slate-500"
+                    }
+                     `}
                 >
                   Selesai
                 </p>
@@ -287,14 +332,7 @@ export default function MobileHelperTasksView({
       `}
                   />
 
-                  <h2
-                    className="
-        text-2xl
-        font-black
-      "
-                  >
-                    {tasks.filter((task) => task.status === "COMPLETED").length}
-                  </h2>
+                  <h2 className="text-2xl font-black">{completedCount}</h2>
                 </div>
               </div>
             </div>
@@ -317,13 +355,7 @@ export default function MobileHelperTasksView({
                 text-center
               "
             >
-              <h3
-                className="
-                  text-lg
-                  font-bold
-                  text-slate-900
-                "
-              >
+              <h3 className="text-lg font-bold text-slate-900">
                 Belum ada task
               </h3>
 
@@ -355,7 +387,7 @@ export default function MobileHelperTasksView({
                   {/* CATEGORY */}
                   <div
                     className="
-                    mt-2
+                      mt-4
                       inline-flex
                       rounded-full
                       bg-emerald-50
@@ -373,7 +405,7 @@ export default function MobileHelperTasksView({
                     {task.is_urgent && (
                       <div
                         className="
-                        mt-2
+                        mt-4
                        
         rounded-full
         bg-red-100
@@ -389,18 +421,17 @@ export default function MobileHelperTasksView({
                     )}
 
                     <div
-                      className="
-                      mt-2
-      rounded-full
-      bg-indigo-50
-      px-3
-      py-1
-      text-[10px]
-      font-semibold
-      text-indigo-500
-    "
+                      className={`
+    mt-4
+    rounded-full
+    px-3
+    py-1
+    text-[10px]
+    font-semibold
+    ${getTaskStatusBadgeClass(task.status)}
+  `}
                     >
-                      {task.status}
+                      {getTaskStatusLabel(task.status)}
                     </div>
                   </div>
                 </div>
@@ -408,8 +439,8 @@ export default function MobileHelperTasksView({
                 {/* TITLE */}
                 <h2
                   className="
-                    mt-3
-                    p-2
+                    mt-1
+                    p-1
                     line-clamp-2
                     text-base
                     font-black
@@ -422,66 +453,97 @@ export default function MobileHelperTasksView({
                 </h2>
 
                 {/* LOCATION */}
-                <p
-                  className="
-    mt-2
-    text-[11px]
-    text-slate-500
-  "
-                >
-                  📍{" "}
-                  {(() => {
-                    const location =
-                      task.location_type === "SEARCH"
-                        ? task.location_name || "Lokasi tidak tersedia"
-                        : task.manual_address || "Alamat manual";
+                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
 
-                    return location.length > 22
-                      ? `${location.slice(0, 22)}...`
-                      : location;
-                  })()}
-                </p>
+                  <span>
+                    {(() => {
+                      const location =
+                        task.location_type === "SEARCH"
+                          ? task.location_name || "Lokasi tidak tersedia"
+                          : task.manual_address || "Alamat manual";
 
-                {userLatitude &&
-                  userLongitude &&
-                  (task.latitude || task.owner_latitude) &&
-                  (task.longitude || task.owner_longitude) && (
-                    <p
-                      className="
-        mt-2
-        text-[11px]
-        text-slate-400
-      "
-                    >
-                      🛵{" "}
-                      {calculateDistance(
-                        userLatitude,
-
-                        userLongitude,
-
-                        task.latitude || task.owner_latitude!,
-
-                        task.longitude || task.owner_longitude!,
-                      ).toFixed(1)}{" "}
-                      km dari kamu
-                    </p>
-                  )}
-
-                {/* PRICE */}
-                <div
-                  className="
-                    p-2
-                    flex
-                    justify-end
-                    text-xl
-                    font-black
-                    tracking-tight
-                    text-amber-500
-                  "
-                >
-                  Rp
-                  {task.budget.toLocaleString("id-ID")}
+                      return location.length > 25
+                        ? `${location.slice(0, 25)}...`
+                        : location;
+                    })()}
+                  </span>
                 </div>
+
+                {/* SCHEDULE */}
+                {task.scheduled_at && (
+                  <div className="mt-1 space-y-1">
+                    {/* DATE */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <CalendarDays className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+
+                      <span>
+                        {new Date(task.scheduled_at).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+
+                    {/* TIME */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <Clock3 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+
+                      <span>
+                        {new Date(task.scheduled_at).toLocaleTimeString(
+                          "id-ID",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* DISTANCE + PRICE */}
+                {(() => {
+                  const taskLatitude = task.latitude ?? task.owner_latitude;
+
+                  const taskLongitude = task.longitude ?? task.owner_longitude;
+
+                  const canCalculateDistance =
+                    userLatitude !== null &&
+                    userLongitude !== null &&
+                    taskLatitude != null &&
+                    taskLongitude != null;
+
+                  return (
+                    <div className="mt-1 flex items-center justify-between gap-3">
+                      {/* DISTANCE */}
+                      <div className="min-w-0 p-3 flex-1">
+                        {canCalculateDistance && (
+                          <p className="truncate text-[11px] text-slate-400">
+                            🛵{" "}
+                            {calculateDistance(
+                              userLatitude,
+                              userLongitude,
+                              taskLatitude,
+                              taskLongitude,
+                            ).toFixed(1)}{" "}
+                            km dari kamu
+                          </p>
+                        )}
+                      </div>
+
+                      {/* PRICE */}
+                      <div className="shrink-0 whitespace-nowrap text-xl font-black tracking-tight text-green-500">
+                        Rp
+                        {task.budget.toLocaleString("id-ID")}
+                      </div>
+                    </div>
+                  );
+                })()}
               </Link>
             ))
           )}

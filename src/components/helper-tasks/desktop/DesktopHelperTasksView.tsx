@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 
+import { CalendarDays, Clock3, MapPin } from "lucide-react";
+
 import { useEffect, useState } from "react";
 
 import { calculateDistance } from "@/lib/location/distance";
+
+import {
+  getTaskStatusBadgeClass,
+  getTaskStatusLabel,
+} from "@/features/tasks/utils/task-status";
 
 interface Task {
   id: string;
@@ -35,8 +42,13 @@ interface Props {
   tasks: Task[];
   loading: boolean;
   activeFilter: string;
+
   setActiveFilter: (value: string) => void;
-  filters: string[];
+
+  appliedCount: number;
+  acceptedCount: number;
+  waitingConfirmationCount: number;
+  completedCount: number;
 }
 
 export default function DesktopHelperTasksView({
@@ -44,7 +56,10 @@ export default function DesktopHelperTasksView({
   loading,
   activeFilter,
   setActiveFilter,
-  filters,
+  appliedCount,
+  acceptedCount,
+  waitingConfirmationCount,
+  completedCount,
 }: Props) {
   const [userLatitude, setUserLatitude] = useState<number | null>(null);
 
@@ -164,7 +179,7 @@ export default function DesktopHelperTasksView({
           className="
             mt-8
             grid
-            grid-cols-3
+            grid-cols-4
             gap-4
           "
         >
@@ -182,18 +197,12 @@ export default function DesktopHelperTasksView({
 
               ${
                 activeFilter === "OPEN"
-                  ? "border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                  ? "bg-linear-to-br from-emerald-500 to-emerald-400 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                   : "border-slate-200 bg-white hover:border-emerald-200"
               }
             `}
           >
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-              "
-            >
+            <div className="flex items-center justify-between">
               <div>
                 <p
                   className={`
@@ -217,24 +226,32 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {tasks.filter((task) => task.status === "OPEN").length}
+                  {appliedCount}
                 </h2>
               </div>
 
               <div
                 className={`
-                  flex
-                  h-14
-                  w-14
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-2xl
+    flex
+    h-14
+    w-14
+    items-center
+    justify-center
+    rounded-2xl
 
-                  ${activeFilter === "OPEN" ? "bg-white/20" : "bg-emerald-50"}
-                `}
+    ${activeFilter === "OPEN" ? "bg-white/20" : "bg-emerald-50"}
+  `}
               >
-                📨
+                <img
+                  src="/icons/tasks/helper-dilamar.svg"
+                  alt="Dilamar"
+                  className={`
+      h-10
+      w-10
+
+      ${activeFilter === "OPEN" ? "brightness-0 invert" : ""}
+    `}
+                />
               </div>
             </div>
           </button>
@@ -252,7 +269,7 @@ export default function DesktopHelperTasksView({
 
               ${
                 activeFilter === "ACCEPTED"
-                  ? "border-indigo-500 bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                  ? "bg-linear-to-br from-violet-500 to-violet-400 text-white shadow-lg shadow-violet-500/20"
                   : "border-slate-200 bg-white hover:border-indigo-200"
               }
             `}
@@ -287,26 +304,110 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {tasks.filter((task) => task.status === "ACCEPTED").length}
+                  {acceptedCount}
                 </h2>
               </div>
 
               <div
                 className={`
-                  flex
-                  h-14
-                  w-14
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-2xl
+    flex
+    h-14
+    w-14
+    items-center
+    justify-center
+    rounded-2xl
 
-                  ${
-                    activeFilter === "ACCEPTED" ? "bg-white/20" : "bg-indigo-50"
-                  }
-                `}
+    ${activeFilter === "ACCEPTED" ? "bg-white/20" : "bg-violet-50"}
+  `}
               >
-                ⚡
+                <img
+                  src="/icons/tasks/helper-dikerjakan.svg"
+                  alt="Dikerjakan"
+                  className={`
+      h-10
+      w-10
+
+      ${activeFilter === "ACCEPTED" ? "brightness-0 invert" : ""}
+    `}
+                />
+              </div>
+            </div>
+          </button>
+
+          {/* WAITING CONFIRMATION */}
+          <button
+            onClick={() => setActiveFilter("WAITING_CONFIRMATION")}
+            className={`
+    rounded-3xl
+    border
+    p-5
+    text-left
+    transition-all
+    duration-300
+
+    ${
+      activeFilter === "WAITING_CONFIRMATION"
+        ? "bg-linear-to-br from-amber-500 to-amber-400 text-white shadow-lg shadow-amber-500/20"
+        : "border-slate-200 bg-white hover:border-violet-200"
+    }
+  `}
+          >
+            <div
+              className="
+      flex
+      items-center
+      justify-between
+    "
+            >
+              <div>
+                <p
+                  className={`
+          text-sm
+          font-medium
+
+          ${
+            activeFilter === "WAITING_CONFIRMATION"
+              ? "text-amber-100"
+              : "text-slate-500"
+          }
+        `}
+                >
+                  Menunggu Konfirmasi
+                </p>
+
+                <h2
+                  className="
+          mt-3
+          text-4xl
+          font-black
+        "
+                >
+                  {waitingConfirmationCount}
+                </h2>
+              </div>
+
+              <div
+                className={`
+    flex
+    h-14
+    w-14
+    items-center
+    justify-center
+    rounded-2xl
+
+    ${activeFilter === "WAITING_CONFIRMATION" ? "bg-white/20" : "bg-amber-50"}
+  `}
+              >
+                <img
+                  src="/icons/tasks/helper-konfirmasi.svg"
+                  alt="Menunggu Konfirmasi"
+                  className={`
+      h-10
+      w-10
+
+      ${activeFilter === "WAITING_CONFIRMATION" ? "brightness-0 invert" : ""}
+    `}
+                />
               </div>
             </div>
           </button>
@@ -324,8 +425,8 @@ export default function DesktopHelperTasksView({
 
               ${
                 activeFilter === "COMPLETED"
-                  ? "border-amber-500 bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                  : "border-slate-200 bg-white hover:border-amber-200"
+                  ? "bg-linear-to-br from-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/20"
+                  : "border-slate-200 bg-white hover:border-blue-200"
               }
             `}
           >
@@ -344,7 +445,7 @@ export default function DesktopHelperTasksView({
 
                     ${
                       activeFilter === "COMPLETED"
-                        ? "text-amber-100"
+                        ? "text-blue-100"
                         : "text-slate-500"
                     }
                   `}
@@ -359,26 +460,32 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {tasks.filter((task) => task.status === "COMPLETED").length}
+                  {completedCount}
                 </h2>
               </div>
 
               <div
                 className={`
-                  flex
-                  h-14
-                  w-14
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  text-2xl
+    flex
+    h-14
+    w-14
+    items-center
+    justify-center
+    rounded-2xl
 
-                  ${
-                    activeFilter === "COMPLETED" ? "bg-white/20" : "bg-amber-50"
-                  }
-                `}
+    ${activeFilter === "COMPLETED" ? "bg-white/20" : "bg-blue-50"}
+  `}
               >
-                ✅
+                <img
+                  src="/icons/tasks/helper-selesai.svg"
+                  alt="Selesai"
+                  className={`
+      h-10
+      w-10
+
+      ${activeFilter === "COMPLETED" ? "brightness-0 invert" : ""}
+    `}
+                />
               </div>
             </div>
           </button>
@@ -495,17 +602,16 @@ export default function DesktopHelperTasksView({
                       )}
 
                       <div
-                        className="
-      rounded-full
-      bg-indigo-50
-      px-3
-      py-1
-      text-[10px]
-      font-semibold
-      text-indigo-500
-    "
+                        className={`
+    rounded-full
+    px-3
+    py-1
+    text-[10px]
+    font-semibold
+    ${getTaskStatusBadgeClass(task.status)}
+  `}
                       >
-                        {task.status}
+                        {getTaskStatusLabel(task.status)}
                       </div>
                     </div>
                   </div>
@@ -528,73 +634,98 @@ export default function DesktopHelperTasksView({
                   </h2>
 
                   {/* LOCATION */}
-                  <p
-                    className="
-                    mt-6
-                    text-sm
-                    text-slate-500
-                  "
-                  >
-                    📍{" "}
-                    {(() => {
-                      const location =
-                        task.location_type === "SEARCH"
-                          ? task.location_name || "Lokasi tidak tersedia"
-                          : task.manual_address || "Alamat manual";
+<div className="mt-6 flex items-center gap-2 text-sm text-slate-500">
+  <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
 
-                      return location.length > 24
-                        ? `${location.slice(0, 24)}...`
-                        : location;
-                    })()}
-                  </p>
+  <span>
+    {(() => {
+      const location =
+        task.location_type === "SEARCH"
+          ? task.location_name ||
+            "Lokasi tidak tersedia"
+          : task.manual_address ||
+            "Alamat manual";
 
-                  {task.scheduled_at && (
-                    <p
-                      className="
-      mt-2
-      text-sm
-      text-slate-500
-    "
-                    >
-                      📅{" "}
-                      {new Date(task.scheduled_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                      {" • "}
-                      🕒{" "}
-                      {new Date(task.scheduled_at).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  )}
+      return location.length > 25
+        ? `${location.slice(0, 25)}...`
+        : location;
+    })()}
+  </span>
+</div>
 
-                  {userLatitude &&
-                    userLongitude &&
-                    (task.latitude || task.owner_latitude) &&
-                    (task.longitude || task.owner_longitude) && (
-                      <p
-                        className="
-        mt-3
-        text-sm
-        text-slate-400
-      "
-                      >
-                        🛵{" "}
-                        {calculateDistance(
-                          userLatitude,
+                  {/* SCHEDULE */}
+{task.scheduled_at && (
+  <div className="mt-2 space-y-2">
+    {/* DATE */}
+    <div className="flex items-center gap-2 text-sm text-slate-500">
+      <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
 
-                          userLongitude,
+      <span>
+        {new Date(
+          task.scheduled_at,
+        ).toLocaleDateString(
+          "id-ID",
+          {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          },
+        )}
+      </span>
+    </div>
 
-                          task.latitude || task.owner_latitude!,
+    {/* TIME */}
+    <div className="flex items-center gap-2 text-sm text-slate-500">
+      <Clock3 className="h-4 w-4 shrink-0 text-slate-400" />
 
-                          task.longitude || task.owner_longitude!,
-                        ).toFixed(1)}{" "}
-                        km dari kamu
-                      </p>
-                    )}
+      <span>
+        {new Date(
+          task.scheduled_at,
+        ).toLocaleTimeString(
+          "id-ID",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          },
+        )}
+      </span>
+    </div>
+  </div>
+)}
+
+                  {/* DISTANCE */}
+{(() => {
+  const taskLatitude =
+    task.latitude ??
+    task.owner_latitude;
+
+  const taskLongitude =
+    task.longitude ??
+    task.owner_longitude;
+
+  const canCalculateDistance =
+    userLatitude !== null &&
+    userLongitude !== null &&
+    taskLatitude != null &&
+    taskLongitude != null;
+
+  if (!canCalculateDistance) {
+    return null;
+  }
+
+  return (
+    <p className="mt-3 text-sm text-slate-400">
+      🛵{" "}
+      {calculateDistance(
+        userLatitude,
+        userLongitude,
+        taskLatitude,
+        taskLongitude,
+      ).toFixed(1)}{" "}
+      km dari kamu
+    </p>
+  );
+})()}
 
                   {/* BOTTOM */}
                   <div

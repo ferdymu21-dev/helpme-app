@@ -1,172 +1,132 @@
 "use client";
 
+import ReviewCard from "@/components/profile/shared/ReviewCard";
+
+import type { UserReview } from "@/features/reviews/services/review.service";
+
 interface Props {
-  reviews: {
-    id: string;
-    rating: number;
-    comment: string;
-    created_at: string;
-    reviewer: {
-      id: string;
-      full_name: string;
-    }[];
-  }[];
-
+  reviews: UserReview[];
   hasMore: boolean;
-
   loading: boolean;
-
   onLoadMore: () => void;
 }
 
-export default function DesktopReviewsView({ reviews, hasMore, loading, onLoadMore }: Props) {
+export default function DesktopReviewsView({
+  reviews,
+  hasMore,
+  loading,
+  onLoadMore,
+}: Props) {
   return (
     <div className="mt-5">
-      {/* REVIEWS */}
-      <div
+      <section
         className="
-    rounded-4xl
-    bg-white
-    p-6
-    shadow-[0_10px_30px_rgba(15,23,42,0.05)]
-  "
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h2
-              className="
-          text-2xl
-          font-black
-          tracking-tight
-          text-slate-900
+          rounded-4xl
+          bg-white
+          p-6
+          shadow-[0_10px_30px_rgba(15,23,42,0.05)]
         "
+      >
+        {/* HEADER */}
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            gap-6
+          "
+        >
+          <div>
+            <h1
+              className="
+                text-2xl
+                font-black
+                tracking-tight
+                text-slate-900
+              "
             >
               Reviews
-            </h2>
+            </h1>
 
-            <p className="mt-1 text-slate-500">Feedback dari user lain</p>
+            <p className="mt-1 text-slate-500">
+              Feedback dari user lain
+            </p>
           </div>
 
           <div
             className="
-        rounded-2xl
-        bg-amber-100
-        px-4
-        py-2
-        text-sm
-        font-bold
-        text-amber-600
-      "
+              shrink-0
+              rounded-2xl
+              bg-amber-100
+              px-4
+              py-2
+              text-sm
+              font-bold
+              text-amber-600
+            "
           >
             {reviews.length} Reviews
           </div>
         </div>
 
         {/* EMPTY */}
-        {reviews.length === 0 && (
+        {reviews.length === 0 ? (
           <div
             className="
-        mt-6
-        rounded-3xl
-        border
-        border-dashed
-        border-slate-200
-        p-10
-        text-center
-      "
+              mt-6
+              rounded-3xl
+              border
+              border-dashed
+              border-slate-200
+              p-10
+              text-center
+            "
           >
-            <p className="text-slate-500">Belum ada review</p>
+            <p className="text-slate-500">
+              Belum ada review
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-4">
+            {reviews.map(
+              (review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                />
+              ),
+            )}
           </div>
         )}
 
-        {/* REVIEW LIST */}
-        <div className="mt-6 grid gap-4">
-          {reviews.map((review) => (
-            <div
-              key={review.id}
-              className="
-          rounded-3xl
-          border
-          border-slate-200
-          bg-slate-50
-          p-5
-        "
-            >
-              {/* TOP */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3
-                    className="
-                font-semibold
-                text-slate-900
-              "
-                  >
-                    {review.reviewer?.[0]?.full_name || "Anonymous"}
-                  </h3>
-
-                  <p
-                    className="
-                mt-1
-                text-sm
-                text-slate-400
-              "
-                  >
-                    {new Date(review.created_at).toLocaleDateString("id-ID")}
-                  </p>
-                </div>
-
-                <div
-                  className="
-              rounded-2xl
-              bg-amber-100
-              px-3
-              py-2
-              text-sm
-              font-bold
-              text-amber-600
-            "
-                >
-                  ⭐ {review.rating}/5
-                </div>
-              </div>
-
-              {/* COMMENT */}
-              <p
-                className="
-            mt-4
-            leading-8
-            text-slate-600
-          "
-              >
-                {review.comment}
-              </p>
-            </div>
-          ))}
-        </div>
-
+        {/* LOAD MORE */}
         {hasMore && (
-  <div className="mt-8 flex justify-center">
-    <button
-      onClick={onLoadMore}
-      disabled={loading}
-      className="
-        rounded-2xl
-        border
-        border-slate-300
-        px-6
-        py-3
-        font-semibold
-        text-indigo-600
-        transition
-        hover:bg-indigo-50
-        disabled:opacity-50
-      "
-    >
-      {loading ? "Memuat..." : "Lihat lebih banyak"}
-    </button>
-  </div>
-)}
-      </div>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={loading}
+              className="
+                rounded-2xl
+                border
+                border-slate-300
+                px-6
+                py-3
+                font-semibold
+                text-indigo-600
+                transition
+                hover:bg-indigo-50
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              {loading
+                ? "Memuat..."
+                : "Lihat lebih banyak"}
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
