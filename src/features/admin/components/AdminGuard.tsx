@@ -1,125 +1,77 @@
 "use client";
 
-import {
-    useEffect,
-} from "react";
+import { useEffect } from "react";
 
-import {
-    useRouter,
-} from "next/navigation";
+import { useRouter } from "next/navigation";
 
-import {
-    useAuthStore,
-} from "@/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function AdminGuard({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
+  const router = useRouter();
 
-    const router =
-        useRouter();
+  const authUser = useAuthStore((state) => state.user);
 
-    const authUser =
-        useAuthStore(
-            (state) => state.user
-        );
+  const authLoading = useAuthStore((state) => state.loading);
 
-    const authLoading =
-        useAuthStore(
-            (state) => state.loading
-        );
+  const role = useAuthStore((state) => state.role);
 
-    const role =
-        useAuthStore(
-            (state) => state.role
-        );
-
-    useEffect(() => {
-
-        if (authLoading) {
-            return;
-        }
-
-        if (!authUser) {
-
-            router.replace("/login");
-
-            return;
-
-        }
-
-        if (
-            role &&
-            role !== "ADMIN"
-        ) {
-
-            router.replace("/");
-
-        }
-
-    }, [
-        authLoading,
-        authUser,
-        role,
-        router,
-    ]);
-
+  useEffect(() => {
     if (authLoading) {
-
-        return (
-
-            <main
-                className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-        "
-            >
-                <p>
-                    Memuat sesi...
-                </p>
-            </main>
-
-        );
-
+      return;
     }
 
     if (!authUser) {
+      router.replace("/login");
 
-        return null;
-
+      return;
     }
 
-    if (!role) {
+    if (role && role !== "ADMIN") {
+      router.replace("/");
+    }
+  }, [authLoading, authUser, role, router]);
 
-        return (
-
-            <main
-                className="
+  if (authLoading) {
+    return (
+      <main
+        className="
             min-h-screen
             flex
             items-center
             justify-center
         "
-            >
-                <p>
-                    Memuat role...
-                </p>
-            </main>
+      >
+        <p>Memuat sesi...</p>
+      </main>
+    );
+  }
 
-        );
+  if (!authUser) {
+    return null;
+  }
 
-    }
+  if (!role) {
+    return (
+      <main
+        className="
+            min-h-screen
+            flex
+            items-center
+            justify-center
+        "
+      >
+        <p>Memuat role...</p>
+      </main>
+    );
+  }
 
-    if (role !== "ADMIN") {
+  if (role !== "ADMIN") {
+    return null;
+  }
 
-        return null;
-
-    }
-
-    return children;
-
+  return children;
 }

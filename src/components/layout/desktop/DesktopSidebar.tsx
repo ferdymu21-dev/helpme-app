@@ -10,13 +10,9 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-import {
-  SignOut,
-} from "@phosphor-icons/react";
+import { SignOut } from "@phosphor-icons/react";
 
-import {
-  logout,
-} from "@/features/auth/services/auth.service";
+import { logout } from "@/features/auth/services/auth.service";
 
 const menus = [
   {
@@ -45,57 +41,43 @@ const menus = [
 ];
 
 interface Props {
-
-  onOpenSupport: () => void;
-
+  onOpenSupport?: () => void;
 }
 
-export default function DesktopSidebar({
+export default function DesktopSidebar({ onOpenSupport }: Props) {
+  const [hasUnread, setHasUnread] = useState(false);
 
-  onOpenSupport,
+  const [userProfile, setUserProfile] = useState<{
+    full_name: string;
+    avatar_url?: string;
+  } | null>(null);
 
-}: Props) {
-
-  const [hasUnread, setHasUnread] =
-    useState(false);
-
-  const [userProfile, setUserProfile] =
-    useState<{
-      full_name: string;
-      avatar_url?: string;
-    } | null>(null);
-
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
 
   useEffect(() => {
-
     async function loadUnread() {
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) return;
 
-      const { data: profile } =
-        await supabase
-          .from("users")
-          .select(`
+      const { data: profile } = await supabase
+        .from("users")
+        .select(
+          `
       full_name,
       avatar_url
-    `)
-          .eq("id", user.id)
-          .single();
+    `,
+        )
+        .eq("id", user.id)
+        .single();
 
       if (profile) {
         setUserProfile(profile);
       }
 
-      const { data } =
-        await supabase
-          .from("conversations")
-          .select(`
+      const { data } = await supabase.from("conversations").select(`
           owner_id,
           helper_id,
           owner_unread_count,
@@ -104,21 +86,15 @@ export default function DesktopSidebar({
 
       if (!data) return;
 
-      const hasUnreadMessage =
-        data.some((conversation) => {
+      const hasUnreadMessage = data.some((conversation) => {
+        const isOwner = conversation.owner_id === user.id;
 
-          const isOwner =
-            conversation.owner_id ===
-            user.id;
+        return isOwner
+          ? conversation.owner_unread_count > 0
+          : conversation.helper_unread_count > 0;
+      });
 
-          return isOwner
-            ? conversation.owner_unread_count > 0
-            : conversation.helper_unread_count > 0;
-        });
-
-      setHasUnread(
-        hasUnreadMessage
-      );
+      setHasUnread(hasUnreadMessage);
     }
 
     loadUnread();
@@ -127,10 +103,7 @@ export default function DesktopSidebar({
        REALTIME
     ========================= */
 
-    const channel =
-      supabase.channel(
-        "sidebar-unread"
-      );
+    const channel = supabase.channel("sidebar-unread");
 
     channel.on(
       "postgres_changes",
@@ -141,37 +114,26 @@ export default function DesktopSidebar({
       },
       () => {
         loadUnread();
-      }
+      },
     );
 
     channel.subscribe();
 
     return () => {
-      supabase.removeChannel(
-        channel
-      );
+      supabase.removeChannel(channel);
     };
-
   }, []);
 
   async function handleLogout() {
-
-    const confirmLogout =
-      confirm(
-        "Keluar dari akun?"
-      );
+    const confirmLogout = confirm("Keluar dari akun?");
 
     if (!confirmLogout) return;
 
     try {
-
       await logout();
 
-      window.location.href =
-        "/login";
-
+      window.location.href = "/login";
     } catch (error) {
-
       console.error(error);
 
       alert("Gagal logout");
@@ -197,10 +159,8 @@ export default function DesktopSidebar({
         py-8
       "
     >
-
       {/* LOGO */}
       <div className="flex justify-center">
-
         <Image
           src="/logo_brand.svg"
           alt="HelpMe Logo"
@@ -209,15 +169,12 @@ export default function DesktopSidebar({
           priority
           className="h-auto w-45"
         />
-
       </div>
 
       {/* MENU */}
       <nav className="mt-6 flex-1 space-y-2">
-
         {menus.map((menu) => {
-          const active =
-            pathname === menu.href;
+          const active = pathname === menu.href;
 
           return (
             <Link
@@ -234,13 +191,13 @@ export default function DesktopSidebar({
                 font-semibold
                 transition
 
-                ${active
-                  ? "bg-indigo-300 text-indigo-500 shadow-lg shadow-indigo-600/20"
-                  : "text-slate-600 hover:bg-slate-100"
+                ${
+                  active
+                    ? "bg-indigo-300 text-indigo-500 shadow-lg shadow-indigo-600/20"
+                    : "text-slate-600 hover:bg-slate-100"
                 }
               `}
             >
-
               <Image
                 src={menu.icon}
                 alt={menu.label}
@@ -256,33 +213,26 @@ export default function DesktopSidebar({
               />
 
               <div className="flex items-center gap-2">
-
                 {menu.label}
 
-                {menu.href === "/messages" &&
-                  hasUnread && (
-
-                    <div
-                      className="
+                {menu.href === "/messages" && hasUnread && (
+                  <div
+                    className="
                         h-2
                         w-2
                         rounded-full
                       bg-red-500
                       "
-                    />
-
-                  )}
-
+                  />
+                )}
               </div>
-
             </Link>
           );
         })}
-
       </nav>
 
       <button
-        onClick={onOpenSupport}
+        onClick={() => onOpenSupport?.()}
         className="
     mt-6
     flex
@@ -326,9 +276,7 @@ export default function DesktopSidebar({
     hover:bg-slate-50
   "
       >
-
         {userProfile?.avatar_url ? (
-
           <img
             src={userProfile.avatar_url}
             alt={userProfile.full_name}
@@ -339,9 +287,7 @@ export default function DesktopSidebar({
         object-cover
       "
           />
-
         ) : (
-
           <div
             className="
         flex
@@ -355,15 +301,11 @@ export default function DesktopSidebar({
         text-indigo-700
       "
           >
-            {userProfile?.full_name
-              ?.charAt(0)
-              ?.toUpperCase() || "U"}
+            {userProfile?.full_name?.charAt(0)?.toUpperCase() || "U"}
           </div>
-
         )}
 
         <div>
-
           <p
             className="
         text-base
@@ -372,14 +314,11 @@ export default function DesktopSidebar({
           >
             Profile saya
           </p>
-
         </div>
-
       </Link>
 
       <button
         onClick={handleLogout}
-
         className="
     mt-4
     border-t
@@ -398,16 +337,9 @@ export default function DesktopSidebar({
     hover:bg-red-50
   "
       >
-
-        <SignOut
-          size={20}
-          weight="bold"
-        />
-
+        <SignOut size={20} weight="bold" />
         Logout
-
       </button>
-
     </aside>
   );
 }

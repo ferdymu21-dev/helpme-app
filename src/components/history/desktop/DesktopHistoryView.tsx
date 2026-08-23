@@ -1,14 +1,13 @@
+import type { HistoryTask } from "@/features/tasks/types/history";
+
 interface Props {
-  tasks: any[];
+  tasks: HistoryTask[];
   loading: boolean;
-
   activeTab: "OWNER" | "HELPER";
-
-  setActiveTab: (
-    value: "OWNER" | "HELPER"
-  ) => void;
-
-  router: any;
+  setActiveTab: (value: "OWNER" | "HELPER") => void;
+  router: {
+    push: (href: string) => void;
+  };
 }
 
 export default function DesktopHistoryView({
@@ -18,9 +17,7 @@ export default function DesktopHistoryView({
   setActiveTab,
   router,
 }: Props) {
-
   return (
-
     <main
       className="
         hidden
@@ -30,14 +27,12 @@ export default function DesktopHistoryView({
         p-10
       "
     >
-
       <div
         className="
           mx-auto
           max-w-5xl
         "
       >
-
         {/* HEADER */}
         <h1
           className="
@@ -56,19 +51,13 @@ export default function DesktopHistoryView({
             text-slate-500
           "
         >
-          Semua task yang pernah dibuat
-          atau dikerjakan.
+          Semua task yang pernah dibuat atau dikerjakan.
         </p>
 
         {/* TABS */}
         <div className="mt-8 flex gap-4">
-
           <button
-            onClick={() =>
-              setActiveTab(
-                "OWNER"
-              )
-            }
+            onClick={() => setActiveTab("OWNER")}
             className={`
               rounded-2xl
               px-5
@@ -87,11 +76,7 @@ export default function DesktopHistoryView({
           </button>
 
           <button
-            onClick={() =>
-              setActiveTab(
-                "HELPER"
-              )
-            }
+            onClick={() => setActiveTab("HELPER")}
             className={`
               rounded-2xl
               px-5
@@ -108,24 +93,15 @@ export default function DesktopHistoryView({
           >
             Bantuan Saya
           </button>
-
         </div>
 
         {/* LOADING */}
-        {loading && (
-
-          <div className="mt-10">
-            Memuat riwayat...
-          </div>
-
-        )}
+        {loading && <div className="mt-10">Memuat riwayat...</div>}
 
         {/* EMPTY */}
-        {!loading &&
-          tasks.length === 0 && (
-
-            <div
-              className="
+        {!loading && tasks.length === 0 && (
+          <div
+            className="
                 mt-8
                 rounded-4xl
                 border
@@ -135,47 +111,35 @@ export default function DesktopHistoryView({
                 p-12
                 text-center
               "
-            >
-
-              <h2
-                className="
+          >
+            <h2
+              className="
                   text-lg
                   font-bold
                   text-slate-900
                 "
-              >
-                Belum ada riwayat
-              </h2>
+            >
+              Belum ada riwayat
+            </h2>
 
-              <p
-                className="
+            <p
+              className="
                   mt-2
                   text-slate-500
                 "
-              >
-                Riwayat task akan muncul
-                di sini.
-              </p>
-
-            </div>
-
-          )}
+            >
+              Riwayat task akan muncul di sini.
+            </p>
+          </div>
+        )}
 
         {/* LIST */}
         <div className="mt-8 grid gap-4">
-
           {!loading &&
             tasks.map((task) => (
-
               <button
                 key={task.id}
-
-                onClick={() =>
-                  router.push(
-                    `/tasks/${task.id}`
-                  )
-                }
-
+                onClick={() => router.push(`/tasks/${task.id}`)}
                 className="
                   flex
                   items-center
@@ -193,9 +157,7 @@ export default function DesktopHistoryView({
                   hover:shadow-md
                 "
               >
-
                 <div>
-
                   <h2
                     className="
                       text-lg
@@ -215,7 +177,6 @@ export default function DesktopHistoryView({
                   >
                     {task.category}
                   </p>
-
                 </div>
 
                 <div
@@ -225,7 +186,6 @@ export default function DesktopHistoryView({
                     gap-5
                   "
                 >
-
                   <p
                     className="
                       text-lg
@@ -234,9 +194,7 @@ export default function DesktopHistoryView({
                     "
                   >
                     Rp
-                    {task.budget?.toLocaleString(
-                      "id-ID"
-                    )}
+                    {task.budget?.toLocaleString("id-ID")}
                   </p>
 
                   <div
@@ -251,18 +209,16 @@ export default function DesktopHistoryView({
                         task.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-700"
                           : task.status === "CANCELLED"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-amber-100 text-amber-700"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-700"
                       }
                     `}
                   >
-                    {
-                      task.status === "COMPLETED"
-                        ? "Selesai"
-                        : task.status === "CANCELLED"
+                    {task.status === "COMPLETED"
+                      ? "Selesai"
+                      : task.status === "CANCELLED"
                         ? "Dibatalkan"
-                        : "Kadaluarsa"
-                    }
+                        : "Kadaluarsa"}
                   </div>
 
                   <span
@@ -273,18 +229,11 @@ export default function DesktopHistoryView({
                   >
                     →
                   </span>
-
                 </div>
-
               </button>
-
             ))}
-
         </div>
-
       </div>
-
     </main>
-
   );
 }

@@ -1,47 +1,29 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import type {
-    CampaignStatusValue,
-} from "../constants/campaign-status";
+import type { CampaignStatusValue } from "../constants/campaign-status";
 
 export async function updateCampaignStatusRepository(
+  campaignId: string,
 
-    campaignId: string,
+  status: CampaignStatusValue,
 
-    status: CampaignStatusValue,
-
-    values: Record<string, unknown> = {},
-
+  values: Record<string, unknown> = {},
 ) {
+  const { error } = await adminSupabase
 
-    const {
+    .from("notification_campaigns")
 
-        error,
+    .update({
+      status,
 
-    } = await adminSupabase
+      updated_at: new Date().toISOString(),
 
-        .from("notification_campaigns")
+      ...values,
+    })
 
-        .update({
+    .eq("id", campaignId);
 
-            status,
-
-            updated_at:
-
-                new Date().toISOString(),
-
-            ...values,
-
-        })
-
-        .eq("id", campaignId);
-
-    if (error) {
-
-        throw error;
-
-    }
-
+  if (error) {
+    throw error;
+  }
 }

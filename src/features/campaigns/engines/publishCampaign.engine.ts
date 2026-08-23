@@ -1,46 +1,17 @@
-import {
-    publishCampaignService,
-} from "../services/publishCampaign.service";
+import { publishCampaignService } from "../services/publishCampaign.service";
 
-import {
-    broadcastCampaignService,
-} from "../services/broadcastCampaign.service";
+import { broadcastCampaignService } from "../services/broadcastCampaign.service";
 
-import {
-    getCampaignByIdRepository,
-} from "../repositories";
+import { getCampaignByIdRepository } from "../repositories";
 
-export async function publishCampaignEngine(
+export async function publishCampaignEngine(campaignId: string) {
+  await publishCampaignService(campaignId);
 
-    campaignId: string,
+  const campaign = await getCampaignByIdRepository(campaignId);
 
-) {
+  if (!campaign) {
+    throw new Error("Campaign tidak ditemukan.");
+  }
 
-    await publishCampaignService(
-
-        campaignId,
-
-    );
-
-    const campaign =
-        await getCampaignByIdRepository(
-            campaignId,
-        );
-
-    if (!campaign) {
-
-        throw new Error(
-
-            "Campaign tidak ditemukan.",
-
-        );
-
-    }
-
-    await broadcastCampaignService(
-
-        campaign,
-
-    );
-
+  await broadcastCampaignService(campaign);
 }

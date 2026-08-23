@@ -1,56 +1,42 @@
 interface SelectOption {
+  label: string;
 
-    label: string;
-
-    value: string;
-
+  value: string;
 }
 
 interface Props {
+  label: string;
 
-    label: string;
+  options: readonly SelectOption[];
 
-    options:
-    readonly SelectOption[];
+  value: string;
 
-    value: string;
-
-    onChange: (
-        value: string
-    ) => void;
-
+  onChange: (value: string) => void;
 }
 
 export default function SimulatorSelect({
-    label,
-    options,
-    value,
-    onChange
+  label,
+  options,
+  value,
+  onChange,
 }: Props) {
-
-    return (
-
-        <div>
-
-            <label
-                className="
+  return (
+    <div>
+      <label
+        className="
                     mb-2
                     block
                     text-sm
                     font-semibold
                 "
-            >
+      >
+        {label}
+      </label>
 
-                {label}
-
-            </label>
-
-            <select
-                value={value}
-                onChange={(event) =>
-                    onChange(event.target.value)
-                }
-                className="
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="
         w-full
         rounded-xl
         border
@@ -60,27 +46,15 @@ export default function SimulatorSelect({
         outline-none
         focus:border-indigo-500
     "
-            >
+      >
+        <option value="">-- Select --</option>
 
-                <option value="">
-                    -- Select --
-                </option>
-
-                {options.map(option => (
-
-                    <option
-                        key={option.value}
-                        value={option.value}
-                    >
-                        {option.label}
-                    </option>
-
-                ))}
-
-            </select>
-
-        </div>
-
-    );
-
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 }

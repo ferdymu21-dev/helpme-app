@@ -1,29 +1,15 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-export async function deleteCampaignRepository(
+export async function deleteCampaignRepository(id: string): Promise<void> {
+  const { error } = await adminSupabase
 
-    id: string,
+    .from("notification_campaigns")
 
-): Promise<void> {
+    .delete()
 
-    const {
+    .eq("id", id);
 
-        error,
-
-    } = await adminSupabase
-
-        .from("notification_campaigns")
-
-        .delete()
-
-        .eq("id", id);
-
-    if (error) {
-
-        throw error;
-
-    }
-
+  if (error) {
+    throw error;
+  }
 }

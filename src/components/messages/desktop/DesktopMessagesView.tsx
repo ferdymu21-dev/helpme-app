@@ -1,28 +1,9 @@
-import Link from "next/link";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
 import DesktopConversationSidebar from "@/components/messages/shared/DesktopConversationSidebar";
 
-interface Conversation {
-  id: string;
-
-  owner_id: string;
-
-  helper_id: string;
-
-  tasks: {
-    title: string;
-  };
-
-  owner: {
-    full_name: string;
-  };
-
-  helper: {
-    full_name: string;
-  };
-}
+import type { Conversation } from "@/features/messages/types/conversation.types";
 
 interface Props {
   conversations: Conversation[];
@@ -36,7 +17,6 @@ export default function DesktopMessagesView({
 }: Props) {
   return (
     <div className="hidden lg:flex">
-
       {/* SIDEBAR */}
       <DesktopSidebar />
 
@@ -51,7 +31,6 @@ export default function DesktopMessagesView({
           bg-slate-50
         "
       >
-
         <DesktopConversationSidebar
           conversations={conversations}
           currentUserId={currentUserId}
@@ -66,9 +45,7 @@ export default function DesktopMessagesView({
             justify-center
           "
         >
-
           <div className="text-center">
-
             <h2
               className="
                 text-3xl
@@ -85,16 +62,11 @@ export default function DesktopMessagesView({
                 text-slate-500
               "
             >
-              Mulai chat dengan helper
-              atau pemilik task.
+              Mulai chat dengan helper atau pemilik task.
             </p>
-
           </div>
-
         </div>
-
       </main>
-
     </div>
   );
 }

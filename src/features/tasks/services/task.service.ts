@@ -5,6 +5,8 @@ import {
   cancelTask,
   expireTasks,
   createConversation,
+  completeTask,
+  confirmTaskCompletion,
 } from "./mutation/task.mutation";
 
 export {
@@ -25,4 +27,6 @@ export {
   cancelTask,
   expireTasks,
   createConversation,
+  completeTask,
+  confirmTaskCompletion,
 };

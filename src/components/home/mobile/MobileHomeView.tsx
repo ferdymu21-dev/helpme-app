@@ -2,26 +2,19 @@
 
 import MobileHomeHeader from "@/components/layout/mobile/MobileHomeHeader";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import MobileGreetingSection from "@/components/home/mobile/MobileGreetingSection";
 
+import MobileAdsBanner from "@/components/home/mobile/MobileAdsBanner";
+
 import MobileQuickActions from "@/components/home/mobile/MobileQuickActions";
-
-import MobileAdsBanner
-  from "@/components/home/mobile/MobileAdsBanner";
-
-import MobileTipsBanner
-  from "@/components/home/mobile/MobileTipsBanner";
 
 import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
-import PaymentRoot
-  from "@/features/payments/components/PaymentRoot";
+import PaymentRoot from "@/features/payments/components/PaymentRoot";
 
 interface Task {
   id: string;
@@ -36,53 +29,27 @@ interface Props {
   tasks: Task[];
 }
 
-export default function MobileHomeView({
-  tasks,
-}: Props) {
-
-  const [
-    openSupport,
-    setOpenSupport,
-  ]
-    =
-    useState(
-      false
-
-    );
+export default function MobileHomeView({ tasks }: Props) {
+  const [openSupport, setOpenSupport] = useState(false);
 
   return (
     <div className="pb-32 lg:hidden">
-
-      <MobileHomeHeader
-        onOpenSupport={() =>
-          setOpenSupport(
-            true
-          )
-        }
-      />
+      <MobileHomeHeader onOpenSupport={() => setOpenSupport(true)} />
 
       <MobileGreetingSection />
 
       <MobileQuickActions />
 
-      <MobileTipsBanner />
+      <MobileAdsBanner />
 
       <MobileTaskFeed tasks={tasks} />
 
       <MobileBottomNavbar />
 
       <PaymentRoot
-
         supportOpen={openSupport}
-
-        onCloseSupport={() =>
-
-          setOpenSupport(false)
-
-        }
-
+        onCloseSupport={() => setOpenSupport(false)}
       />
-
     </div>
   );
 }

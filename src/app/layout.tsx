@@ -1,23 +1,14 @@
-import type { Metadata }
-  from "next";
+import { AppMetadata } from "@/config";
 
-import ModerationGuard
-  from "@/components/moderation/ModerationGuard";
+import ModerationGuard from "@/components/moderation/ModerationGuard";
 
 import "./globals.css";
 
-import AuthProvider from
-  "@/features/auth/providers/AuthProvider";
+import AuthProvider from "@/features/auth/providers/AuthProvider";
 
-import MidtransScript
-from "@/components/payments/MidtransScript";
+import MidtransScript from "@/components/payments/MidtransScript";
 
-export const metadata: Metadata = {
-  title: "HelpMe",
-
-  description:
-    "Marketplace bantuan harian",
-};
+export const metadata = AppMetadata;
 
 export default function RootLayout({
   children,
@@ -27,19 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-100">
-
         <AuthProvider>
-
           <ModerationGuard />
 
           <MidtransScript />
 
           {children}
-
         </AuthProvider>
-
       </body>
-
     </html>
   );
 }

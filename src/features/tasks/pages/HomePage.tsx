@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/auth.store";
 
 import AppShell from "@/components/layout/AppShell";
 
-import { getTasks } from "../services/client/task.service";
+import { getTasks } from "@/features/tasks/services/task.service";
 
 interface Task {
   id: string;
@@ -34,20 +34,29 @@ export default function HomePage() {
     useState(true);
 
   useEffect(() => {
-    loadTasks();
-  }, []);
+  let mounted = true;
 
-  async function loadTasks() {
-    try {
-      const data = await getTasks();
+  getTasks()
+    .then((data) => {
+      if (!mounted) {
+        return;
+      }
 
       setTasks(data || []);
-    } catch (error) {
+    })
+    .catch((error) => {
       console.error(error);
-    } finally {
-      setLoadingTasks(false);
-    }
-  }
+    })
+    .finally(() => {
+      if (mounted) {
+        setLoadingTasks(false);
+      }
+    });
+
+  return () => {
+    mounted = false;
+  };
+}, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -129,7 +138,6 @@ export default function HomePage() {
           </button>
         </div>
 
-
         {/* TASK FEED */}
         <div className="mt-10">
           <h2 className="mb-4 text-2xl font-bold">
@@ -146,7 +154,6 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              
               {tasks.map((task) => (
                 <div
                   key={task.id}
@@ -166,7 +173,6 @@ export default function HomePage() {
                     hover:shadow-md
                   "
                 >
-
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-lg font-semibold">

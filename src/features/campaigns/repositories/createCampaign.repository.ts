@@ -1,39 +1,28 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import type {
-    InsertCampaignPayload,
-} from "../types/campaign.types";
+import type { InsertCampaignPayload } from "../types/campaign.types";
 
 export async function createCampaignRepository(
-
-    campaign: InsertCampaignPayload,
-
+  campaign: InsertCampaignPayload,
 ) {
+  
+  const {
+    data,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data,
+    .from("notification_campaigns")
 
-        error,
+    .insert(campaign)
 
-    } = await adminSupabase
+    .select()
 
-        .from("notification_campaigns")
+    .single();
 
-        .insert(campaign)
+  if (error) {
+    throw error;
+  }
 
-        .select()
-
-        .single();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }

@@ -1,73 +1,20 @@
-import type {
-    MidtransNotification,
-} from "./midtrans.types";
+import type { MidtransNotification } from "./midtrans.types";
 
-import {
-    parseNotification,
-} from "./notification.parser";
+import { verifySignature } from "./verifySignature";
 
-import {
-    resolvePaymentStatus,
-} from "./paymentStatus.mapper";
+import { handlePaymentNotification } from "./paymentNotification.service";
 
-import {
-    verifySignature,
-} from "./verifySignature";
+export async function processWebhook(notification: MidtransNotification) {
+  const valid = verifySignature({
+    orderId: notification.order_id,
+    statusCode: notification.status_code,
+    grossAmount: notification.gross_amount,
+    signatureKey: notification.signature_key,
+  });
 
-import {
-    updateDonationPayment,
-} from "./webhook.repository";
+  if (!valid) {
+    throw new Error("Invalid Midtrans signature.");
+  }
 
-import {
-    handlePaymentNotification,
-} from "./paymentNotification.service";
-
-export async function processWebhook(
-
-    notification: MidtransNotification
-
-) {
-
-    const valid =
-        verifySignature({
-
-            orderId:
-                notification.order_id,
-
-            statusCode:
-                notification.status_code,
-
-            grossAmount:
-                notification.gross_amount,
-
-            signatureKey:
-                notification.signature_key,
-
-        });
-
-    console.log(
-        "SIGNATURE VALID:",
-        valid
-    );
-
-    if (
-
-        !valid
-
-    ) {
-
-        throw new Error(
-
-            "Invalid Midtrans signature."
-
-        );
-
-    }
-
-    return await handlePaymentNotification(
-
-        notification
-
-    );
-
+  return await handlePaymentNotification(notification);
 }

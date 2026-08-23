@@ -28,9 +28,7 @@ interface Props {
 
   bottomRef: React.RefObject<HTMLDivElement | null>;
 
-  setMessage: (
-    value: string
-  ) => void;
+  setMessage: (value: string) => void;
 
   handleSendMessage: () => void;
 }
@@ -48,7 +46,6 @@ export default function DesktopChatRoomView({
 }: Props) {
   return (
     <div className="hidden lg:flex">
-
       {/* SIDEBAR */}
       <DesktopSidebar />
 
@@ -63,7 +60,6 @@ export default function DesktopChatRoomView({
           bg-slate-50
         "
       >
-
         {/* HEADER */}
         <div
           className="
@@ -74,13 +70,10 @@ export default function DesktopChatRoomView({
     py-4
   "
         >
-
           <div className="flex items-center gap-4">
-
             {/* AVATAR */}
 
             {otherUser?.avatar_url ? (
-
               <img
                 src={otherUser.avatar_url}
                 alt={otherUser.full_name}
@@ -93,9 +86,7 @@ export default function DesktopChatRoomView({
           border-slate-200
         "
               />
-
             ) : (
-
               <div
                 className="
           flex
@@ -110,17 +101,13 @@ export default function DesktopChatRoomView({
           text-indigo-700
         "
               >
-                {otherUser?.full_name
-                  ?.charAt(0)
-                  ?.toUpperCase() || "U"}
+                {otherUser?.full_name?.charAt(0)?.toUpperCase() || "U"}
               </div>
-
             )}
 
             {/* INFO */}
 
             <div>
-
               <h1
                 className="
           text-lg
@@ -128,8 +115,7 @@ export default function DesktopChatRoomView({
           text-slate-900
         "
               >
-                {otherUser?.full_name ||
-                  "Loading..."}
+                {otherUser?.full_name || "Loading..."}
               </h1>
 
               <p
@@ -140,40 +126,27 @@ export default function DesktopChatRoomView({
               >
                 Percakapan
               </p>
-
             </div>
-
           </div>
-
         </div>
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-y-auto px-8 py-8">
-
           {loading ? (
-            <div>
-              Memuat pesan...
-            </div>
+            <div>Memuat pesan...</div>
           ) : (
             <div className="space-y-4">
-
               {messages.map((item) => {
-                const isMine =
-                  item.sender_id ===
-                  currentUserId;
+                const isMine = item.sender_id === currentUserId;
 
                 return (
                   <div
                     key={item.id}
                     className={`
                       flex
-                      ${isMine
-                        ? "justify-end"
-                        : "justify-start"
-                      }
+                      ${isMine ? "justify-end" : "justify-start"}
                     `}
                   >
-
                     <div
                       className={`
                         max-w-[65%]
@@ -184,24 +157,22 @@ export default function DesktopChatRoomView({
                         leading-7
                         shadow-sm
 
-                        ${isMine
-                          ? "bg-indigo-600 text-white"
-                          : "border border-slate-200 bg-white text-slate-700"
+                        ${
+                          isMine
+                            ? "bg-indigo-600 text-white"
+                            : "border border-slate-200 bg-white text-slate-700"
                         }
                       `}
                     >
                       {item.content}
                     </div>
-
                   </div>
                 );
               })}
 
               <div ref={bottomRef} />
-
             </div>
           )}
-
         </div>
 
         {/* INPUT */}
@@ -214,16 +185,10 @@ export default function DesktopChatRoomView({
             py-5
           "
         >
-
           <div className="flex gap-4">
-
             <input
               value={message}
-              onChange={(e) =>
-                setMessage(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Tulis pesan..."
               className="
                 h-14
@@ -241,9 +206,7 @@ export default function DesktopChatRoomView({
             />
 
             <button
-              onClick={
-                handleSendMessage
-              }
+              onClick={handleSendMessage}
               disabled={sending}
               className="
                 rounded-2xl
@@ -259,13 +222,9 @@ export default function DesktopChatRoomView({
             >
               Kirim
             </button>
-
           </div>
-
         </div>
-
       </main>
-
     </div>
   );
 }

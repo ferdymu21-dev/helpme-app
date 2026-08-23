@@ -1,41 +1,47 @@
-import {
-    createNotificationServer,
-} from "@/features/notifications/server";
+import { createNotificationServer } from "@/features/notifications/server";
 
-import type {
-    NotificationCampaign,
-} from "../types/campaign.types";
+import type { NotificationCampaign } from "../types/campaign.types";
+
+import { CampaignEvent } from "../constants/campaign-event";
+
+import { createCampaignEventService } from "../services";
 
 interface DispatchCampaignNotificationParams {
+  campaign: NotificationCampaign;
 
-    campaign: NotificationCampaign;
-
-    userId: string;
-
+  userId: string;
 }
 
 export async function dispatchCampaignNotification({
+  campaign,
+  userId,
+}: DispatchCampaignNotificationParams) {
 
-    campaign,
+  const notification = await createNotificationServer({
+    userId,
+
+    title: campaign.title,
+
+    message: campaign.message,
+
+    type: campaign.type,
+
+    campaignId: campaign.id,
+
+    imageUrl: campaign.image_url ?? undefined,
+
+    redirectUrl: campaign.redirect_url ?? undefined,
+  });
+
+  await createCampaignEventService({
+    campaignId: campaign.id,
+
+    notificationId: notification.id,
 
     userId,
 
-}: DispatchCampaignNotificationParams) {
+    eventType: CampaignEvent.SENT,
+  });
 
-    return createNotificationServer({
-
-        userId,
-
-        title: campaign.title,
-
-        message: campaign.message,
-
-        type: campaign.type,
-
-        redirectUrl:
-
-            campaign.redirect_url ?? undefined,
-
-    });
-
+  return notification;
 }

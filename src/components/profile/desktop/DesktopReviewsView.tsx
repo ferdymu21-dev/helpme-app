@@ -1,59 +1,54 @@
 "use client";
 
 interface Props {
-    reviews: {
-        id: string;
-        rating: number;
-        comment: string;
-        created_at: string;
-        reviewer: {
-            id: string;
-            full_name: string;
-        }[];
+  reviews: {
+    id: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+    reviewer: {
+      id: string;
+      full_name: string;
     }[];
+  }[];
+
+  hasMore: boolean;
+
+  loading: boolean;
+
+  onLoadMore: () => void;
 }
 
-export default function DesktopReviewsView({
-    reviews,
-}: Props) {
-
-    return (
-
-        <div className="mt-5">
-
-            {/* REVIEWS */}
-            <div
-                className="
+export default function DesktopReviewsView({ reviews, hasMore, loading, onLoadMore }: Props) {
+  return (
+    <div className="mt-5">
+      {/* REVIEWS */}
+      <div
+        className="
     rounded-4xl
     bg-white
     p-6
     shadow-[0_10px_30px_rgba(15,23,42,0.05)]
   "
-            >
-
-                <div className="flex items-center justify-between">
-
-                    <div>
-
-                        <h2
-                            className="
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2
+              className="
           text-2xl
           font-black
           tracking-tight
           text-slate-900
         "
-                        >
-                            Reviews
-                        </h2>
+            >
+              Reviews
+            </h2>
 
-                        <p className="mt-1 text-slate-500">
-                            Feedback dari user lain
-                        </p>
+            <p className="mt-1 text-slate-500">Feedback dari user lain</p>
+          </div>
 
-                    </div>
-
-                    <div
-                        className="
+          <div
+            className="
         rounded-2xl
         bg-amber-100
         px-4
@@ -62,17 +57,15 @@ export default function DesktopReviewsView({
         font-bold
         text-amber-600
       "
-                    >
-                        {reviews.length} Reviews
-                    </div>
+          >
+            {reviews.length} Reviews
+          </div>
+        </div>
 
-                </div>
-
-                {/* EMPTY */}
-                {reviews.length === 0 && (
-
-                    <div
-                        className="
+        {/* EMPTY */}
+        {reviews.length === 0 && (
+          <div
+            className="
         mt-6
         rounded-3xl
         border
@@ -81,66 +74,49 @@ export default function DesktopReviewsView({
         p-10
         text-center
       "
-                    >
+          >
+            <p className="text-slate-500">Belum ada review</p>
+          </div>
+        )}
 
-                        <p className="text-slate-500">
-                            Belum ada review
-                        </p>
-
-                    </div>
-
-                )}
-
-                {/* REVIEW LIST */}
-                <div className="mt-6 grid gap-4">
-
-                    {reviews.map((review) => (
-
-                        <div
-                            key={review.id}
-                            className="
+        {/* REVIEW LIST */}
+        <div className="mt-6 grid gap-4">
+          {reviews.map((review) => (
+            <div
+              key={review.id}
+              className="
           rounded-3xl
           border
           border-slate-200
           bg-slate-50
           p-5
         "
-                        >
-
-                            {/* TOP */}
-                            <div className="flex items-center justify-between">
-
-                                <div>
-
-                                    <h3
-                                        className="
+            >
+              {/* TOP */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3
+                    className="
                 font-semibold
                 text-slate-900
               "
-                                    >
-                                        {review.reviewer?.[0]
-                                            ?.full_name ||
-                                            "Anonymous"}
-                                    </h3>
+                  >
+                    {review.reviewer?.[0]?.full_name || "Anonymous"}
+                  </h3>
 
-                                    <p
-                                        className="
+                  <p
+                    className="
                 mt-1
                 text-sm
                 text-slate-400
               "
-                                    >
-                                        {new Date(
-                                            review.created_at
-                                        ).toLocaleDateString(
-                                            "id-ID"
-                                        )}
-                                    </p>
+                  >
+                    {new Date(review.created_at).toLocaleDateString("id-ID")}
+                  </p>
+                </div>
 
-                                </div>
-
-                                <div
-                                    className="
+                <div
+                  className="
               rounded-2xl
               bg-amber-100
               px-3
@@ -149,33 +125,48 @@ export default function DesktopReviewsView({
               font-bold
               text-amber-600
             "
-                                >
-                                    ⭐ {review.rating}/5
-                                </div>
+                >
+                  ⭐ {review.rating}/5
+                </div>
+              </div>
 
-                            </div>
-
-                            {/* COMMENT */}
-                            <p
-                                className="
+              {/* COMMENT */}
+              <p
+                className="
             mt-4
             leading-8
             text-slate-600
           "
-                            >
-                                {review.comment}
-                            </p>
-
-                        </div>
-
-                    ))}
-
-                </div>
-
+              >
+                {review.comment}
+              </p>
             </div>
-
+          ))}
         </div>
 
-    );
-
+        {hasMore && (
+  <div className="mt-8 flex justify-center">
+    <button
+      onClick={onLoadMore}
+      disabled={loading}
+      className="
+        rounded-2xl
+        border
+        border-slate-300
+        px-6
+        py-3
+        font-semibold
+        text-indigo-600
+        transition
+        hover:bg-indigo-50
+        disabled:opacity-50
+      "
+    >
+      {loading ? "Memuat..." : "Lihat lebih banyak"}
+    </button>
+  </div>
+)}
+      </div>
+    </div>
+  );
 }

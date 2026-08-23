@@ -1,87 +1,57 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
 interface IncrementCampaignStatisticPayload {
+  totalSent?: number;
 
-    totalSent?: number;
+  totalOpened?: number;
 
-    totalOpened?: number;
-
-    totalClicked?: number;
-
+  totalClicked?: number;
 }
 
 export async function incrementCampaignStatistic(
+  campaignId: string,
 
-    campaignId: string,
-
-    payload: IncrementCampaignStatisticPayload,
-
+  payload: IncrementCampaignStatisticPayload,
 ) {
+  const {
+    data: campaign,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data: campaign,
+    .from("notification_campaigns")
 
-        error,
-
-    } = await adminSupabase
-
-        .from("notification_campaigns")
-
-        .select(`
+    .select(
+      `
             total_sent,
             total_opened,
             total_clicked
-        `)
+        `,
+    )
 
-        .eq("id", campaignId)
+    .eq("id", campaignId)
 
-        .single();
+    .single();
 
-    if (error) {
+  if (error) {
+    throw error;
+  }
 
-        throw error;
+  const { error: updateError } = await adminSupabase
 
-    }
+    .from("notification_campaigns")
 
-    const {
+    .update({
+      total_sent: campaign.total_sent + (payload.totalSent ?? 0),
 
-        error: updateError,
+      total_opened: campaign.total_opened + (payload.totalOpened ?? 0),
 
-    } = await adminSupabase
+      total_clicked: campaign.total_clicked + (payload.totalClicked ?? 0),
+    })
 
-        .from("notification_campaigns")
+    .eq("id", campaignId);
 
-        .update({
-
-            total_sent:
-
-                campaign.total_sent +
-
-                (payload.totalSent ?? 0),
-
-            total_opened:
-
-                campaign.total_opened +
-
-                (payload.totalOpened ?? 0),
-
-            total_clicked:
-
-                campaign.total_clicked +
-
-                (payload.totalClicked ?? 0),
-
-        })
-
-        .eq("id", campaignId);
-
-    if (updateError) {
-
-        throw updateError;
-
-    }
-
+  if (updateError) {
+    throw updateError;
+  }
 }

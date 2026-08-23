@@ -1,91 +1,157 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  useRouter,
-} from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import {
   getTaskHistory,
   getHelperHistory,
-} from "@/features/tasks/services/client/task.service";
+} from "@/features/tasks/services/client/task.client";
 
-import MobileHistoryView
-  from "@/components/history/mobile/MobileHistoryView";
+import type {
+  HistoryTask,
+  HistoryTaskStatus,
+} from "@/features/tasks/types/history";
 
-import DesktopHistoryView
-  from "@/components/history/desktop/DesktopHistoryView";
+import MobileHistoryView from "@/components/history/mobile/MobileHistoryView";
+import DesktopHistoryView from "@/components/history/desktop/DesktopHistoryView";
+
+function normalizeHelperHistoryTask(task: {
+  id: string;
+  title: string;
+  category: string | null;
+  budget: number | null;
+  status: string;
+  created_at: string;
+}): HistoryTask | null {
+  const validStatuses: HistoryTaskStatus[] = [
+    "COMPLETED",
+    "CANCELLED",
+    "EXPIRED",
+  ];
+
+  if (!validStatuses.includes(task.status as HistoryTaskStatus)) {
+    return null;
+  }
+
+  return {
+    id: task.id,
+    title: task.title,
+    category: task.category,
+    budget: task.budget,
+    status: task.status as HistoryTaskStatus,
+    created_at: task.created_at,
+  };
+}
 
 export default function HistoryPage() {
-
   const router = useRouter();
 
   const [activeTab, setActiveTab] =
-    useState<
-      "OWNER" | "HELPER"
-    >("OWNER");
+    useState<"OWNER" | "HELPER">("OWNER");
 
   const [tasks, setTasks] =
-    useState<any[]>([]);
+    useState<HistoryTask[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  async function loadHistory() {
-
-    try {
-
-      setLoading(true);
-
-      const data =
-        activeTab === "OWNER"
-          ? await getTaskHistory()
-          : await getHelperHistory();
-
-      setTasks(data);
-
-    } catch (error) {
-
-      console.error(error);
-
-    } finally {
-
-      setLoading(false);
-    }
-  }
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
 
-    loadHistory();
+    const loadHistory = async () => {
+      try {
+        setLoading(true);
 
+        if (activeTab === "OWNER") {
+          const data = await getTaskHistory();
+
+          if (!cancelled) {
+            setTasks(data);
+          }
+
+          return;
+        }
+
+        const data = await getHelperHistory();
+
+        const normalizedTasks: HistoryTask[] = [];
+
+        for (const task of data) {
+          const normalizedTask =
+            normalizeHelperHistoryTask(task);
+
+          if (normalizedTask) {
+            normalizedTasks.push(normalizedTask);
+          }
+        }
+
+        if (!cancelled) {
+          setTasks(normalizedTasks);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+          setTasks([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   return (
+    <>
+      {/* MOBILE BACK BUTTON */}
+      <button
+        onClick={() => router.back()}
+        aria-label="Kembali"
+        className="
+          inline-flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-slate-200
+          bg-white
+          text-slate-700
+          shadow-sm
+          transition
+          hover:bg-slate-50
+          active:scale-95
+        "
+      >
+        <ArrowLeft
+          className="h-5 w-5"
+          strokeWidth={2}
+        />
+      </button>
 
-  <>
+      <MobileHistoryView
+        tasks={tasks}
+        loading={loading}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        router={router}
+      />
 
-    <MobileHistoryView
-      tasks={tasks}
-      loading={loading}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      router={router}
-    />
-
-    <DesktopHistoryView
-      tasks={tasks}
-      loading={loading}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      router={router}
-    />
-
-  </>
-
-);
-
+      <DesktopHistoryView
+        tasks={tasks}
+        loading={loading}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        router={router}
+      />
+    </>
+  );
 }

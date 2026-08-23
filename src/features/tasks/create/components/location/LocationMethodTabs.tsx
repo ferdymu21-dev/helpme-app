@@ -1,33 +1,26 @@
 "use client";
 
-import type { LocationMethod } from "../../types/create-task.types";
+import type { 
+  LocationMethod,
+  NominatimLocation, 
+} from "../../types/create-task.types";
 
 type Props = {
   locationMethod: LocationMethod;
 
-  onLocationMethodChange: (
-    value: LocationMethod
-  ) => void;
+  onLocationMethodChange: (value: LocationMethod) => void;
 
-  onManualAddressChange: (
-    value: string
-  ) => void;
+  onManualAddressChange: (value: string) => void;
 
   onSelectedLocationChange: (
-    value: any
-  ) => void;
+  value: NominatimLocation | null,
+) => void;
 
-  onLatitudeChange: (
-    value: number | null
-  ) => void;
+  onLatitudeChange: (value: number | null) => void;
 
-  onLongitudeChange: (
-    value: number | null
-  ) => void;
+  onLongitudeChange: (value: number | null) => void;
 
-  onLocationQueryChange: (
-    value: string
-  ) => void;
+  onLocationQueryChange: (value: string) => void;
 };
 
 export default function LocationMethodTabs({

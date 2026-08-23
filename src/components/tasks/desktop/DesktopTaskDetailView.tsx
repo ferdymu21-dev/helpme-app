@@ -1,124 +1,189 @@
 "use client";
 
-import { useState }
-    from "react";
+import { useState } from "react";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { Camera, Lock } from "lucide-react";
+
+import imageCompression from "browser-image-compression";
+
+import { uploadTaskCompletionProof } from "@/lib/supabase/storage";
+
+import { supabase } from "@/lib/supabase/client";
 
 import Link from "next/link";
 
-import ReportTaskModal
-    from "@/features/reports/components/ReportTaskModal";
+import ReportTaskModal from "@/features/reports/components/ReportTaskModal";
+
+import FinishTaskDialog from "@/features/tasks/components/dialog/FinishTaskDialog";
+
+interface TaskUser {
+  id: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  verification_status?: string | null;
+}
+
+interface TaskDetail {
+  id: string;
+  user_id: string;
+  selected_helper_id?: string | null;
+
+  category: string;
+  title: string;
+  description: string;
+  status: string;
+  budget: number;
+
+  is_urgent?: boolean | null;
+  scheduled_at?: string | null;
+
+  location_type?: string;
+  location_name?: string | null;
+  manual_address?: string | null;
+
+  completion_proof_photo?: string | null;
+
+  users?: TaskUser | null;
+}
+
+interface TaskApplication {
+  id: string;
+  helper_id: string;
+
+  helper?: TaskUser | null;
+
+  reputation?: {
+    averageRating?: number | null;
+    totalReviews?: number | null;
+    completedTasks?: number | null;
+  } | null;
+}
 
 interface Props {
-    task: any;
-
-    applications: any[];
-
-    currentUserId: string;
-
-    hasApplied: boolean;
-
-    applying: boolean;
-
-    accepting: boolean;
-
-    handleApplyTask: () => void;
-
-    handleAcceptHelper: (
-        helperId: string
-    ) => void;
-
-    handleCompleteTask: () => void;
-
-    handleCancelTask: () => void;
+  task: TaskDetail;
+  applications: TaskApplication[];
+  currentUserId: string;
+  hasApplied: boolean;
+  applying: boolean;
+  acceptingHelperId: string | null;
+  handleApplyTask: () => void;
+  handleAcceptHelper: (helperId: string) => void;
+  handleCompleteTask: (proofUrl: string) => Promise<void>;
+  handleCancelTask: () => void;
+  handleConfirmCompletion: () => Promise<void>;
 }
 
 export default function DesktopTaskDetailView({
-    task,
-
-    applications,
-
-    currentUserId,
-
-    hasApplied,
-
-    applying,
-
-    accepting,
-
-    handleApplyTask,
-
-    handleAcceptHelper,
-
-    handleCompleteTask,
-
-    handleCancelTask,
-
+  task,
+  applications,
+  currentUserId,
+  hasApplied,
+  applying,
+  acceptingHelperId,
+  handleApplyTask,
+  handleAcceptHelper,
+  handleCompleteTask,
+  handleCancelTask,
+  handleConfirmCompletion,
 }: Props) {
+  const [showReportModal, setShowReportModal] = useState(false);
 
-    const [
-        showReportModal,
-        setShowReportModal,
-    ] = useState(false);
+  const [showFinishDialog, setShowFinishDialog] = useState(false);
 
-    const isOwner =
-        task.user_id ===
-        currentUserId;
+  const [proofFile, setProofFile] = useState<File | null>(null);
 
-    const isSelectedHelper =
+  const [proofPreview, setProofPreview] = useState("");
 
-        task.selected_helper_id ===
-        currentUserId;
+  const [uploadingProof, setUploadingProof] = useState(false);
 
-    const alreadyApplied =
+  const [confirmingCompletion, setConfirmingCompletion] = useState(false);
 
-        applications.some(
-            (app) =>
+  const isOwner = task.user_id === currentUserId;
 
-                app.helper_id ===
-                currentUserId
-        );
+  const isSelectedHelper = task.selected_helper_id === currentUserId;
 
-    const canAccessChat =
+  const canAccessChat =
+    task.selected_helper_id === currentUserId || task.user_id === currentUserId;
 
+  async function getConversationByTask(taskId: string) {
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("task_id", taskId)
+      .maybeSingle();
 
-        task.selected_helper_id ===
-        currentUserId ||
-
-        task.user_id ===
-        currentUserId;
-
-    async function getConversationByTask(
-        taskId: string
-    ) {
-
-        const {
-            data,
-            error,
-        } = await supabase
-            .from("conversations")
-            .select("*")
-            .eq("task_id", taskId)
-            .maybeSingle();
-
-        if (error) {
-            throw error;
-        }
-
-        return data;
+    if (error) {
+      throw error;
     }
 
-    return (
+    return data;
+  }
 
-        <main className="hidden min-h-screen bg-slate-50 pb-32 lg:block">
+  async function handleProofChange(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran foto maksimal 10MB");
 
-            <div className="mx-auto max-w-5xl px-6 py-8">
+      return;
+    }
 
-                {/* HERO */}
-                <div
-                    className="
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.4,
+      maxWidthOrHeight: 1200,
+      useWebWorker: true,
+    });
+
+    setProofFile(compressed as File);
+
+    setProofPreview(URL.createObjectURL(compressed));
+  }
+
+  async function handleFinish() {
+    if (!proofFile) {
+      alert("Upload foto bukti terlebih dahulu");
+      return;
+    }
+
+    try {
+      setUploadingProof(true);
+
+      const imagePath = await uploadTaskCompletionProof(task.id, proofFile);
+
+      await handleCompleteTask(imagePath);
+
+      // tutup dialog
+      setShowFinishDialog(false);
+
+      // reset state
+      setProofFile(null);
+      setProofPreview("");
+    } catch (error) {
+      console.error(error);
+      alert("Gagal mengupload bukti");
+    } finally {
+      setUploadingProof(false);
+    }
+  }
+
+  async function onConfirmCompletion() {
+  try {
+    setConfirmingCompletion(true);
+
+    await handleConfirmCompletion();
+  } catch (error) {
+    console.error(error);
+
+    alert("Gagal mengonfirmasi task.");
+  } finally {
+    setConfirmingCompletion(false);
+  }
+}
+
+  return (
+    <main className="hidden min-h-screen bg-slate-50 pb-32 lg:block">
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        {/* HERO */}
+        <div
+          className="
             overflow-hidden
             rounded-4xl
             border
@@ -126,23 +191,20 @@ export default function DesktopTaskDetailView({
             bg-white
             shadow-[0_20px_60px_rgba(15,23,42,0.06)]
           "
-                >
-
-                    {/* TOP */}
-                    <div
-                        className="
+        >
+          {/* TOP */}
+          <div
+            className="
               bg-linear-to-br
               from-indigo-600
               to-violet-600
               p-8
               text-white
             "
-                    >
-
-                        <div className="flex items-center justify-between">
-
-                            <div
-                                className="
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="
                   rounded-full
                   bg-white/20
                   px-4
@@ -150,12 +212,12 @@ export default function DesktopTaskDetailView({
                   text-sm
                   font-semibold
                 "
-                            >
-                                {task.category}
-                            </div>
+              >
+                {task.category}
+              </div>
 
-                            <div
-                                className="
+              <div
+                className="
                   rounded-full
                   bg-white/20
                   px-4
@@ -163,26 +225,25 @@ export default function DesktopTaskDetailView({
                   text-sm
                   font-semibold
                 "
-                            >
-                                {
-                                    task.status === "OPEN"
-                                        ? "Terbuka"
-                                        : task.status === "ACCEPTED"
-                                            ? "Sedang Dibantu"
-                                            : task.status === "COMPLETED"
-                                                ? "Selesai"
-                                                : task.status === "CANCELLED"
-                                                    ? "Dibatalkan"
-                                                    : task.status === "EXPIRED"
-                                                        ? "Kadaluarsa"
-                                                        : task.status
-                                }
-                            </div>
+              >
+                {task.status === "OPEN"
+                  ? "Terbuka"
+                  : task.status === "ACCEPTED"
+                    ? "Sedang Dibantu"
+                    : task.status === "WAITING_CONFIRMATION"
+                      ? "Menunggu Konfirmasi"
+                      : task.status === "COMPLETED"
+                        ? "Selesai"
+                        : task.status === "CANCELLED"
+                          ? "Dibatalkan"
+                          : task.status === "EXPIRED"
+                            ? "Kadaluarsa"
+                            : task.status}
+              </div>
+            </div>
 
-                        </div>
-
-                        <h1
-                            className="
+            <h1
+              className="
                 mt-8
                 max-w-3xl
                 text-4xl
@@ -190,14 +251,13 @@ export default function DesktopTaskDetailView({
                 leading-tight
                 tracking-tight
               "
-                        >
-                            {task.title}
-                        </h1>
+            >
+              {task.title}
+            </h1>
 
-                        {task.is_urgent && (
-
-                            <div
-                                className="
+            {task.is_urgent && (
+              <div
+                className="
       mt-5
       inline-flex
       rounded-full
@@ -208,16 +268,14 @@ export default function DesktopTaskDetailView({
       font-bold
       text-red-100
     "
-                            >
-                                🔥 Mendesak
-                            </div>
+              >
+                🔥 Mendesak
+              </div>
+            )}
 
-                        )}
-
-                        {task.scheduled_at && (
-
-                            <div
-                                className="
+            {task.scheduled_at && (
+              <div
+                className="
       mt-6
       flex
       items-center
@@ -225,183 +283,124 @@ export default function DesktopTaskDetailView({
       text-sm
       text-indigo-100
     "
-                            >
+              >
+                <span>
+                  📅{" "}
+                  {new Date(task.scheduled_at).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
 
-                                <span>
-                                    📅 {
+                <span>•</span>
 
-                                        new Date(
-                                            task.scheduled_at
-                                        ).toLocaleDateString(
-                                            "id-ID",
-                                            {
-                                                day: "numeric",
-                                                month: "long",
-                                                year: "numeric",
-                                            }
-                                        )
+                <span>
+                  🕒{" "}
+                  {new Date(task.scheduled_at).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            )}
 
-                                    }
-                                </span>
+            <div className="mt-8">
+              <p className="text-indigo-100">Budget</p>
 
-                                <span>
-                                    •
-                                </span>
-
-                                <span>
-                                    🕒 {
-
-                                        new Date(
-                                            task.scheduled_at
-                                        ).toLocaleTimeString(
-                                            "id-ID",
-                                            {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            }
-                                        )
-
-                                    }
-                                </span>
-
-                            </div>
-
-                        )}
-
-                        <div className="mt-8">
-
-                            <p className="text-indigo-100">
-                                Budget
-                            </p>
-
-                            <h2
-                                className="
+              <h2
+                className="
                   mt-2
                   text-5xl
                   font-bold
                   tracking-tight
                 "
-                            >
-                                Rp
-                                {task.budget.toLocaleString("id-ID")}
-                            </h2>
+              >
+                Rp
+                {task.budget.toLocaleString("id-ID")}
+              </h2>
+            </div>
+          </div>
 
-                        </div>
-
-                    </div>
-
-                    {/* INFO */}
-                    <div className="grid gap-6 p-8 md:grid-cols-3">
-
-                        <div
-                            className="
+          {/* INFO */}
+          <div className="grid gap-6 p-8 md:grid-cols-3">
+            <div
+              className="
                 rounded-3xl
                 border
                 border-slate-200
                 bg-slate-50
                 p-5
               "
-                        >
+            >
+              <p className="text-sm text-slate-500">Lokasi</p>
 
-                            <p className="text-sm text-slate-500">
-                                Lokasi
-                            </p>
-
-                            <h3
-                                className="
+              <h3
+                className="
                                   mt-2
                                   font-semibold
                                   break-all
                                 text-slate-900
                                 "
-                            >
-                                📍 {
+              >
+                📍{" "}
+                {task.location_type === "SEARCH"
+                  ? task.location_name || "Lokasi tidak tersedia"
+                  : task.manual_address || "Alamat tidak tersedia"}
+              </h3>
+            </div>
 
-                                    task.location_type ===
-                                        "SEARCH"
-
-                                        ? (
-                                            task.location_name ||
-                                            "Lokasi tidak tersedia"
-                                        )
-
-                                        : (
-                                            task.manual_address ||
-                                            "Alamat tidak tersedia"
-                                        )
-                                }
-                            </h3>
-
-                        </div>
-
-                        <div
-                            className="
+            <div
+              className="
                 rounded-3xl
                 border
                 border-slate-200
                 bg-slate-50
                 p-5
               "
-                        >
+            >
+              <p className="text-sm text-slate-500">Jadwal</p>
 
-                            <p className="text-sm text-slate-500">
-                                Jadwal
-                            </p>
-
-                            <h3
-                                className="
+              <h3
+                className="
                   mt-2
                   font-semibold
                   text-slate-900
                 "
-                            >
-                                {task.scheduled_at
+              >
+                {task.scheduled_at
+                  ? new Date(task.scheduled_at).toLocaleString("id-ID")
+                  : "-"}
+              </h3>
+            </div>
 
-                                    ? new Date(
-                                        task.scheduled_at
-                                    ).toLocaleString(
-                                        "id-ID"
-                                    )
-
-                                    : "-"
-                                }
-                            </h3>
-
-                        </div>
-
-                        <div
-                            className="
+            <div
+              className="
                 rounded-3xl
                 border
                 border-slate-200
                 bg-slate-50
                 p-5
               "
-                        >
+            >
+              <p className="text-sm text-slate-500">Status</p>
 
-                            <p className="text-sm text-slate-500">
-                                Status
-                            </p>
-
-                            <h3
-                                className="
+              <h3
+                className="
                   mt-2
                   font-semibold
                   text-emerald-600
                 "
-                            >
-                                {task.status}
-                            </h3>
+              >
+                {task.status}
+              </h3>
+            </div>
+          </div>
+        </div>
 
-                        </div>
-
-                    </div>
-
-                </div>
-
-                {/* DESCRIPTION */}
-                <div
-                    className="
+        {/* DESCRIPTION */}
+        <div
+          className="
             mt-6
             rounded-4xl
             border
@@ -410,47 +409,44 @@ export default function DesktopTaskDetailView({
             p-8
             shadow-[0_10px_30px_rgba(15,23,42,0.05)]
           "
-                >
-
-                    <h2
-                        className="
+        >
+          <h2
+            className="
               text-2xl
               font-bold
               tracking-tight
               text-slate-900
             "
-                    >
-                        Deskripsi Task
-                    </h2>
+          >
+            Deskripsi Task
+          </h2>
 
-                    <p
-                        className="
+          <p
+            className="
               mt-5
               leading-8
               text-slate-600
             "
-                    >
-                        {task.description}
-                    </p>
+          >
+            {task.description}
+          </p>
+        </div>
 
-                </div>
-
-                {/* OWNER */}
-                <div className="mt-6">
-
-                    <h2
-                        className="
+        {/* OWNER */}
+        <div className="mt-6">
+          <h2
+            className="
                           text-xs
                           font-black
                           text-slate-900
                         "
-                    >
-                        Diposting oleh
-                    </h2>
+          >
+            Diposting oleh
+          </h2>
 
-                    <Link
-                        href={`/users/${task.users?.id}`}
-                        className="
+          <Link
+            href={`/users/${task.users?.id}`}
+            className="
                           mt-5
                           flex
                           gap-4
@@ -463,14 +459,12 @@ export default function DesktopTaskDetailView({
                           shadow-[0_10px_30px_rgba(15,23,42,0.05)]
                           
                         "
-                    >
-
-                        {task.users?.avatar_url ? (
-
-                            <img
-                                src={task.users.avatar_url}
-                                alt="Owner"
-                                className="
+          >
+            {task.users?.avatar_url ? (
+              <img
+                src={task.users.avatar_url}
+                alt="Owner"
+                className="
       h-12
       w-12
       rounded-full
@@ -478,12 +472,10 @@ export default function DesktopTaskDetailView({
       border
       border-slate-200
     "
-                            />
-
-                        ) : (
-
-                            <div
-                                className="
+              />
+            ) : (
+              <div
+                className="
       flex
       h-12
       w-12
@@ -494,34 +486,24 @@ export default function DesktopTaskDetailView({
       font-bold
       text-indigo-600
     "
-                            >
+              >
+                {task.users?.full_name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
 
-                                {
-                                    task.users?.full_name
-                                        ?.charAt(0)
-                                        ?.toUpperCase()
-                                }
-
-                            </div>
-
-                        )}
-
-                        <div>
-
-                            <p
-                                className="
+            <div>
+              <p
+                className="
       font-bold
       text-slate-900
     "
-                            >
-                                {task.users?.full_name}
-                            </p>
+              >
+                {task.users?.full_name}
+              </p>
 
-                            {task.users?.verification_status ===
-                                "VERIFIED" ? (
-
-                                <span
-                                    className="
+              {task.users?.verification_status === "VERIFIED" ? (
+                <span
+                  className="
         mt-1
         inline-flex
         rounded-full
@@ -532,59 +514,45 @@ export default function DesktopTaskDetailView({
         font-bold
         text-emerald-700
       "
-                                >
-                                    ✓ Terverifikasi
-                                </span>
-
-                            ) : (
-
-                                <span className="
+                >
+                  ✓ Terverifikasi
+                </span>
+              ) : (
+                <span
+                  className="
                                             text-[11px]
                                           "
-                                >
-                                    ⏳ Belum Terverifikasi
-                                </span>
+                >
+                  ⏳ Belum Terverifikasi
+                </span>
+              )}
+            </div>
+          </Link>
+        </div>
 
-                            )}
-
-                        </div>
-
-                    </Link>
-
-                </div>
-
-                {/* APPLICANTS */}
-                {isOwner &&
-                    applications.length > 0 && (
-
-                        <div className="mt-6">
-
-                            <div>
-
-                                <h2
-                                    className="
+        {/* APPLICANTS */}
+        {isOwner && applications.length > 0 && (
+          <div className="mt-6">
+            <div>
+              <h2
+                className="
                   text-2xl
                   font-bold
                   tracking-tight
                   text-slate-900
                 "
-                                >
-                                    Pelamar
-                                </h2>
+              >
+                Pelamar
+              </h2>
 
-                                <p className="mt-2 text-slate-500">
-                                    Pilih helper terbaik
-                                </p>
+              <p className="mt-2 text-slate-500">Pilih helper terbaik</p>
+            </div>
 
-                            </div>
-
-                            <div className="mt-6 grid gap-4">
-
-                                {applications.map((application) => (
-
-                                    <div
-                                        key={application.id}
-                                        className="
+            <div className="mt-6 grid gap-4">
+              {applications.map((application) => (
+                <div
+                  key={application.id}
+                  className="
                     flex
                     items-center
                     justify-between
@@ -595,25 +563,22 @@ export default function DesktopTaskDetailView({
                     p-6
                     shadow-[0_10px_30px_rgba(15,23,42,0.05)]
                   "
-                                    >
-
-                                        {/* LEFT */}
-                                        <Link
-                                            href={`/users/${application.helper?.id}`}
-                                            className="
+                >
+                  {/* LEFT */}
+                  <Link
+                    href={`/users/${application.helper?.id}`}
+                    className="
                         flex
                         items-center
                         gap-4
                       "
-                                        >
-
-                                            {/* AVATAR */}
-                                            {application.helper?.avatar_url ? (
-
-                                                <img
-                                                    src={application.helper.avatar_url}
-                                                    alt="Helper"
-                                                    className="
+                  >
+                    {/* AVATAR */}
+                    {application.helper?.avatar_url ? (
+                      <img
+                        src={application.helper.avatar_url}
+                        alt="Helper"
+                        className="
       h-14
       w-14
       rounded-full
@@ -621,12 +586,10 @@ export default function DesktopTaskDetailView({
       border
       border-slate-200
     "
-                                                />
-
-                                            ) : (
-
-                                                <div
-                                                    className="
+                      />
+                    ) : (
+                      <div
+                        className="
       flex
       h-14
       w-14
@@ -638,93 +601,71 @@ export default function DesktopTaskDetailView({
       font-bold
       text-indigo-700
     "
-                                                >
-                                                    {application.helper?.full_name
-                                                        ?.charAt(0)
-                                                        ?.toUpperCase() || "U"}
-                                                </div>
+                      >
+                        {application.helper?.full_name
+                          ?.charAt(0)
+                          ?.toUpperCase() || "U"}
+                      </div>
+                    )}
 
-                                            )}
-
-                                            {/* INFO */}
-                                            <div>
-
-                                                <h3
-                                                    className="
+                    {/* INFO */}
+                    <div>
+                      <h3
+                        className="
                           text-lg
                           font-bold
                           text-slate-900
                         "
-                                                >
-                                                    {application.helper?.full_name ||
-                                                        "Unknown User"}
-                                                </h3>
+                      >
+                        {application.helper?.full_name || "Unknown User"}
+                      </h3>
 
-                                                <div
-                                                    className="
+                      <div
+                        className="
                           mt-1
                           flex
                           items-center
                           gap-2
                         "
-                                                >
+                      >
+                        <p className="text-sm text-slate-500">
+                          ⭐ {application.reputation?.averageRating || "0.0"}
+                        </p>
 
-                                                    <p className="text-sm text-slate-500">
-                                                        ⭐ {
-                                                            application.reputation?.averageRating ||
-                                                            "0.0"
-                                                        }
-                                                    </p>
-
-                                                    <div
-                                                        className="
+                        <div
+                          className="
                             h-1
                             w-1
                             rounded-full
                             bg-slate-300
                           "
-                                                    />
+                        />
 
-                                                    <p className="text-sm text-slate-400">
-                                                        {
-                                                            application.reputation
-                                                                ?.totalReviews || 0
-                                                        }
-                                                        {" "}reviews
-                                                    </p>
+                        <p className="text-sm text-slate-400">
+                          {application.reputation?.totalReviews || 0} reviews
+                        </p>
+                      </div>
 
-                                                </div>
-
-                                                <p
-                                                    className="
+                      <p
+                        className="
                           mt-1
                           text-sm
                           font-medium
                           text-indigo-600
                         "
-                                                >
-                                                    🏆 {
-                                                        application.reputation
-                                                            ?.completedTasks || 0
-                                                    }
-                                                    {" "}task selesai
-                                                </p>
+                      >
+                        🏆 {application.reputation?.completedTasks || 0} task
+                        selesai
+                      </p>
+                    </div>
+                  </Link>
 
-                                            </div>
-
-                                        </Link>
-
-                                        {/* BUTTON */}
-                                        {task?.status === "OPEN" && (
-
-                                            <button
-                                                onClick={() =>
-                                                    handleAcceptHelper(
-                                                        application.helper_id
-                                                    )
-                                                }
-                                                disabled={accepting}
-                                                className="
+                  {/* BUTTON */}
+                  {task?.status === "OPEN" && (
+                    <button
+                      onClick={() => handleAcceptHelper(application.helper_id)}
+                      disabled={acceptingHelperId !== null}
+                      className="
                         rounded-2xl
                         bg-indigo-600
                         px-5
@@ -736,94 +677,202 @@ export default function DesktopTaskDetailView({
                         hover:bg-indigo-700
                         disabled:opacity-50
                       "
-                                            >
-                                                Terima Helper
-                                            </button>
-
-                                        )}
-
-                                    </div>
-
-                                ))}
-
-                            </div>
-
-                        </div>
-                    )}
-
+                    >
+                      Terima Helper
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* OWNER ACTIONS */}
-            {
-                isOwner &&
-                (
-                    task?.status === "OPEN" ||
-                    task?.status === "ACCEPTED"
-                ) && (
+      {/* OWNER ACTIONS */}
+      {isOwner && (task?.status === "OPEN" || task?.status === "ACCEPTED") && (
+        <div className="mt-8 flex justify-center">
+          {/* Owner hanya boleh membatalkan */}
+          <button
+            onClick={handleCancelTask}
+            className="
+        flex
+        h-14
+        w-56
+        max-w-sm
+        items-center
+        justify-center
+        rounded-2xl
+        bg-red-500
+        text-sm
+        font-semibold
+        text-white
+        transition
+        hover:bg-red-600
+      "
+          >
+            Batalkan Task
+          </button>
+        </div>
+      )}
 
-                    <div className="mt-6 flex gap-3">
-
-                        {/* Hanya saat ACCEPTED */}
-                        {
-                            task?.status ===
-                            "ACCEPTED" && (
-
-                                <button
-                                    onClick={handleCompleteTask}
-                                    className="
-              flex
-              h-14
-              flex-1
-              items-center
-              justify-center
-              rounded-2xl
-              bg-emerald-500
-              text-sm
-              font-semibold
-              text-white
-              transition
-              hover:bg-emerald-600
-            "
-                                >
-                                    Tandai Selesai
-                                </button>
-
-                            )
-                        }
-
-                        {/* OPEN & ACCEPTED */}
-                        <button
-                            onClick={handleCancelTask}
-                            className="
+      {/* CHAT BUTTON */}
+      {task?.status === "ACCEPTED" && canAccessChat && (
+        <div
+          className="
+      fixed
+      bottom-0
+      left-0
+      right-0
+      z-40
+      border-t
+      border-slate-200
+      bg-white/90
+      p-4
+      backdrop-blur
+    "
+        >
+          <div className="mx-auto max-w-5xl">
+            <div className="flex gap-3">
+              {/* Tombol Selesaikan */}
+              {isSelectedHelper && (
+                <button
+                  onClick={() => setShowFinishDialog(true)}
+                  disabled={uploadingProof}
+                  className="
           flex
           h-14
-          flex-1
           items-center
           justify-center
-          rounded-2xl
-          bg-red-500
+          rounded-[20px]
+          bg-emerald-600
+          px-6
           text-sm
           font-semibold
           text-white
           transition
-          hover:bg-red-600
+          hover:bg-emerald-700
+          disabled:opacity-50
         "
-                        >
-                            Batalkan Task
-                        </button>
+                >
+                  {uploadingProof ? "Mengirim..." : "Selesaikan Task"}
+                </button>
+              )}
 
-                    </div>
+              {/* Tombol Chat */}
+              <button
+                onClick={async () => {
+                  if (!task) return;
 
-                )
-            }
+                  try {
+                    const conversation = await getConversationByTask(task.id);
 
-            {/* CHAT BUTTON */}
-            {
-                task?.status === "ACCEPTED" &&
-                canAccessChat && (
+                    if (!conversation) return;
 
-                    <div
-                        className="
+                    window.location.href = `/messages/${conversation.id}`;
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
+                className="
+        flex
+        h-14
+        flex-1
+        items-center
+        justify-center
+        rounded-[20px]
+        bg-indigo-600
+        text-lg
+        font-semibold
+        text-white
+        shadow-lg
+        shadow-indigo-600/20
+        transition
+        hover:bg-indigo-700
+      "
+              >
+                Buka Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HELPER WAITING CONFIRMATION */}
+
+      {isSelectedHelper && task.status === "WAITING_CONFIRMATION" && (
+        <div
+          className="
+        fixed
+        bottom-0
+        left-70
+        right-70
+        z-20
+        rounded-3xl
+        border-slate-200
+        bg-white/95
+        p-4
+        backdrop-blur
+      "
+        >
+          <div className="mx-auto max-w-3xl">
+            <div
+              className="
+            rounded-3xl
+            border
+            border-emerald-200
+            bg-emerald-50
+            p-3
+          "
+            >
+              <div className="text-xl font-bold text-emerald-700">
+                ✓ Bukti berhasil dikirim
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Bukti penyelesaian telah dikirim ke pemilik task.
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Saat ini Anda hanya perlu menunggu konfirmasi dari pemilik task.
+              </p>
+
+              <button
+                onClick={async () => {
+                  const conversation = await getConversationByTask(task.id);
+
+                  if (!conversation) return;
+
+                  window.location.href = `/messages/${conversation.id}`;
+                }}
+                className="
+              mt-5
+              flex
+              h-12
+              w-full
+              items-center
+              justify-center
+              rounded-2xl
+              bg-indigo-600
+              font-semibold
+              text-white
+              transition
+              hover:bg-indigo-700
+            "
+              >
+                Buka Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STICKY APPLY BUTTON */}
+      {!isOwner &&
+        !isSelectedHelper &&
+        !hasApplied &&
+        task.status === "OPEN" && (
+          <div
+            className="
       fixed
       bottom-0
       left-0
@@ -835,93 +884,12 @@ export default function DesktopTaskDetailView({
       p-4
       backdrop-blur
     "
-                    >
-
-                        <div className="mx-auto max-w-5xl">
-
-                            <button
-
-                                onClick={async () => {
-
-                                    if (!task) return;
-
-                                    try {
-
-                                        const conversation =
-                                            await getConversationByTask(
-                                                task.id
-                                            );
-
-                                        if (!conversation) return;
-
-                                        window.location.href =
-                                            `/messages/${conversation.id}`;
-
-                                    } catch (error) {
-
-                                        console.error(error);
-                                    }
-                                }}
-
-                                className="
-          flex
-          h-14
-          w-full
-          items-center
-          justify-center
-          rounded-[20px]
-          bg-indigo-600
-          text-lg
-          font-semibold
-          text-white
-          shadow-lg
-          shadow-indigo-600/20
-          transition
-          hover:bg-indigo-700
-        "
-                            >
-                                Buka Chat
-                            </button>
-
-                        </div>
-
-                    </div>
-                )
-            }
-
-            {/* STICKY APPLY BUTTON */}
-            {
-                !isOwner &&
-                !isSelectedHelper &&
-                !hasApplied &&
-                task.status === "OPEN" && (
-
-                    <div
-                        className="
-      fixed
-      bottom-0
-      left-0
-      right-0
-      z-40
-      border-t
-      border-slate-200
-      bg-white/90
-      p-4
-      backdrop-blur
-    "
-                    >
-
-                        <div className="mx-auto max-w-5xl">
-
-                            <div className="flex gap-3">
-
-                                <button
-                                    onClick={() =>
-                                        setShowReportModal(
-                                            true
-                                        )
-                                    }
-                                    className="
+          >
+            <div className="mx-auto max-w-5xl">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="
             flex
             h-14
             items-center
@@ -934,14 +902,14 @@ export default function DesktopTaskDetailView({
             font-bold
             text-red-600
         "
-                                >
-                                    Report
-                                </button>
+                >
+                  Report
+                </button>
 
-                                <button
-                                    onClick={handleApplyTask}
-                                    disabled={applying}
-                                    className="
+                <button
+                  onClick={handleApplyTask}
+                  disabled={applying}
+                  className="
             flex
             h-14
             flex-1
@@ -953,30 +921,20 @@ export default function DesktopTaskDetailView({
             font-bold
             text-white
         "
-                                >
-                                    {
-                                        applying
-                                            ? "Melamar..."
-                                            : "Lamar Task"
-                                    }
-                                </button>
+                >
+                  {applying ? "Melamar..." : "Lamar Task"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-                            </div>
-
-                        </div>
-
-                    </div>
-                )
-            }
-
-            {
-                !isOwner &&
-                !isSelectedHelper &&
-                hasApplied &&
-                task.status === "OPEN" && (
-
-                    <div
-                        className="
+      {!isOwner &&
+        !isSelectedHelper &&
+        hasApplied &&
+        task.status === "OPEN" && (
+          <div
+            className="
                 fixed
                 bottom-0
                 left-0
@@ -987,12 +945,10 @@ export default function DesktopTaskDetailView({
                 bg-white
                 p-4
             "
-                    >
-
-                        <div className="mx-auto max-w-5xl">
-
-                            <div
-                                className="
+          >
+            <div className="mx-auto max-w-5xl">
+              <div
+                className="
                         flex
                         h-14
                         items-center
@@ -1003,26 +959,18 @@ export default function DesktopTaskDetailView({
                         font-bold
                         text-emerald-700
                     "
-                            >
-                                ✓ Kamu sudah melamar task ini
-                            </div>
+              >
+                ✓ Kamu sudah melamar task ini
+              </div>
+            </div>
+          </div>
+        )}
 
-                        </div>
+      {/* TASK CLOSED INFO */}
 
-                    </div>
-
-                )
-            }
-
-            {/* TASK CLOSED INFO */}
-
-            {
-                !isOwner &&
-                !isSelectedHelper &&
-                task.status === "ACCEPTED" && (
-
-                    <div
-                        className="
+      {!isOwner && !isSelectedHelper && task.status === "ACCEPTED" && (
+        <div
+          className="
       fixed
       bottom-0
       left-0
@@ -1033,12 +981,10 @@ export default function DesktopTaskDetailView({
       bg-white
       p-4
     "
-                    >
-
-                        <div className="mx-auto max-w-5xl">
-
-                            <div
-                                className="
+        >
+          <div className="mx-auto max-w-5xl">
+            <div
+              className="
           flex
           h-14
           items-center
@@ -1049,39 +995,139 @@ export default function DesktopTaskDetailView({
           font-semibold
           text-slate-500
         "
-                            >
-                                Sudah ada yang membantu
-                            </div>
+            >
+              Sudah ada yang membantu
+            </div>
+          </div>
+        </div>
+      )}
 
-                        </div>
+      {/* COMPLETION PROOF */}
+      {isOwner &&
+        task.status === "WAITING_CONFIRMATION" &&
+        task.completion_proof_photo && (
+          <div className="mx-auto max-w-5xl px-6">
+            <div
+              className="
+      mt-6
+      rounded-4xl
+      border
+      border-slate-200
+      bg-white
+      p-8
+      shadow-[0_10px_30px_rgba(15,23,42,0.05)]
+    "
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div
+                  className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-full
+      bg-indigo-50
+      px-4
+      py-2
+      text-sm
+      font-semibold
+      text-indigo-700
+    "
+                >
+                  <Camera className="h-4 w-4" />
+                  Bukti dari Helper
+                </div>
+              </div>
 
-                    </div>
+              <h2 className="mt-6 text-2xl font-bold text-slate-900">
+                Bukti Penyelesaian
+              </h2>
 
-                )
-            }
+              <p className="mt-3 text-base leading-7 text-slate-500">
+                Helper telah mengirim bukti penyelesaian pekerjaan. Periksa foto
+                berikut sebelum mengonfirmasi bahwa pekerjaan benar-benar telah
+                selesai.
+              </p>
 
-            <ReportTaskModal
+              <img
+                loading="lazy"
+                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/task-completion-proofs/${task.completion_proof_photo}`}
+                alt="Completion Proof"
+                className="
+    mt-6
+    w-full
+    rounded-2xl
+    border
+    border-slate-200
+    object-cover
+  "
+                onError={(e) => {
+                  e.currentTarget.src = "/images/image-error.png";
+                }}
+              />
 
-                open={
-                    showReportModal
-                }
+              <div
+                className="
+    mt-5
+    flex
+    items-center
+    gap-2
+  "
+              >
+                <Lock
+                  className="h-3 w-3 shrink-0 text-amber-600"
+                  strokeWidth={2}
+                />
 
-                onClose={() =>
-                    setShowReportModal(
-                        false
-                    )
-                }
+                <p className="text-[12px] leading-6 text-amber-800">
+                  Bukti penyelesaian bersifat privat dan hanya dapat dilihat
+                  oleh Anda dan helper.
+                </p>
+              </div>
 
-                taskId={
-                    task.id
-                }
+              <button
+                onClick={onConfirmCompletion}
+                disabled={confirmingCompletion}
+                className="
+          mt-6
+          flex
+          h-14
+          w-full
+          items-center
+          justify-center
+          rounded-2xl
+          bg-emerald-600
+          text-sm
+          font-semibold
+          text-white
+          transition
+          hover:bg-emerald-700
+          disabled:opacity-50
+        "
+              >
+                {confirmingCompletion
+                  ? "Mengonfirmasi..."
+                  : "Konfirmasi Penyelesaian"}
+              </button>
+            </div>
+          </div>
+        )}
 
-                taskOwnerId={
-                    task.user_id
-                }
+      <FinishTaskDialog
+        open={showFinishDialog}
+        onClose={() => setShowFinishDialog(false)}
+        proofPreview={proofPreview}
+        uploadingProof={uploadingProof}
+        handleProofChange={handleProofChange}
+        handleFinish={handleFinish}
+      />
 
-            />
-
-        </main >
-    );
+      <ReportTaskModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        taskId={task.id}
+        taskOwnerId={task.user_id}
+      />
+    </main>
+  );
 }

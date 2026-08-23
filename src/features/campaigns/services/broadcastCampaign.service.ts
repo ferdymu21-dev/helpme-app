@@ -1,61 +1,31 @@
-import type {
-    NotificationCampaign,
-} from "../types/campaign.types";
+import type { NotificationCampaign } from "../types/campaign.types";
 
-import {
-    resolveCampaignRecipients,
-} from "../resolvers/resolveCampaignRecipients";
+import { resolveCampaignRecipients } from "../resolvers/resolveCampaignRecipients";
 
-import {
-    dispatchCampaignNotification,
-} from "../dispatchers";
+import { dispatchCampaignNotification } from "../dispatchers";
 
-import {
-    incrementCampaignStatistic,
-} from "../repositories";
+import { incrementCampaignStatistic } from "../repositories";
 
-export async function broadcastCampaignService(
+export async function broadcastCampaignService(campaign: NotificationCampaign) {
+  const recipients = await resolveCampaignRecipients(campaign);
 
-    campaign: NotificationCampaign,
+  if (recipients.length === 0) {
+    return;
+  }
 
-) {
+  for (const recipient of recipients) {
+    await dispatchCampaignNotification({
+      campaign,
 
-    const recipients =
+      userId: recipient.id,
+    });
+  }
 
-        await resolveCampaignRecipients(
+  await incrementCampaignStatistic(
+    campaign.id,
 
-            campaign,
-
-        );
-
-    if (recipients.length === 0) {
-
-        return;
-
-    }
-
-    for (const recipient of recipients) {
-
-        await dispatchCampaignNotification({
-
-            campaign,
-
-            userId: recipient.id,
-
-        });
-
-    }
-
-    await incrementCampaignStatistic(
-
-        campaign.id,
-
-        {
-
-            totalSent: recipients.length,
-
-        }
-
-    );
-
+    {
+      totalSent: recipients.length,
+    },
+  );
 }

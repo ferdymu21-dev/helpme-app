@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 
-import DesktopReviewsView
-    from "@/components/profile/desktop/DesktopReviewsView";
+import DesktopReviewsView from "@/components/profile/desktop/DesktopReviewsView";
 
 interface Props {
   reviews: {
@@ -16,26 +14,25 @@ interface Props {
       full_name: string;
     }[];
   }[];
+  
+  hasMore: boolean;
+
+  loading: boolean;
+
+  onLoadMore: () => void;
 }
 
-export default function DesktopReviewPage({
-    reviews,
-}: Props) {
-
-return (
-
+export default function DesktopReviewPage({ reviews, hasMore, loading, onLoadMore }: Props) {
+  return (
     <main className="hidden lg:block">
-
-        <div className="mx-auto max-w-5xl p-10">
-
-            <DesktopReviewsView
-                reviews={reviews}
-            />
-
-        </div>
-
+      <div className="mx-auto max-w-5xl p-10">
+        <DesktopReviewsView
+          reviews={reviews}
+          hasMore={hasMore}
+          loading={loading}
+          onLoadMore={onLoadMore}
+        />
+      </div>
     </main>
-
-);
-
+  );
 }

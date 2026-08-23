@@ -6,21 +6,16 @@ import SimulatorForm from "./SimulatorForm";
 
 import SimulatorToolbar from "./SimulatorToolbar";
 
-import {
-    usePaymentSimulator,
-} from "../hooks/usePaymentSimulator";
+import { usePaymentSimulator } from "../hooks/usePaymentSimulator";
 
 import SimulationHistory from "./SimulationHistory";
 
 export default function PaymentWebhookSimulator() {
+  const simulator = usePaymentSimulator();
 
-    const simulator =
-        usePaymentSimulator();
-
-    return (
-
-        <div
-            className="
+  return (
+    <div
+      className="
                 mt-8
                 overflow-hidden
                 rounded-3xl
@@ -29,44 +24,18 @@ export default function PaymentWebhookSimulator() {
                 bg-white
                 shadow-sm
             "
-        >
+    >
+      <SimulatorHeader />
 
-            <SimulatorHeader />
+      <SimulatorToolbar
+        onGenerateIds={simulator.generateNewIds}
+        onCopyPayload={simulator.copyPayload}
+        onCopyResponse={simulator.copyResponse}
+      />
 
-            <SimulatorToolbar
+      <SimulatorForm simulator={simulator} />
 
-                onGenerateIds={
-
-                    simulator.generateNewIds
-
-                }
-
-                onCopyPayload={
-
-                    simulator.copyPayload
-
-                }
-
-                onCopyResponse={
-
-                    simulator.copyResponse
-
-                }
-
-            />
-
-            <SimulatorForm
-                simulator={simulator}
-            />
-
-            <SimulationHistory
-                history={
-                    simulator.history
-                }
-            />
-
-        </div>
-
-    );
-
+      <SimulationHistory history={simulator.history} />
+    </div>
+  );
 }

@@ -8,72 +8,114 @@ import MobileReviewPage from "@/components/profile/mobile/MobileReviewPage";
 
 import DesktopReviewPage from "@/components/profile/desktop/DesktopReviewPage";
 
-import {
-    getUserReviews,
-} from "@/features/reviews/services/review.service";
+import { getUserReviews } from "@/features/reviews/services/review.service";
 
 interface Review {
+  id: string;
 
+  rating: number;
+
+  comment: string;
+
+  created_at: string;
+
+  reviewer: {
     id: string;
 
-    rating: number;
-
-    comment: string;
-
-    created_at: string;
-
-    reviewer: {
-        id: string;
-
-        full_name: string;
-    }[];
-
+    full_name: string;
+  }[];
 }
 
 export default function ProfileReviewsPage() {
 
-    const [reviews, setReviews] =
-        useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
-    useEffect(() => {
+  const REVIEWS_PER_PAGE = 5;
 
-        async function loadReviews() {
+const [offset, setOffset] = useState(0);
 
-            try {
+const [hasMoreReviews, setHasMoreReviews] = useState(true);
 
-                const {
-                    data: { user },
-                } = await supabase.auth.getUser();
+const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
 
-                if (!user) return;
+async function loadMoreReviews() {
+  if (loadingMoreReviews || !hasMoreReviews) return;
 
-                const reviewsData =
-                    await getUserReviews(user.id);
+  try {
+    setLoadingMoreReviews(true);
 
-                setReviews(reviewsData);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-            } catch (error) {
+    if (!user) return;
 
-                console.error(error);
-
-            }
-
-        }
-
-        loadReviews();
-
-    }, []);
-
-    return (
-        <>
-            <MobileReviewPage
-                reviews={reviews}
-            />
-
-            <DesktopReviewPage
-                reviews={reviews}
-            />
-        </>
+    const newReviews = await getUserReviews(
+      user.id,
+      REVIEWS_PER_PAGE,
+      offset,
     );
 
+    setReviews((prev) => [...prev, ...newReviews]);
+
+    setOffset((prev) => prev + newReviews.length);
+
+    if (newReviews.length < REVIEWS_PER_PAGE) {
+      setHasMoreReviews(false);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoadingMoreReviews(false);
+  }
+}
+
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const reviewsData = await getUserReviews(
+  user.id,
+  REVIEWS_PER_PAGE,
+  0,
+);
+
+setReviews(reviewsData);
+
+setOffset(reviewsData.length);
+
+setHasMoreReviews(
+  reviewsData.length === REVIEWS_PER_PAGE,
+);
+
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadReviews();
+  }, []);
+
+  return (
+    <>
+      <MobileReviewPage 
+        reviews={reviews}
+        hasMore={hasMoreReviews}
+        loading={loadingMoreReviews}
+        onLoadMore={loadMoreReviews}
+      />
+
+      <DesktopReviewPage 
+        reviews={reviews}
+        hasMore={hasMoreReviews}
+        loading={loadingMoreReviews}
+        onLoadMore={loadMoreReviews}
+      />
+    </>
+  );
 }

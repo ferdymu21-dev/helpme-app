@@ -2,7 +2,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 
 import {
     notifyTaskCancelled,
-} from "@/features/notifications/actions";
+} from "@/features/notifications/actions/server";
 
 export async function cancelTaskServer(
     taskId: string,

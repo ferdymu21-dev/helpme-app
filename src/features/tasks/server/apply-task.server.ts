@@ -1,119 +1,92 @@
 import { adminSupabase } from "@/lib/supabase/admin";
 
-import {
-    notifyTaskApplied,
-} from "@/features/notifications/actions";
+import { notifyTaskApplied } from "@/features/notifications/actions/server";
 
-export async function applyTaskServer(
-    taskId: string,
-    userId: string,
-) {
-
-    /* =========================
+export async function applyTaskServer(taskId: string, userId: string) {
+  /* =========================
          GET TASK
       ========================= */
 
-    const { data: task } =
-        await adminSupabase
-            .from("tasks")
-            .select("*")
-            .eq("id", taskId)
-            .single();
+  const { data: task } = await adminSupabase
+    .from("tasks")
+    .select("*")
+    .eq("id", taskId)
+    .single();
 
-    if (!task) {
-        throw new Error(
-            "Permintaan bantuan tidak ditemukan"
-        );
-    }
+  if (!task) {
+    throw new Error("Permintaan bantuan tidak ditemukan");
+  }
 
-    /* =========================
+  /* =========================
        PREVENT SELF APPLY
     ========================= */
 
-    if (task.user_id === userId) {
-        throw new Error(
-            "Tidak bisa melamar task sendiri"
-        );
-    }
+  if (task.user_id === userId) {
+    throw new Error("Tidak bisa melamar task sendiri");
+  }
 
-    /* =========================
+  /* =========================
        TASK MUST BE OPEN
     ========================= */
 
-    if (task.status !== "OPEN") {
-        throw new Error(
-            "Permintaan bantuan ini sudah ditutup"
-        );
-    }
+  if (task.status !== "OPEN") {
+    throw new Error("Permintaan bantuan ini sudah ditutup");
+  }
 
-    /* =========================
+  /* =========================
        PREVENT DUPLICATE APPLY
     ========================= */
 
-    const { data: existing } =
-        await adminSupabase
-            .from("task_applications")
-            .select("id")
-            .eq("task_id", taskId)
-            .eq("helper_id", userId)
-            .maybeSingle();
+  const { data: existing } = await adminSupabase
+    .from("task_applications")
+    .select("id")
+    .eq("task_id", taskId)
+    .eq("helper_id", userId)
+    .maybeSingle();
 
-    if (existing) {
-        throw new Error(
-            "Kamu sudah melamar task ini"
-        );
-    }
+  if (existing) {
+    throw new Error("Kamu sudah melamar task ini");
+  }
 
-    /* =========================
+  /* =========================
        INSERT APPLICATION
     ========================= */
 
-    const { data, error } =
+  const { data, error } = await adminSupabase
 
-        await adminSupabase
+    .from("task_applications")
 
-            .from("task_applications")
+    .insert([
+      {
+        task_id: taskId,
 
-            .insert([
-                {
+        helper_id: userId,
 
-                    task_id: taskId,
+        status: "PENDING",
+      },
+    ])
 
-                    helper_id: userId,
+    .select()
 
-                    status: "PENDING",
+    .single();
 
-                },
-            ])
+  if (error) {
+    throw error;
+  }
 
-            .select()
-
-            .single();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    /* =========================
+  /* =========================
        CREATE NOTIFICATION
     ========================= */
 
-    await notifyTaskApplied(
+  await notifyTaskApplied(
+    task.user_id,
 
-        task.user_id,
+    task.id,
+  );
 
-        task.id,
+  return {
+    application: data,
 
-    );
-
-    return {
-
-        application: data,
-
-        task,
-
-    };
-
+    task,
+  };
 }

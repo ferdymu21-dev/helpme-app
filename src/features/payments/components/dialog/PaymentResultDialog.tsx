@@ -1,243 +1,174 @@
 "use client";
 
 import {
-    BadgeCheck,
-    CircleAlert,
-    CircleX,
-    Clock3,
-    Copy,
-    CreditCard,
-    FileText,
-    ShieldCheck,
-    X,
+  BadgeCheck,
+  CircleAlert,
+  CircleX,
+  Clock3,
+  Copy,
+  CreditCard,
+  FileText,
+  ShieldCheck,
+  X,
 } from "lucide-react";
 
-import type {
-    PaymentResultStatus,
-} from "../../types/paymentResult";
+import type { PaymentResultStatus } from "../../types/paymentResult";
 
 interface Props {
-    open: boolean;
-    status: PaymentResultStatus;
-    amount: number;
-    orderId: string;
-    paymentType: "DONATION" | "URGENT_TASK" | null;
-    taskId?: string | null;
-    onClose: () => void;
-    onHistory: () => void;
-    onViewTask?: (
-        taskId: string
-    ) => void;
+  open: boolean;
+  status: PaymentResultStatus;
+  amount: number;
+  orderId: string;
+  paymentType: "DONATION" | "URGENT_TASK" | null;
+  taskId?: string | null;
+  onClose: () => void;
+  onHistory: () => void;
+  onViewTask?: (taskId: string) => void;
 }
 
 const CONFIG = {
+  SUCCESS: {
+    title: "Pembayaran Berhasil",
 
-    SUCCESS: {
+    subtitle: "Terima kasih! Pembayaran Anda telah berhasil diterima.",
 
-        title: "Pembayaran Berhasil",
+    badge: "Berhasil",
 
-        subtitle:
-            "Terima kasih! Pembayaran Anda telah berhasil diterima.",
+    icon: BadgeCheck,
 
-        badge:
-            "Berhasil",
+    iconBg: "bg-emerald-100",
 
-        icon: BadgeCheck,
+    iconColor: "text-emerald-600",
 
-        iconBg:
-            "bg-emerald-100",
+    badgeClass: "bg-emerald-100 text-emerald-700",
 
-        iconColor:
-            "text-emerald-600",
+    primaryButton: "Tutup",
+  },
 
-        badgeClass:
-            "bg-emerald-100 text-emerald-700",
+  FAILED: {
+    title: "Pembayaran Gagal",
 
-        primaryButton:
-            "Tutup",
+    subtitle: "Pembayaran tidak berhasil diproses. Silakan coba kembali.",
 
-    },
+    badge: "Gagal",
 
-    FAILED: {
+    icon: CircleX,
 
-        title: "Pembayaran Gagal",
+    iconBg: "bg-red-100",
 
-        subtitle:
-            "Pembayaran tidak berhasil diproses. Silakan coba kembali.",
+    iconColor: "text-red-600",
 
-        badge:
-            "Gagal",
+    badgeClass: "bg-red-100 text-red-700",
+    primaryButton: "Coba Lagi",
+  },
 
-        icon: CircleX,
+  PENDING: {
+    title: "Menunggu Pembayaran",
 
-        iconBg:
-            "bg-red-100",
+    subtitle: "Silakan selesaikan pembayaran agar transaksi dapat diproses.",
 
-        iconColor:
-            "text-red-600",
+    badge: "Pending",
 
-        badgeClass:
-            "bg-red-100 text-red-700",
-        primaryButton:
-            "Coba Lagi",
-    },
+    icon: Clock3,
 
-    PENDING: {
+    iconBg: "bg-amber-100",
 
-        title: "Menunggu Pembayaran",
+    iconColor: "text-amber-600",
 
-        subtitle:
-            "Silakan selesaikan pembayaran agar transaksi dapat diproses.",
+    badgeClass: "bg-amber-100 text-amber-700",
 
-        badge:
-            "Pending",
+    primaryButton: "Saya Sudah Bayar",
+  },
 
-        icon: Clock3,
+  EXPIRED: {
+    title: "Pembayaran Kedaluwarsa",
 
-        iconBg:
-            "bg-amber-100",
+    subtitle: "Waktu pembayaran telah habis. Silakan buat transaksi baru.",
 
-        iconColor:
-            "text-amber-600",
+    badge: "Expired",
 
-        badgeClass:
-            "bg-amber-100 text-amber-700",
+    icon: CircleAlert,
 
-        primaryButton:
-            "Saya Sudah Bayar",
+    iconBg: "bg-slate-100",
 
-    },
+    iconColor: "text-slate-600",
 
-    EXPIRED: {
+    badgeClass: "bg-slate-200 text-slate-700",
+    primaryButton: "Buat Transaksi Baru",
+  },
 
-        title: "Pembayaran Kedaluwarsa",
+  CANCELLED: {
+    title: "Pembayaran Dibatalkan",
 
-        subtitle:
-            "Waktu pembayaran telah habis. Silakan buat transaksi baru.",
+    subtitle:
+      "Transaksi telah dibatalkan. Anda dapat membuat pembayaran baru kapan saja.",
 
-        badge:
-            "Expired",
+    badge: "Cancelled",
 
-        icon: CircleAlert,
+    icon: CircleAlert,
 
-        iconBg:
-            "bg-slate-100",
+    iconBg: "bg-slate-100",
 
-        iconColor:
-            "text-slate-600",
+    iconColor: "text-slate-600",
 
-        badgeClass:
-            "bg-slate-200 text-slate-700",
-        primaryButton:
-            "Buat Transaksi Baru",
-    },
+    badgeClass: "bg-slate-200 text-slate-700",
 
-    CANCELLED: {
-
-        title:
-            "Pembayaran Dibatalkan",
-
-        subtitle:
-            "Transaksi telah dibatalkan. Anda dapat membuat pembayaran baru kapan saja.",
-
-        badge:
-            "Cancelled",
-
-        icon:
-            CircleAlert,
-
-        iconBg:
-            "bg-slate-100",
-
-        iconColor:
-            "text-slate-600",
-
-        badgeClass:
-            "bg-slate-200 text-slate-700",
-
-        primaryButton:
-            "Tutup",
-
-    },
-
+    primaryButton: "Tutup",
+  },
 } satisfies Record<
-    Exclude<PaymentResultStatus, "IDLE">,
-    {
+  Exclude<PaymentResultStatus, "IDLE">,
+  {
+    title: string;
 
-        title: string;
+    subtitle: string;
 
-        subtitle: string;
+    badge: string;
 
-        badge: string;
+    icon: typeof BadgeCheck;
 
-        icon: typeof BadgeCheck;
+    iconBg: string;
 
-        iconBg: string;
+    iconColor: string;
 
-        iconColor: string;
+    badgeClass: string;
 
-        badgeClass: string;
-
-        primaryButton: string;
-
-    }
+    primaryButton: string;
+  }
 >;
 
 export default function PaymentResultDialog({
-    open,
-    status,
-    amount,
-    orderId,
-    paymentType,
-    taskId,
-    onClose,
-    onHistory,
-    onViewTask,
+  open,
+  status,
+  amount,
+  orderId,
+  paymentType,
+  taskId,
+  onClose,
+  onHistory,
+  onViewTask,
 }: Props) {
+  if (!open || status === "IDLE") {
+    return null;
+  }
 
-    if (
-        !open ||
-        status === "IDLE"
-    ) {
+  const ui = CONFIG[status];
 
-        return null;
+  const Icon = ui.icon;
 
+  const showViewTaskButton =
+    status === "SUCCESS" && paymentType === "URGENT_TASK" && !!taskId;
+
+  const copyOrderId = async () => {
+    try {
+      await navigator.clipboard.writeText(orderId);
+    } catch {
+      console.error("Failed to copy Order ID");
     }
+  };
 
-    const ui = CONFIG[status];
-
-    const Icon = ui.icon;
-
-    const showViewTaskButton =
-
-        status === "SUCCESS"
-
-        &&
-
-        paymentType === "URGENT_TASK"
-
-        &&
-
-        !!taskId;
-
-    const copyOrderId = async () => {
-
-        try {
-
-            await navigator.clipboard.writeText(orderId);
-
-        } catch {
-
-            console.error("Failed to copy Order ID");
-
-        }
-
-    };
-
-    return (
-
-        <div
-            className="
+  return (
+    <div
+      className="
               fixed
               inset-0
               z-50
@@ -245,10 +176,9 @@ export default function PaymentResultDialog({
               backdrop-blur-[2px]
               sm:items-center
             "
-        >
-
-            <div
-                className="
+    >
+      <div
+        className="
                     flex
                     min-h-full
                     items-end
@@ -256,10 +186,9 @@ export default function PaymentResultDialog({
                     p-4
                     sm:items-center
                 "
-            >
-
-                <div
-                    className="
+      >
+        <div
+          className="
                       w-full
                       max-w-97.5
                       max-h-[90vh]
@@ -269,12 +198,11 @@ export default function PaymentResultDialog({
                       shadow-[0_24px_80px_rgba(15,23,42,.18)]
                       animate-support-modal
                     "
-                >
+        >
+          {/* Header */}
 
-                    {/* Header */}
-
-                    <div
-                        className="
+          <div
+            className="
                         relative
                         overflow-hidden
                         bg-linear-to-b
@@ -284,15 +212,11 @@ export default function PaymentResultDialog({
                         pt-8
                         pb-6
                     "
-                    >
-
-                        <button
-
-                            type="button"
-
-                            onClick={onClose}
-
-                            className="
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              className="
                               absolute
                               right-4
                               top-4
@@ -302,15 +226,12 @@ export default function PaymentResultDialog({
                               transition
                             hover:bg-slate-100
                         "
+            >
+              <X size={18} />
+            </button>
 
-                        >
-
-                            <X size={18} />
-
-                        </button>
-
-                        <div
-                            className={`
+            <div
+              className={`
                               mx-auto
                               flex
                               h-20
@@ -323,28 +244,19 @@ export default function PaymentResultDialog({
                             ring-white
                               ${ui.iconBg}
                             `}
-                        >
+            >
+              <Icon size={42} className={ui.iconColor} />
+            </div>
 
-                            <Icon
-
-                                size={42}
-
-                                className={ui.iconColor}
-
-                            />
-
-                        </div>
-
-                        <div
-                            className="
+            <div
+              className="
                             mt-6
                             flex
                             justify-center
                         "
-                        >
-
-                            <span
-                                className={`
+            >
+              <span
+                className={`
                                 rounded-full
                                 px-4
                                 py-1.5
@@ -352,50 +264,41 @@ export default function PaymentResultDialog({
                                 font-semibold
                                 ${ui.badgeClass}
                             `}
-                            >
+              >
+                {ui.badge}
+              </span>
+            </div>
 
-                                {ui.badge}
-
-                            </span>
-
-                        </div>
-
-                        <h2
-                            className="
+            <h2
+              className="
                             mt-4
                             text-center
                             text-2xl
                             font-bold
                             text-text-main
                         "
-                        >
+            >
+              {ui.title}
+            </h2>
 
-                            {ui.title}
-
-                        </h2>
-
-                        <p
-                            className="
+            <p
+              className="
                             mt-3
                             text-center
                             text-sm
                             leading-6
                             text-text-soft
                         "
-                        >
+            >
+              {ui.subtitle}
+            </p>
+          </div>
 
-                            {ui.subtitle}
+          {/* Transaction Card */}
 
-                        </p>
-
-                    </div>
-
-                    {/* Transaction Card */}
-
-                    <div className="px-6">
-
-                        <div
-                            className="
+          <div className="px-6">
+            <div
+              className="
                             rounded-3xl
                             border
                             border-border
@@ -403,20 +306,17 @@ export default function PaymentResultDialog({
                             p-5
                             shadow-sm
                         "
-                        >
-
-                            <div
-                                className="
+            >
+              <div
+                className="
                                 flex
                                 items-center
                                 justify-between
                             "
-                            >
-
-                                <div className="flex items-center gap-3">
-
-                                    <div
-                                        className="
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="
                                         flex
                                         h-10
                                         w-10
@@ -425,47 +325,38 @@ export default function PaymentResultDialog({
                                         rounded-xl
                                         bg-white
                                     "
-                                    >
-
-                                        <BadgeCheck
-                                            size={20}
-                                            className="
+                  >
+                    <BadgeCheck
+                      size={20}
+                      className="
                                             text-primary-600
                                         "
-                                        />
+                    />
+                  </div>
 
-                                    </div>
-
-                                    <div>
-
-                                        <p
-                                            className="
+                  <div>
+                    <p
+                      className="
                                             text-xs
                                             text-text-soft
                                         "
-                                        >
+                    >
+                      Status
+                    </p>
 
-                                            Status
-
-                                        </p>
-
-                                        <p
-                                            className="
+                    <p
+                      className="
                                             font-semibold
                                             text-text-main
                                         "
-                                        >
+                    >
+                      {ui.badge}
+                    </p>
+                  </div>
+                </div>
 
-                                            {ui.badge}
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                                <span
-                                    className={`
+                <span
+                  className={`
                                     rounded-full
                                     px-3
                                     py-1
@@ -473,32 +364,28 @@ export default function PaymentResultDialog({
                                     font-semibold
                                     ${ui.badgeClass}
                                 `}
-                                >
+                >
+                  {status}
+                </span>
+              </div>
 
-                                    {status}
-
-                                </span>
-
-                            </div>
-
-                            <div
-                                className="
+              <div
+                className="
                                 my-5
                                 border-t
                                 border-dashed
                             "
-                            />
+              />
 
-                            <div
-                                className="
+              <div
+                className="
                                 flex
                                 items-center
                                 gap-3
                             "
-                            >
-
-                                <div
-                                    className="
+              >
+                <div
+                  className="
                                     flex
                                     h-10
                                     w-10
@@ -507,64 +394,54 @@ export default function PaymentResultDialog({
                                     rounded-xl
                                     bg-white
                                 "
-                                >
-
-                                    <CreditCard
-                                        size={20}
-                                        className="
+                >
+                  <CreditCard
+                    size={20}
+                    className="
                                         text-primary-600
                                     "
-                                    />
+                  />
+                </div>
 
-                                </div>
-
-                                <div>
-
-                                    <p
-                                        className="
+                <div>
+                  <p
+                    className="
                                         text-xs
                                         text-text-soft
                                     "
-                                    >
+                  >
+                    Nominal Pembayaran
+                  </p>
 
-                                        Nominal Pembayaran
-
-                                    </p>
-
-                                    <h3
-                                        className="
+                  <h3
+                    className="
                                         text-xl
                                         font-bold
                                         text-text-main
                                     "
-                                    >
+                  >
+                    Rp {amount.toLocaleString("id-ID")}
+                  </h3>
+                </div>
+              </div>
 
-                                        Rp {amount.toLocaleString("id-ID")}
-
-                                    </h3>
-
-                                </div>
-
-                            </div>
-
-                            <div
-                                className="
+              <div
+                className="
                                 my-5
                                 border-t
                                 border-dashed
                             "
-                            />
+              />
 
-                            <div
-                                className="
+              <div
+                className="
                                 flex
                                 items-start
                                 gap-3
                             "
-                            >
-
-                                <div
-                                    className="
+              >
+                <div
+                  className="
                                     flex
                                     h-10
                                     w-10
@@ -573,39 +450,30 @@ export default function PaymentResultDialog({
                                     rounded-xl
                                     bg-white
                                 "
-                                >
+                >
+                  <FileText size={20} className="text-primary-600" />
+                </div>
 
-                                    <FileText
-                                        size={20}
-                                        className="text-primary-600"
-                                    />
-
-                                </div>
-
-                                <div className="flex-1">
-
-                                    <p
-                                        className="
+                <div className="flex-1">
+                  <p
+                    className="
                                         text-xs
                                         text-text-soft
                                     "
-                                    >
+                  >
+                    Order ID
+                  </p>
 
-                                        Order ID
-
-                                    </p>
-
-                                    <div
-                                        className="
+                  <div
+                    className="
                                         mt-2
                                         flex
                                         items-center
                                         gap-2
                                     "
-                                    >
-
-                                        <code
-                                            className="
+                  >
+                    <code
+                      className="
                                             flex-1
                                             break-all
                                             rounded-xl
@@ -616,17 +484,15 @@ export default function PaymentResultDialog({
                                             font-mono
                                             text-slate-700
                                         "
-                                        >
+                    >
+                      {orderId}
+                    </code>
 
-                                            {orderId}
-
-                                        </code>
-
-                                        <button
-                                            type="button"
-                                            aria-label="Salin Order ID"
-                                            onClick={copyOrderId}
-                                            className="
+                    <button
+                      type="button"
+                      aria-label="Salin Order ID"
+                      onClick={copyOrderId}
+                      className="
                                             flex
                                             h-10
                                             w-10
@@ -639,24 +505,18 @@ export default function PaymentResultDialog({
                                             hover:bg-primary-600
                                             hover:text-white
                                         "
-                                        >
+                    >
+                      <Copy size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                                            <Copy size={18} />
+            {/* Info */}
 
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        {/* Info */}
-
-                        <div
-                            className="
+            <div
+              className="
                             mt-5
                             rounded-2xl
                             border
@@ -664,75 +524,62 @@ export default function PaymentResultDialog({
                             bg-primary-100/50
                             p-4
                         "
-                        >
-
-                            <div
-                                className="
+            >
+              <div
+                className="
                                 flex
                                 items-start
                                 gap-3
                             "
-                            >
-
-                                <ShieldCheck
-                                    size={20}
-                                    className="
+              >
+                <ShieldCheck
+                  size={20}
+                  className="
                                     mt-0.5
                                     text-primary-600
                                 "
-                                />
+                />
 
-                                <div>
-
-                                    <p
-                                        className="
+                <div>
+                  <p
+                    className="
                                         text-sm
                                         font-semibold
                                         text-text-main
                                     "
-                                    >
+                  >
+                    Simpan Order ID
+                  </p>
 
-                                        Simpan Order ID
-
-                                    </p>
-
-                                    <p
-                                        className="
+                  <p
+                    className="
                                         mt-1
                                         text-xs
                                         leading-5
                                         text-text-soft
                                     "
-                                    >
+                  >
+                    Order ID dapat digunakan sebagai referensi apabila terjadi
+                    kendala pada transaksi Anda.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                                        Order ID dapat digunakan sebagai referensi apabila terjadi kendala pada transaksi Anda.
+            {/* Buttons */}
 
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        {/* Buttons */}
-
-                        <div
-                            className="
+            <div
+              className="
                             mt-6
                             flex
                             gap-3
                             pb-6
                         "
-                        >
-
-                            <button
-
-                                type="button"
-
-                                onClick={onHistory}
-
-                                className="
+            >
+              <button
+                type="button"
+                onClick={onHistory}
+                className="
                                 flex-1
                                 rounded-2xl
                                 border
@@ -744,42 +591,23 @@ export default function PaymentResultDialog({
                                 transition
                                 hover:bg-slate-100
                             "
+              >
+                Riwayat
+              </button>
 
-                            >
+              <button
+                type="button"
+                aria-label="Tutup dialog"
+                onClick={() => {
+                  if (showViewTaskButton && taskId && onViewTask) {
+                    onViewTask(taskId);
 
-                                Riwayat
+                    return;
+                  }
 
-                            </button>
-
-                            <button
-
-                                type="button"
-
-                                aria-label="Tutup dialog"
-
-                                onClick={() => {
-
-                                    if (
-
-                                        showViewTaskButton &&
-
-                                        taskId &&
-
-                                        onViewTask
-
-                                    ) {
-
-                                        onViewTask(taskId);
-
-                                        return;
-
-                                    }
-
-                                    onClose();
-
-                                }}
-
-                                className="
+                  onClose();
+                }}
+                className="
         flex-1
         rounded-2xl
         bg-primary-600
@@ -793,36 +621,23 @@ export default function PaymentResultDialog({
         hover:scale-[1.02]
         active:scale-[.98]
     "
+              >
+                {showViewTaskButton ? "Lihat Task" : ui.primaryButton}
+              </button>
+            </div>
 
-                            >
+            {/* Footer */}
 
-                                {
-
-                                    showViewTaskButton
-
-                                        ? "Lihat Task"
-
-                                        : ui.primaryButton
-
-                                }
-
-                            </button>
-
-                        </div>
-
-                        {/* Footer */}
-
-                        <div
-                            className="
+            <div
+              className="
                             border-t
                             border-border
                             py-4
                             text-center
                         "
-                        >
-
-                            <div
-                                className="
+            >
+              <div
+                className="
                                 inline-flex
                                 items-center
                                 gap-2
@@ -831,37 +646,23 @@ export default function PaymentResultDialog({
                                 px-3
                                 py-1.5
                             "
-                            >
+              >
+                <ShieldCheck size={14} className="text-emerald-600" />
 
-                                <ShieldCheck
-                                    size={14}
-                                    className="text-emerald-600"
-                                />
-
-                                <span
-                                    className="
+                <span
+                  className="
                                     text-xs
                                     font-medium
                                     text-text-soft
                                 "
-                                >
-
-                                    Transaksi aman • HelpMe
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+                >
+                  Transaksi aman • HelpMe
+                </span>
+              </div>
             </div>
-
+          </div>
         </div>
-
-    );
-
+      </div>
+    </div>
+  );
 }

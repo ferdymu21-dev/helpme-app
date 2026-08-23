@@ -1,9 +1,3 @@
 import "server-only";
 
-export {
-
-    createDonation,
-
-}
-
-from "./donation.server";
+export { createDonation } from "./donation.server";

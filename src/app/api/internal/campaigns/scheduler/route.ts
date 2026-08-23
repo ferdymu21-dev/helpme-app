@@ -1,101 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-    runScheduledCampaignsService,
-} from "@/features/campaigns/services";
+import { runScheduledCampaignsService } from "@/features/campaigns/services";
 
-export async function POST(
+export async function POST(request: NextRequest) {
+  try {
+    const authorization = request.headers.get("authorization");
 
-    request: NextRequest,
+    const secret = process.env.CAMPAIGN_CRON_SECRET;
 
-) {
+    if (authorization !== `Bearer ${secret}`) {
+      return NextResponse.json(
+        {
+          success: false,
 
-    try {
+          message: "Unauthorized",
+        },
 
-        const authorization =
-
-            request.headers.get(
-
-                "authorization",
-
-            );
-
-        const secret =
-
-            process.env.CAMPAIGN_CRON_SECRET;
-
-        if (
-
-            authorization !==
-
-            `Bearer ${secret}`
-
-        ) {
-
-            return NextResponse.json(
-
-                {
-
-                    success: false,
-
-                    message: "Unauthorized",
-
-                },
-
-                {
-
-                    status: 401,
-
-                },
-
-            );
-
-        }
-
-        const result =
-
-            await runScheduledCampaignsService();
-
-        return NextResponse.json({
-
-            success: true,
-
-            ...result,
-
-        });
-
+        {
+          status: 401,
+        },
+      );
     }
 
-    catch (error) {
+    const result = await runScheduledCampaignsService();
 
-        console.error(
+    return NextResponse.json({
+      success: true,
 
-            "[CAMPAIGN SCHEDULER]",
+      ...result,
+    });
+  } catch (error) {
+    console.error(
+      "[CAMPAIGN SCHEDULER]",
 
-            error,
+      error,
+    );
 
-        );
+    return NextResponse.json(
+      {
+        success: false,
 
-        return NextResponse.json(
+        message: "Scheduler failed.",
+      },
 
-            {
-
-                success: false,
-
-                message:
-
-                    "Scheduler failed.",
-
-            },
-
-            {
-
-                status: 500,
-
-            },
-
-        );
-
-    }
-
+      {
+        status: 500,
+      },
+    );
+  }
 }

@@ -1,46 +1,28 @@
 import type {
-    CreateCampaignPayload,
-    InsertCampaignPayload,
+  CreateCampaignPayload,
+  InsertCampaignPayload,
 } from "../types/campaign.types";
 
 export function buildCampaignBase(
+  payload: CreateCampaignPayload,
+): Omit<InsertCampaignPayload, "status" | "published_at" | "scheduled_at"> {
+  return {
+    title: payload.title,
 
-    payload: CreateCampaignPayload,
+    message: payload.message,
 
-): Omit<
-    InsertCampaignPayload,
-    | "status"
-    | "published_at"
-    | "scheduled_at"
-> {
+    image_url: payload.imageUrl ?? null,
 
-    return {
+    redirect_url: payload.redirectUrl ?? null,
 
-        title: payload.title,
+    category: payload.category,
 
-        message: payload.message,
+    type: payload.type,
 
-        image_url:
-            payload.imageUrl ?? null,
+    target_type: payload.targetType,
 
-        redirect_url:
-            payload.redirectUrl ?? null,
+    target_value: payload.targetValue ?? null,
 
-        category:
-            payload.category,
-
-        type:
-            payload.type,
-
-        target_type:
-            payload.targetType,
-
-        target_value:
-            payload.targetValue ?? null,
-
-        expires_at:
-            payload.expiresAt ?? null,
-
-    };
-
+    expires_at: payload.expiresAt ?? null,
+  };
 }

@@ -1,24 +1,11 @@
-import {
-    CampaignStatus,
-} from "../constants/campaign-status";
+import { CampaignStatus } from "../constants/campaign-status";
 
-import {
-    changeCampaignStatusService,
-} from "./changeCampaignStatus.service";
+import { changeCampaignStatusService } from "./changeCampaignStatus.service";
 
-export async function scheduleCampaignService(
+export async function scheduleCampaignService(campaignId: string) {
+  await changeCampaignStatusService({
+    campaignId,
 
-    campaignId: string,
-
-) {
-
-    await changeCampaignStatusService({
-
-        campaignId,
-
-        status:
-            CampaignStatus.SCHEDULED,
-
-    });
-
+    status: CampaignStatus.SCHEDULED,
+  });
 }

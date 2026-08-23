@@ -1,47 +1,27 @@
 import crypto from "crypto";
 
 interface VerifySignaturePayload {
+  orderId: string;
 
-    orderId: string;
+  statusCode: string;
 
-    statusCode: string;
+  grossAmount: string;
 
-    grossAmount: string;
-
-    signatureKey: string;
-
+  signatureKey: string;
 }
 
-export function verifySignature(
+export function verifySignature(payload: VerifySignaturePayload) {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY!;
 
-    payload: VerifySignaturePayload
+  const hash = crypto
 
-) {
+    .createHash("sha512")
 
-    const serverKey =
+    .update(
+      payload.orderId + payload.statusCode + payload.grossAmount + serverKey,
+    )
 
-        process.env.MIDTRANS_SERVER_KEY!;
+    .digest("hex");
 
-    const hash =
-
-        crypto
-
-            .createHash("sha512")
-
-            .update(
-
-                payload.orderId +
-
-                payload.statusCode +
-
-                payload.grossAmount +
-
-                serverKey
-
-            )
-
-            .digest("hex");
-
-    return hash === payload.signatureKey;
-
+  return hash === payload.signatureKey;
 }

@@ -1,537 +1,314 @@
 "use client";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import imageCompression
-    from "browser-image-compression";
+import imageCompression from "browser-image-compression";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
+
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function VerificationPage() {
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(
+    null,
+  );
 
-    const [
-        verificationStatus,
-        setVerificationStatus,
-    ] = useState<
-        string | null
-    >(
-        null
-    );
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [ktpFile, setKtpFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [ktpPreview, setKtpPreview] = useState("");
+  const [selfiePreview, setSelfiePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
 
-    const [
-        rejectionReason,
-        setRejectionReason,
-    ] = useState("");
+  useEffect(() => {
+    return () => {
+      if (ktpPreview) {
+        URL.revokeObjectURL(ktpPreview);
+      }
 
-    const [
-        ktpFile,
-        setKtpFile,
-    ] = useState<File | null>(
-        null
-    );
+      if (selfiePreview) {
+        URL.revokeObjectURL(selfiePreview);
+      }
+    };
+  }, [ktpPreview, selfiePreview]);
 
-    const [
-        selfieFile,
-        setSelfieFile,
-    ] = useState<File | null>(
-        null
-    );
+  useEffect(() => {
+    async function loadStatus() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const [
-        ktpPreview,
-        setKtpPreview,
-    ] = useState("");
+      if (!user) return;
 
-    const [
-        selfiePreview,
-        setSelfiePreview,
-    ] = useState("");
-
-    const [
-        uploading,
-        setUploading,
-    ] = useState(false);
-
-    useEffect(() => {
-
-        return () => {
-
-            if (ktpPreview) {
-
-                URL.revokeObjectURL(
-                    ktpPreview
-                );
-
-            }
-
-            if (selfiePreview) {
-
-                URL.revokeObjectURL(
-                    selfiePreview
-                );
-
-            }
-
-        };
-
-    }, [
-        ktpPreview,
-        selfiePreview,
-    ]);
-
-    useEffect(() => {
-
-        async function loadStatus() {
-
-            const {
-                data: { user },
-            } =
-                await supabase.auth.getUser();
-
-            if (!user) return;
-
-            const {
-                data: pendingRequest,
-            } = await supabase
-                .from(
-                    "verification_requests"
-                )
-                .select(`
+      const { data: pendingRequest } = await supabase
+        .from("verification_requests")
+        .select(
+          `
         status
-    `)
-                .eq(
-                    "user_id",
-                    user.id
-                )
-                .eq(
-                    "status",
-                    "PENDING"
-                )
-                .maybeSingle();
+    `,
+        )
+        .eq("user_id", user.id)
+        .eq("status", "PENDING")
+        .maybeSingle();
 
-            if (pendingRequest) {
+      if (pendingRequest) {
+        setVerificationStatus("PENDING");
 
-                setVerificationStatus(
-                    "PENDING"
-                );
+        return;
+      }
 
-                return;
-            }
-
-            const { data } =
-                await supabase
-                    .from("users")
-                    .select(`
+      const { data } = await supabase
+        .from("users")
+        .select(
+          `
             verification_status
-        `)
-                    .eq("id", user.id)
-                    .single();
+        `,
+        )
+        .eq("id", user.id)
+        .single();
 
-            setVerificationStatus(
-                data?.verification_status ||
-                "UNVERIFIED"
-            );
+      setVerificationStatus(data?.verification_status || "UNVERIFIED");
 
-            if (
-                data?.verification_status ===
-                "REJECTED"
-            ) {
+      if (data?.verification_status === "REJECTED") {
+        const { data: rejectedRequest } = await supabase
+          .from("verification_requests")
+          .select("rejection_reason")
+          .eq("user_id", user.id)
+          .eq("status", "REJECTED")
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(1)
+          .single();
 
-                const {
-                    data: rejectedRequest,
-                } = await supabase
-                    .from(
-                        "verification_requests"
-                    )
-                    .select(
-                        "rejection_reason"
-                    )
-                    .eq(
-                        "user_id",
-                        user.id
-                    )
-                    .eq(
-                        "status",
-                        "REJECTED"
-                    )
-                    .order(
-                        "created_at",
-                        {
-                            ascending: false,
-                        }
-                    )
-                    .limit(1)
-                    .single();
-
-                setRejectionReason(
-                    rejectedRequest
-                        ?.rejection_reason || ""
-                );
-
-            }
-        }
-
-        loadStatus();
-
-    }, []);
-
-    async function handleKtpChange(
-        file: File
-    ) {
-
-        if (
-            file.size >
-            2 * 1024 * 1024
-        ) {
-
-            alert(
-                "Ukuran KTP maksimal 2MB"
-            );
-
-            return;
-        }
-
-        const compressed =
-            await imageCompression(
-                file,
-                {
-                    maxSizeMB: 0.3,
-                    maxWidthOrHeight: 1200,
-                    useWebWorker: true,
-                }
-            );
-
-        setKtpFile(
-            compressed as File
-        );
-
-        setKtpPreview(
-            URL.createObjectURL(
-                compressed
-            )
-        );
+        setRejectionReason(rejectedRequest?.rejection_reason || "");
+      }
     }
 
-    async function handleSelfieChange(
-        file: File
-    ) {
+    loadStatus();
+  }, []);
 
-        if (
-            file.size >
-            10 * 1024 * 1024
-        ) {
+  async function handleKtpChange(file: File) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert("Format KTP harus JPG, PNG, atau WEBP");
 
-            alert(
-                "Ukuran Selfie maksimal 2MB"
-            );
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran KTP maksimal 2MB");
 
-            return;
-        }
-
-        const compressed =
-            await imageCompression(
-                file,
-                {
-                    maxSizeMB: 0.2,
-                    maxWidthOrHeight: 800,
-                    useWebWorker: true,
-                }
-            );
-
-        setSelfieFile(
-            compressed as File
-        );
-
-        setSelfiePreview(
-            URL.createObjectURL(
-                compressed
-            )
-        );
+      return;
     }
 
-    async function handleSubmitVerification() {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.3,
+      maxWidthOrHeight: 1200,
+      useWebWorker: true,
+    });
 
-        try {
+    setKtpFile(compressed as File);
 
-            if (!ktpFile || !selfieFile) {
+    setKtpPreview(URL.createObjectURL(compressed));
+  }
 
-                alert(
-                    "Upload KTP dan selfie terlebih dahulu"
-                );
+  async function handleSelfieChange(file: File) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert("Format Selfie harus JPG, PNG, atau WEBP");
 
-                return;
-            }
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran Selfie maksimal 10MB");
 
-            setUploading(true);
+      return;
+    }
 
-            const {
-                data: { user },
-            } =
-                await supabase.auth.getUser();
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.2,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
 
-            if (!user) return;
+    setSelfieFile(compressed as File);
 
-            /* =========================
+    setSelfiePreview(URL.createObjectURL(compressed));
+  }
+
+  async function handleSubmitVerification() {
+    try {
+      if (!ktpFile || !selfieFile) {
+        alert("Upload KTP dan selfie terlebih dahulu");
+
+        return;
+      }
+
+      setUploading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      /* =========================
                CHECK EXISTING REQUEST
             ========================= */
 
-            const {
-                data: existingRequest,
-            } = await supabase
-                .from(
-                    "verification_requests"
-                )
-                .select(`
+      const { data: existingRequest } = await supabase
+        .from("verification_requests")
+        .select(
+          `
         id,
         status
-    `)
-                .eq(
-                    "user_id",
-                    user.id
-                )
-                .eq(
-                    "status",
-                    "PENDING"
-                )
-                .maybeSingle();
+    `,
+        )
+        .eq("user_id", user.id)
+        .eq("status", "PENDING")
+        .maybeSingle();
 
-            if (existingRequest) {
+      if (existingRequest) {
+        alert("Verifikasi Anda masih sedang diproses");
 
-                alert(
-                    "Verifikasi Anda masih sedang diproses"
-                );
+        return;
+      }
 
-                return;
-            }
-
-            /* =========================
+      /* =========================
                FILE PATH
             ========================= */
 
-            const timestamp =
-                Date.now();
+      const timestamp = Date.now();
 
-            const ktpPath =
-                `${user.id}/ktp-${timestamp}.jpg`;
+      const ktpPath = `${user.id}/ktp-${timestamp}.jpg`;
 
-            const selfiePath =
-                `${user.id}/selfie-${timestamp}.jpg`;
+      const selfiePath = `${user.id}/selfie-${timestamp}.jpg`;
 
-            /* =========================
+      /* =========================
                UPLOAD KTP
             ========================= */
 
-            const {
-                error: ktpError,
-            } = await supabase
-                .storage
-                .from("verifications")
-                .upload(
-                    ktpPath,
-                    ktpFile,
-                );
+      const { error: ktpError } = await supabase.storage
+        .from("verifications")
+        .upload(ktpPath, ktpFile);
 
-            if (ktpError) {
+      if (ktpError) {
+        console.error(ktpError);
 
-                console.error(
-                    ktpError
-                );
+        alert("Gagal upload KTP");
 
-                alert(
-                    "Gagal upload KTP"
-                );
+        return;
+      }
 
-                return;
-            }
-
-            /* =========================
+      /* =========================
                UPLOAD SELFIE
             ========================= */
 
-            const {
-                error: selfieError,
-            } = await supabase
-                .storage
-                .from("verifications")
-                .upload(
-                    selfiePath,
-                    selfieFile,
-                );
+      const { error: selfieError } = await supabase.storage
+        .from("verifications")
+        .upload(selfiePath, selfieFile);
 
-            if (selfieError) {
+      if (selfieError) {
+        await supabase.storage.from("verifications").remove([ktpPath]);
 
-                await supabase
-                    .storage
-                    .from("verifications")
-                    .remove([
-                        ktpPath
-                    ]);
+        alert("Gagal upload selfie");
 
-                alert(
-                    "Gagal upload selfie"
-                );
+        return;
+      }
 
-                return;
-            }
-
-            /* =========================
+      /* =========================
                INSERT REQUEST
             ========================= */
 
-            const {
-                error: requestError,
-            } = await supabase
-                .from(
-                    "verification_requests"
-                )
-                .insert({
+      const { error: requestError } = await supabase
+        .from("verification_requests")
+        .insert({
+          user_id: user.id,
 
-                    user_id:
-                        user.id,
+          ktp_url: ktpPath,
 
-                    ktp_url:
-                        ktpPath,
+          selfie_url: selfiePath,
 
-                    selfie_url:
-                        selfiePath,
+          status: "PENDING",
+        });
 
-                    status:
-                        "PENDING",
-                });
+      if (requestError) {
+        console.error("CODE:", requestError.code);
 
-            if (requestError) {
+        console.error("MESSAGE:", requestError.message);
 
-                console.error(
-                    "CODE:",
-                    requestError.code
-                );
+        console.error("DETAILS:", requestError.details);
 
-                console.error(
-                    "MESSAGE:",
-                    requestError.message
-                );
+        console.error("HINT:", requestError.hint);
 
-                console.error(
-                    "DETAILS:",
-                    requestError.details
-                );
+        alert(requestError.message);
 
-                console.error(
-                    "HINT:",
-                    requestError.hint
-                );
+        return;
+      }
 
-                alert(
-                    requestError.message
-                );
-
-                return;
-            }
-
-            /* =========================
+      /* =========================
                UPDATE USER STATUS
             ========================= */
 
-            const {
-                error: updateError,
-            } = await supabase
-                .from("users")
-                .update({
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({
+          verification_status: "PENDING",
+        })
+        .eq("id", user.id);
 
-                    verification_status:
-                        "PENDING",
+      if (updateError) {
+        console.error(updateError);
+      }
 
-                })
-                .eq(
-                    "id",
-                    user.id
-                );
+      setVerificationStatus("PENDING");
 
-            if (updateError) {
+      alert("Verifikasi berhasil dikirim");
 
-                console.error(
-                    updateError
-                );
-            }
+      setKtpFile(null);
 
-            setVerificationStatus(
-                "PENDING"
-            );
+      setSelfieFile(null);
 
-            alert(
-                "Verifikasi berhasil dikirim"
-            );
+      setKtpPreview("");
 
-            setKtpFile(null);
-
-            setSelfieFile(null);
-
-            setKtpPreview("");
-
-            setSelfiePreview("");
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setUploading(false);
-        }
+      setSelfiePreview("");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUploading(false);
     }
+  }
 
-    if (
-        verificationStatus === null
-    ) {
-
-        return (
-
-            <main
-                className="
+  if (verificationStatus === null) {
+    return (
+      <main
+        className="
                 min-h-screen
                 flex
                 items-center
                 justify-center
             "
-            >
+      >
+        <p>Memuat data...</p>
+      </main>
+    );
+  }
 
-                <p>
-                    Memuat data...
-                </p>
-
-            </main>
-
-        );
-
-    }
-
-    return (
-
-        <main className="min-h-screen bg-slate-50">
-
-            <div className="mx-auto max-w-2xl px-6 py-8">
-
-                <h1
-                    className="
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-2xl px-6 py-8">
+        <h1
+          className="
             text-lg
             font-black
             text-slate-900
           "
-                >
-                    Verifikasi Akun
-                </h1>
+        >
+          Verifikasi Akun
+        </h1>
 
-                {verificationStatus ===
-                    "UNVERIFIED" && (
-
-                        <>
-
-                            <div
-                                className="
+        {verificationStatus === "UNVERIFIED" && (
+          <>
+            <div
+              className="
                 inline-flex
                 rounded-full
                 bg-slate-100
@@ -541,49 +318,41 @@ export default function VerificationPage() {
                 font-bold
                 text-slate-700
             "
-                            >
-                                ⭕ Belum Terverifikasi
-                            </div>
+            >
+              ⭕ Belum Terverifikasi
+            </div>
 
-                            <h2
-                                className="
+            <h2
+              className="
                 mt-4
                 text-xl
                 font-bold
                 text-slate-900
             "
-                            >
-                                Verifikasi identitas Anda
-                            </h2>
+            >
+              Verifikasi identitas Anda
+            </h2>
 
-                            <p
-                                className="
+            <p
+              className="
                 mt-2
                 text-slate-500
             "
-                            >
-                                Upload KTP dan selfie
-                                untuk mendapatkan
-                                badge verified dan
-                                meningkatkan kepercayaan
-                                pengguna lain.
-                            </p>
+            >
+              Upload KTP dan selfie untuk mendapatkan badge verified dan
+              meningkatkan kepercayaan pengguna lain.
+            </p>
+          </>
+        )}
 
-                        </>
-
-                    )}
-
-                {verificationStatus ===
-                    "PENDING" && (
-
-                        <div
-                            className="
+        {verificationStatus === "PENDING" && (
+          <div
+            className="
             text-center
         "
-                        >
-
-                            <div
-                                className="
+          >
+            <div
+              className="
             mt-10
                 mx-auto
                 flex
@@ -593,12 +362,12 @@ export default function VerificationPage() {
                 justify-center
                 text-4xl
             "
-                            >
-                                ⏳
-                            </div>
+            >
+              ⏳
+            </div>
 
-                            <div
-                                className="
+            <div
+              className="
                 mt-3
                 inline-flex
                 rounded-full
@@ -609,49 +378,40 @@ export default function VerificationPage() {
                 font-bold
                 text-amber-500
             "
-                            >
-                                Menunggu Verifikasi
-                            </div>
+            >
+              Menunggu Verifikasi
+            </div>
 
-                            <h2
-                                className="
+            <h2
+              className="
                 mt-5
                 text-lg
                 font-black
                 text-slate-900
             "
-                            >
-                                Dokumen sedang ditinjau
-                            </h2>
+            >
+              Dokumen sedang ditinjau
+            </h2>
 
-                            <p
-                                className="
+            <p
+              className="
                 mt-3
                 text-sm
                 leading-7
                 text-slate-500
             "
-                            >
-                                Tim HelpMe sedang
-                                memeriksa dokumen Anda.
+            >
+              Tim HelpMe sedang memeriksa dokumen Anda.
+              <br />
+              Estimasi proses 1–3 hari kerja.
+            </p>
+          </div>
+        )}
 
-                                <br />
-
-                                Estimasi proses
-                                1–3 hari kerja.
-                            </p>
-
-                        </div>
-
-                    )}
-
-                {verificationStatus ===
-                    "VERIFIED" && (
-
-                        <>
-
-                            <div
-                                className="
+        {verificationStatus === "VERIFIED" && (
+          <>
+            <div
+              className="
                 inline-flex
                 rounded-full
                 bg-emerald-100
@@ -661,44 +421,37 @@ export default function VerificationPage() {
                 font-bold
                 text-emerald-700
             "
-                            >
-                                ✔️ Akun Terverifikasi
-                            </div>
+            >
+              ✔️ Akun Terverifikasi
+            </div>
 
-                            <h2
-                                className="
+            <h2
+              className="
                 mt-4
                 text-xl
                 font-bold
                 text-slate-900
             "
-                            >
-                                Selamat 🎉
-                            </h2>
+            >
+              Selamat 🎉
+            </h2>
 
-                            <p
-                                className="
+            <p
+              className="
                 mt-2
                 text-slate-500
             "
-                            >
-                                Badge verified sudah aktif.
-                                Akun Anda akan lebih
-                                dipercaya oleh pemilik
-                                task dan helper lain.
-                            </p>
+            >
+              Badge verified sudah aktif. Akun Anda akan lebih dipercaya oleh
+              pemilik task dan helper lain.
+            </p>
+          </>
+        )}
 
-                        </>
-
-                    )}
-
-                {verificationStatus ===
-                    "REJECTED" && (
-
-                        <>
-
-                            <div
-                                className="
+        {verificationStatus === "REJECTED" && (
+          <>
+            <div
+              className="
                 inline-flex
                 rounded-full
                 bg-red-100
@@ -708,40 +461,36 @@ export default function VerificationPage() {
                 font-bold
                 text-red-700
             "
-                            >
-                                🚫 Verifikasi Ditolak
-                            </div>
+            >
+              🚫 Verifikasi Ditolak
+            </div>
 
-                            <h2
-                                className="
+            <h2
+              className="
                 mt-4
                 text-xl
                 font-bold
                 text-slate-900
             "
-                            >
-                                Dokumen perlu diperbaiki
-                            </h2>
+            >
+              Dokumen perlu diperbaiki
+            </h2>
 
-                            <p
-                                className="
+            <p
+              className="
                 mt-2
                 text-slate-500
             "
-                            >
-                                Silakan upload ulang
-                                dokumen yang lebih jelas
-                                agar dapat diverifikasi.
-                            </p>
+            >
+              Silakan upload ulang dokumen yang lebih jelas agar dapat
+              diverifikasi.
+            </p>
+          </>
+        )}
 
-                        </>
-
-                    )}
-
-                    {rejectionReason && (
-
-    <div
-        className="
+        {rejectionReason && (
+          <div
+            className="
             mt-4
             rounded-2xl
             bg-red-50
@@ -749,167 +498,139 @@ export default function VerificationPage() {
             border-red-200
             p-4
         "
-    >
-
-        <p
-            className="
+          >
+            <p
+              className="
                 font-bold
                 text-red-700
             "
-        >
-            Alasan Penolakan
-        </p>
+            >
+              Alasan Penolakan
+            </p>
 
-        <p
-            className="
+            <p
+              className="
                 mt-2
                 text-sm
                 text-red-600
             "
-        >
-            {rejectionReason}
-        </p>
+            >
+              {rejectionReason}
+            </p>
+          </div>
+        )}
 
-    </div>
+        {/* UPLOAD DOCUMENTS */}
 
-)}      
-
-                {/* UPLOAD DOCUMENTS */}
-
-                {(
-                    verificationStatus ===
-                    "UNVERIFIED"
-
-                    ||
-
-                    verificationStatus ===
-                    "REJECTED"
-                ) && (
-
-                        <div
-                            className="
+        {(verificationStatus === "UNVERIFIED" ||
+          verificationStatus === "REJECTED") && (
+          <div
+            className="
     mt-6
     rounded-3xl
     bg-white
     p-6
     shadow-sm
   "
-                        >
-
-                            <h2
-                                className="
+          >
+            <h2
+              className="
       text-lg
       font-bold
       text-slate-900
     "
-                            >
-                                Upload Dokumen
-                            </h2>
+            >
+              Upload Dokumen
+            </h2>
 
-                            {/* KTP */}
+            {/* KTP */}
 
-                            <div className="mt-6">
-
-                                <p
-                                    className="
+            <div className="mt-6">
+              <p
+                className="
         text-sm
         font-semibold
         text-slate-700
       "
-                                >
-                                    Foto KTP
-                                </p>
+              >
+                Foto KTP
+              </p>
 
-                                {ktpPreview && (
-
-                                    <img
-                                        src={ktpPreview}
-                                        alt="KTP"
-                                        className="
+              {ktpPreview && (
+                <img
+                  src={ktpPreview}
+                  alt="KTP"
+                  className="
           mt-3
           h-48
           w-full
           rounded-2xl
           object-cover
         "
-                                    />
+                />
+              )}
 
-                                )}
+              <input
+                type="file"
+                accept="image/*"
+                className="mt-3"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
 
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="mt-3"
-                                    onChange={(e) => {
+                  if (!file) return;
 
-                                        const file =
-                                            e.target.files?.[0];
+                  handleKtpChange(file);
+                }}
+              />
+            </div>
 
-                                        if (!file) return;
+            {/* SELFIE */}
 
-                                        handleKtpChange(file);
-                                    }}
-                                />
-
-                            </div>
-
-                            {/* SELFIE */}
-
-                            <div className="mt-8">
-
-                                <p
-                                    className="
+            <div className="mt-8">
+              <p
+                className="
         text-sm
         font-semibold
         text-slate-700
       "
-                                >
-                                    Foto Selfie
-                                </p>
+              >
+                Foto Selfie
+              </p>
 
-                                {selfiePreview && (
-
-                                    <img
-                                        src={selfiePreview}
-                                        alt="Selfie"
-                                        className="
+              {selfiePreview && (
+                <img
+                  src={selfiePreview}
+                  alt="Selfie"
+                  className="
           mt-3
           h-48
           w-full
           rounded-2xl
           object-cover
         "
-                                    />
+                />
+              )}
 
-                                )}
+              <input
+                type="file"
+                accept="image/*"
+                className="mt-3"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
 
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="mt-3"
-                                    onChange={(e) => {
+                  if (!file) return;
 
-                                        const file =
-                                            e.target.files?.[0];
+                  handleSelfieChange(file);
+                }}
+              />
+            </div>
 
-                                        if (!file) return;
+            {/* SUBMIT BUTTON */}
 
-                                        handleSelfieChange(file);
-                                    }}
-                                />
-
-                            </div>
-
-                            {/* SUBMIT BUTTON */}
-
-                            <button
-                                onClick={
-                                    handleSubmitVerification
-                                }
-                                disabled={
-                                    uploading
-                                }
-                                className="
+            <button
+              onClick={handleSubmitVerification}
+              disabled={uploading}
+              className="
                             mt-8
                             w-full
                             rounded-2xl
@@ -922,21 +643,12 @@ export default function VerificationPage() {
                             hover:bg-indigo-700
                             disabled:opacity-50
                         "
-                            >
-
-                                {uploading
-                                    ? "Mengirim..."
-                                    : "Kirim Verifikasi"}
-
-                            </button>
-
-                        </div>
-
-                    )}
-
-            </div>
-
-        </main>
-
-    );
+            >
+              {uploading ? "Mengirim..." : "Kirim Verifikasi"}
+            </button>
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }

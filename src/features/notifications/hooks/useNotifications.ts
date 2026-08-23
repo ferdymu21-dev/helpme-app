@@ -2,225 +2,115 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import {
-    subscribeNotifications,
-} from "../realtime";
+import { subscribeNotifications } from "../realtime";
 
-import type {
-    Notification,
-} from "../types/notification.types";
+import type { Notification } from "../types/notification.types";
+
+import { markNotificationReadAction } from "../actions/client";
 
 import {
-    getMyNotifications,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
+  getMyNotifications,
+  markAllNotificationsAsRead,
 } from "../services";
 
 export function useNotifications() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-    const [
-        notifications,
-        setNotifications,
-    ] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
 
-    const [
-        hasMore,
-        setHasMore,
-    ] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
-    const [
-        nextCursor,
-        setNextCursor,
-    ] = useState<string | null>(null);
+  const loadNotifications = useCallback(async () => {
+    try {
+      const result = await getMyNotifications();
 
-    const loadNotifications =
-        useCallback(
+      setNotifications(result.notifications);
 
-            async () => {
+      setHasMore(result.hasMore);
 
-                try {
+      setNextCursor(result.nextCursor);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-                    const result =
-                        await getMyNotifications();
-
-                    setNotifications(
-                        result.notifications
-                    );
-
-                    setHasMore(
-                        result.hasMore
-                    );
-
-                    setNextCursor(
-                        result.nextCursor
-                    );
-
-                } catch (error) {
-
-                    console.error(error);
-
-                } finally {
-
-                    setLoading(false);
-
-                }
-
-            },
-
-            []
-
-        );
-
-    async function loadMore() {
-
-        if (!nextCursor) {
-
-            return;
-
-        }
-
-        try {
-
-            const result =
-                await getMyNotifications(
-                    nextCursor
-                );
-
-            setNotifications(
-
-                (prev) => [
-
-                    ...prev,
-
-                    ...result.notifications,
-
-                ]
-
-            );
-
-            setHasMore(
-                result.hasMore
-            );
-
-            setNextCursor(
-                result.nextCursor
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
+  async function loadMore() {
+    if (!nextCursor) {
+      return;
     }
 
-    async function readNotification(
-        notificationId: string
-    ) {
+    try {
+      const result = await getMyNotifications(nextCursor);
 
-        await markNotificationAsRead(
-            notificationId
-        );
+      setNotifications((prev) => [...prev, ...result.notifications]);
 
-        setNotifications(
+      setHasMore(result.hasMore);
 
-            (prev) =>
-
-                prev.map(
-
-                    (item) =>
-
-                        item.id === notificationId
-
-                            ? {
-
-                                ...item,
-
-                                is_read: true,
-
-                            }
-
-                            : item
-
-                )
-
-        );
-
+      setNextCursor(result.nextCursor);
+    } catch (error) {
+      console.error(error);
     }
+  }
 
-    async function readAllNotifications() {
+  async function readNotification(notificationId: string) {
+    await markNotificationReadAction(notificationId);
 
-        await markAllNotificationsAsRead();
+    setNotifications((prev) =>
+      prev.map((item) =>
+        item.id === notificationId
+          ? {
+              ...item,
 
-        setNotifications(
+              is_read: true,
+            }
+          : item,
+      ),
+    );
+  }
 
-            (prev) =>
+  async function readAllNotifications() {
+    await markAllNotificationsAsRead();
 
-                prev.map(
+    setNotifications((prev) =>
+      prev.map((notification) => ({
+        ...notification,
 
-                    (notification) => ({
+        is_read: true,
+      })),
+    );
+  }
 
-                        ...notification,
+  useEffect(() => {
+  let unsubscribe: (() => void) | undefined;
 
-                        is_read: true,
+  void Promise.resolve().then(() => loadNotifications());
 
-                    })
+  (async () => {
+    unsubscribe = await subscribeNotifications(loadNotifications);
+  })();
 
-                )
+  return () => {
+    unsubscribe?.();
+  };
+}, [loadNotifications]);
 
-        );
+  return {
+    notifications,
 
-    }
+    loading,
 
-    useEffect(() => {
+    hasMore,
 
-        let unsubscribe:
-            (() => void) | undefined;
+    loadMore,
 
-        loadNotifications();
+    loadNotifications,
 
-        (async () => {
+    readNotification,
 
-            unsubscribe =
-                await subscribeNotifications(
-                    loadNotifications
-                );
-
-        })();
-
-        return () => {
-
-            unsubscribe?.();
-
-        };
-
-    }, [
-
-        loadNotifications,
-
-    ]);
-
-    return {
-
-        notifications,
-
-        loading,
-
-        hasMore,
-
-        loadMore,
-
-        loadNotifications,
-
-        readNotification,
-
-        readAllNotifications,
-
-    };
-
+    readAllNotifications,
+  };
 }

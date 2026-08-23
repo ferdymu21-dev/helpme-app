@@ -1,36 +1,6 @@
 import Link from "next/link";
 
-interface Conversation {
-  id: string;
-
-  owner_id: string;
-
-  helper_id: string;
-
-  created_at: string;
-
-  last_message: string;
-
-  last_message_at: string;
-
-  owner_unread_count: number;
-
-  helper_unread_count: number;
-
-  tasks: {
-    title: string;
-  };
-
-  owner: {
-    full_name: string;
-    avatar_url?: string;
-  };
-
-  helper: {
-    full_name: string;
-    avatar_url?: string;
-  };
-}
+import type { Conversation } from "@/features/messages/types/conversation.types";
 
 interface Props {
   conversations: Conversation[];
@@ -51,7 +21,6 @@ export default function DesktopConversationSidebar({
         bg-white
       "
     >
-
       {/* HEADER */}
       <div
         className="
@@ -61,7 +30,6 @@ export default function DesktopConversationSidebar({
           py-6
         "
       >
-
         <h1
           className="
             text-3xl
@@ -72,33 +40,27 @@ export default function DesktopConversationSidebar({
         >
           Messages
         </h1>
-
       </div>
 
       {/* LIST */}
       <div className="overflow-y-auto p-4">
-
         <div className="space-y-3">
+          {conversations.map((conversation) => {
+            const otherUser =
+              conversation.owner_id === currentUserId
+                ? conversation.helper
+                : conversation.owner;
 
-          {conversations.map(
-            (conversation) => {
-              const otherUser =
-                conversation.owner_id ===
-                  currentUserId
-                  ? conversation.helper
-                  : conversation.owner;
+            const unreadCount =
+              conversation.owner_id === currentUserId
+                ? conversation.owner_unread_count
+                : conversation.helper_unread_count;
 
-              const unreadCount =
-                conversation.owner_id ===
-                  currentUserId
-                  ? conversation.owner_unread_count
-                  : conversation.helper_unread_count;
-
-              return (
-                <Link
-                  key={conversation.id}
-                  href={`/messages/${conversation.id}`}
-                  className="
+            return (
+              <Link
+                key={conversation.id}
+                href={`/messages/${conversation.id}`}
+                className="
                     flex
                     items-center
                     gap-4
@@ -110,16 +72,14 @@ export default function DesktopConversationSidebar({
                     transition
                     hover:bg-slate-50
                   "
-                >
+              >
+                {/* AVATAR */}
 
-                  {/* AVATAR */}
-
-                  {otherUser?.avatar_url ? (
-
-                    <img
-                      src={otherUser.avatar_url}
-                      alt={otherUser.full_name}
-                      className="
+                {otherUser?.avatar_url ? (
+                  <img
+                    src={otherUser.avatar_url}
+                    alt={otherUser.full_name}
+                    className="
       h-14
       w-14
       rounded-full
@@ -128,12 +88,10 @@ export default function DesktopConversationSidebar({
       border-slate-200
       shrink-0
     "
-                    />
-
-                  ) : (
-
-                    <div
-                      className="
+                  />
+                ) : (
+                  <div
+                    className="
       flex
       h-14
       w-14
@@ -146,33 +104,27 @@ export default function DesktopConversationSidebar({
       text-indigo-700
       shrink-0
     "
-                    >
-                      {otherUser?.full_name?.charAt(0) || "U"}
-                    </div>
+                  >
+                    {otherUser?.full_name?.charAt(0) || "U"}
+                  </div>
+                )}
 
-                  )}
-
-                  {/* INFO */}
-                  <div className="flex-1">
-
-                    <div className="flex items-center justify-between">
-
-                      <h2
-                        className="
+                {/* INFO */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h2
+                      className="
                          text-sm
                          font-bold
                        text-slate-900
                        "
-                      >
-                        {
-                          otherUser?.full_name
-                        }
-                      </h2>
+                    >
+                      {otherUser?.full_name}
+                    </h2>
 
-                      {unreadCount > 0 && (
-
-                        <div
-                          className="
+                    {unreadCount > 0 && (
+                      <div
+                        className="
                            flex
                            h-6
                            min-w-6
@@ -185,51 +137,38 @@ export default function DesktopConversationSidebar({
                            font-bold
                          text-white
                         "
-                        >
-                          {unreadCount}
-                        </div>
+                      >
+                        {unreadCount}
+                      </div>
+                    )}
+                  </div>
 
-                      )}
-
-                    </div>
-
-                    <p
-                      className="
+                  <p
+                    className="
                       mt-1
                       truncate
                       text-xs
                     text-slate-500
                     "
-                    >
-                      {conversation.last_message ||
-                        "Belum ada pesan"}
-                    </p>
+                  >
+                    {conversation.last_message || "Belum ada pesan"}
+                  </p>
 
-                    <p
-                      className="
+                  <p
+                    className="
                       mt-1
                       text-[11px]
                     text-slate-400
                     "
-                    >
-                      {
-                        conversation.tasks
-                          ?.title
-                      }
-
-                    </p>
-
-                  </div>
-
-                </Link>
-              );
-            }
-          )}
-
+                  >
+                    {conversation.tasks?.title}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-
       </div>
-
     </div>
   );
 }

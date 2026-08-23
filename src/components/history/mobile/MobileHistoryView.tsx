@@ -1,14 +1,13 @@
+import type { HistoryTask } from "@/features/tasks/types/history";
+
 interface Props {
-  tasks: any[];
+  tasks: HistoryTask[];
   loading: boolean;
-
   activeTab: "OWNER" | "HELPER";
-
-  setActiveTab: (
-    value: "OWNER" | "HELPER"
-  ) => void;
-
-  router: any;
+  setActiveTab: (value: "OWNER" | "HELPER") => void;
+  router: {
+    push: (href: string) => void;
+  };
 }
 
 export default function MobileHistoryView({
@@ -18,16 +17,13 @@ export default function MobileHistoryView({
   setActiveTab,
   router,
 }: Props) {
-
   return (
-
     <main
       className="
         p-6
         lg:hidden
       "
     >
-
       {/* HEADER */}
       <h1
         className="
@@ -40,13 +36,8 @@ export default function MobileHistoryView({
 
       {/* TABS */}
       <div className="mt-6 flex gap-3">
-
         <button
-          onClick={() =>
-            setActiveTab(
-              "OWNER"
-            )
-          }
+          onClick={() => setActiveTab("OWNER")}
           className={`
             rounded-full
             px-4
@@ -66,11 +57,7 @@ export default function MobileHistoryView({
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab(
-              "HELPER"
-            )
-          }
+          onClick={() => setActiveTab("HELPER")}
           className={`
             rounded-full
             px-4
@@ -88,21 +75,15 @@ export default function MobileHistoryView({
         >
           Bantuan Saya
         </button>
-
       </div>
 
       {/* LIST */}
       <div className="mt-6">
+        {loading && <p>Memuat...</p>}
 
-        {loading && (
-          <p>Memuat...</p>
-        )}
-
-        {!loading &&
-          tasks.length === 0 && (
-
-            <div
-              className="
+        {!loading && tasks.length === 0 && (
+          <div
+            className="
                 rounded-3xl
                 border
                 border-dashed
@@ -111,28 +92,16 @@ export default function MobileHistoryView({
                 p-8
                 text-center
               "
-            >
-
-              <p className="text-slate-500">
-                Belum ada riwayat
-              </p>
-
-            </div>
-
-          )}
+          >
+            <p className="text-slate-500">Belum ada riwayat</p>
+          </div>
+        )}
 
         {!loading &&
           tasks.map((task) => (
-
             <button
               key={task.id}
-
-              onClick={() =>
-                router.push(
-                  `/tasks/${task.id}`
-                )
-              }
-
+              onClick={() => router.push(`/tasks/${task.id}`)}
               className="
                 mb-4
                 w-full
@@ -149,11 +118,8 @@ export default function MobileHistoryView({
                 hover:shadow-md
               "
             >
-
               <div className="flex items-start justify-between">
-
                 <div>
-
                   <h2
                     className="
                       text-base
@@ -173,11 +139,9 @@ export default function MobileHistoryView({
                   >
                     {task.category}
                   </p>
-
                 </div>
 
                 <div className="flex items-center gap-2">
-
                   <span
                     className="
                       text-lg
@@ -199,26 +163,21 @@ export default function MobileHistoryView({
                         task.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-700"
                           : task.status === "CANCELLED"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-amber-100 text-amber-700"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-700"
                       }
                     `}
                   >
-                    {
-                      task.status === "COMPLETED"
-                        ? "Selesai"
-                        : task.status === "CANCELLED"
+                    {task.status === "COMPLETED"
+                      ? "Selesai"
+                      : task.status === "CANCELLED"
                         ? "Dibatalkan"
-                        : "Kadaluarsa"
-                    }
+                        : "Kadaluarsa"}
                   </div>
-
                 </div>
-
               </div>
 
               <div className="mt-4">
-
                 <p
                   className="
                     text-lg
@@ -227,20 +186,12 @@ export default function MobileHistoryView({
                   "
                 >
                   Rp
-                  {task.budget?.toLocaleString(
-                    "id-ID"
-                  )}
+                  {task.budget?.toLocaleString("id-ID")}
                 </p>
-
               </div>
-
             </button>
-
           ))}
-
       </div>
-
     </main>
-
   );
 }

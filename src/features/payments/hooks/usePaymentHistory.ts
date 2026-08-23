@@ -1,150 +1,77 @@
 "use client";
 
 import {
-    useEffect,
-    useState,
+  useCallback,
+  useEffect,
+  useState,
 } from "react";
 
 import {
-    fetchPaymentHistory,
+  fetchPaymentHistory,
 } from "../services/paymentHistory.service";
 
 export interface PaymentHistoryItem {
-
-    id: string;
-
-    amount: number;
-
-    payment_status: string;
-
-    payment_method: string;
-
-    midtrans_order_id: string;
-
-    created_at: string;
-
-    paid_at: string | null;
-
+  id: string;
+  amount: number;
+  payment_status: string;
+  payment_method: string;
+  midtrans_order_id: string;
+  created_at: string;
+  paid_at: string | null;
 }
 
 export function usePaymentHistory() {
-
-    const [
-
-        history,
-
-        setHistory,
-
-    ]
-
-    =
-
+  const [history, setHistory] =
     useState<PaymentHistoryItem[]>([]);
 
-    const [
-
-        loading,
-
-        setLoading,
-
-    ]
-
-    =
-
+  const [loading, setLoading] =
     useState(true);
 
-    const [
+  const [error, setError] =
+    useState<string | null>(null);
 
-        error,
+  const loadHistory = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        setError,
+      const result =
+        await fetchPaymentHistory();
 
-    ]
-
-    =
-
-    useState<string | null>(
-
-        null
-
-    );
-
-    async function loadHistory() {
-
-        try {
-
-            setLoading(
-
-                true
-
-            );
-
-            const result =
-
-                await fetchPaymentHistory();
-
-            setHistory(
-
-                result
-
-            );
-
-        }
-
-        catch (
-
-            error
-
-        ) {
-
-            setError(
-
-                error instanceof Error
-
-                    ? error.message
-
-                    : "Unknown Error"
-
-            );
-
-        }
-
-        finally {
-
-            setLoading(
-
-                false
-
-            );
-
-        }
-
+      setHistory(result);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unknown Error",
+      );
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    useEffect(
+  useEffect(() => {
+    let cancelled = false;
 
-        () => {
+    const run = async () => {
+      if (cancelled) {
+        return;
+      }
 
-            loadHistory();
-
-        },
-
-        []
-
-    );
-
-    return {
-
-        history,
-
-        loading,
-
-        error,
-
-        reload:
-
-            loadHistory,
-
+      await loadHistory();
     };
 
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadHistory]);
+
+  return {
+    history,
+    loading,
+    error,
+    reload: loadHistory,
+  };
 }

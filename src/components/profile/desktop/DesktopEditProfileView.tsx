@@ -1,23 +1,25 @@
 "use client";
 
-interface Props {
-  profile: {
-    fullName: string;
-    username: string;
-    bio: string;
-    location: string;
-    avatarUrl?: string;
-  };
+import type { Dispatch, SetStateAction } from "react";
 
-  setProfile: any;
+interface ProfileData {
+  fullName: string;
+  username: string;
+  bio: string;
+  location: string;
+  avatarUrl?: string;
+}
+
+interface Props {
+  profile: ProfileData;
+
+  setProfile: Dispatch<SetStateAction<ProfileData>>;
 
   loading: boolean;
 
   avatarPreview: string;
 
-  onAvatarChange: (
-    file: File
-  ) => void;
+  onAvatarChange: (file: File) => void;
 
   onSave: () => void;
 }
@@ -25,14 +27,11 @@ interface Props {
 export default function DesktopEditProfileView({
   profile,
   setProfile,
-  loading,
   avatarPreview,
-
   onAvatarChange,
-
   onSave,
 }: Props) {
-
+  
   return (
     <main
       className="
@@ -42,12 +41,9 @@ export default function DesktopEditProfileView({
         lg:block
       "
     >
-
       <div className="mx-auto max-w-6xl px-10 py-10">
-
         {/* HEADER */}
         <div>
-
           <h1
             className="
               text-5xl
@@ -66,15 +62,12 @@ export default function DesktopEditProfileView({
               text-slate-500
             "
           >
-            Lengkapi profile dan
-            reputasi akun kamu.
+            Lengkapi profile dan reputasi akun kamu.
           </p>
-
         </div>
 
         {/* GRID */}
         <div className="mt-10 grid grid-cols-3 gap-6">
-
           {/* LEFT */}
           <div
             className="
@@ -84,7 +77,6 @@ export default function DesktopEditProfileView({
               shadow-[0_10px_30px_rgba(15,23,42,0.05)]
             "
           >
-
             {/* AVATAR */}
             <div
               className="
@@ -101,9 +93,7 @@ export default function DesktopEditProfileView({
     text-indigo-700
   "
             >
-
               {avatarPreview ? (
-
                 <img
                   src={avatarPreview}
                   alt="Avatar"
@@ -113,15 +103,9 @@ export default function DesktopEditProfileView({
         object-cover
       "
                 />
-
               ) : (
-
-                profile.fullName
-                  ?.charAt(0)
-                  ?.toUpperCase()
-
+                profile.fullName?.charAt(0)?.toUpperCase()
               )}
-
             </div>
 
             <label
@@ -141,26 +125,21 @@ export default function DesktopEditProfileView({
   "
             >
               Pilih Foto
-
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
                 onChange={(e) => {
-
-                  const file =
-                    e.target.files?.[0];
+                  const file = e.target.files?.[0];
 
                   if (!file) return;
 
                   onAvatarChange(file);
                 }}
               />
-
             </label>
 
             <div className="mt-6">
-
               <h2
                 className="
                   text-2xl
@@ -169,8 +148,7 @@ export default function DesktopEditProfileView({
                   text-slate-900
                 "
               >
-                {profile.fullName ||
-                  "User"}
+                {profile.fullName || "User"}
               </h2>
 
               <p
@@ -181,7 +159,6 @@ export default function DesktopEditProfileView({
               >
                 @{profile.username}
               </p>
-
             </div>
 
             {/* PREVIEW */}
@@ -193,7 +170,6 @@ export default function DesktopEditProfileView({
                 p-5
               "
             >
-
               <p
                 className="
                   text-sm
@@ -212,12 +188,9 @@ export default function DesktopEditProfileView({
                   text-slate-600
                 "
               >
-                {profile.bio ||
-                  "Belum ada bio"}
+                {profile.bio || "Belum ada bio"}
               </p>
-
             </div>
-
           </div>
 
           {/* RIGHT */}
@@ -230,12 +203,9 @@ export default function DesktopEditProfileView({
               shadow-[0_10px_30px_rgba(15,23,42,0.05)]
             "
           >
-
             <div className="space-y-6">
-
               {/* FULL NAME */}
               <div>
-
                 <label
                   className="
                     text-sm
@@ -251,8 +221,7 @@ export default function DesktopEditProfileView({
                   onChange={(e) =>
                     setProfile({
                       ...profile,
-                      fullName:
-                        e.target.value,
+                      fullName: e.target.value,
                     })
                   }
                   className="
@@ -269,12 +238,10 @@ export default function DesktopEditProfileView({
                     focus:border-indigo-400
                   "
                 />
-
               </div>
 
               {/* USERNAME */}
               <div>
-
                 <label
                   className="
                     text-sm
@@ -290,8 +257,7 @@ export default function DesktopEditProfileView({
                   onChange={(e) =>
                     setProfile({
                       ...profile,
-                      username:
-                        e.target.value,
+                      username: e.target.value,
                     })
                   }
                   className="
@@ -308,12 +274,10 @@ export default function DesktopEditProfileView({
                     focus:border-indigo-400
                   "
                 />
-
               </div>
 
               {/* BIO */}
               <div>
-
                 <label
                   className="
                     text-sm
@@ -346,12 +310,10 @@ export default function DesktopEditProfileView({
                     focus:border-indigo-400
                   "
                 />
-
               </div>
 
               {/* LOCATION */}
               <div>
-
                 <label
                   className="
                     text-sm
@@ -367,8 +329,7 @@ export default function DesktopEditProfileView({
                   onChange={(e) =>
                     setProfile({
                       ...profile,
-                      location:
-                        e.target.value,
+                      location: e.target.value,
                     })
                   }
                   className="
@@ -385,7 +346,6 @@ export default function DesktopEditProfileView({
                     focus:border-indigo-400
                   "
                 />
-
               </div>
 
               {/* BUTTON */}
@@ -409,15 +369,10 @@ export default function DesktopEditProfileView({
               >
                 Simpan Perubahan
               </button>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </main>
   );
 }

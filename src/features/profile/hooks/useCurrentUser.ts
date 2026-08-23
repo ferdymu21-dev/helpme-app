@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import { supabase } from "@/lib/supabase/client";
 
 export interface CurrentUser {
@@ -11,21 +12,14 @@ export interface CurrentUser {
   bio: string;
   location: string;
   verificationStatus: string;
-
 }
 
 export function useCurrentUser() {
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [user, setUser] =
-    useState<CurrentUser | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  async function refresh() {
-
+  const refresh = useCallback(async () => {
     try {
-
       setLoading(true);
 
       const {
@@ -33,20 +27,14 @@ export function useCurrentUser() {
       } = await supabase.auth.getUser();
 
       if (!authUser) {
-
         setUser(null);
-
         return;
       }
 
-      const {
-        data,
-        error,
-      } = await supabase
-
+      const { data, error } = await supabase
         .from("users")
-
-        .select(`
+        .select(
+          `
           id,
           full_name,
           username,
@@ -54,71 +42,46 @@ export function useCurrentUser() {
           bio,
           location,
           verification_status
-        `)
-
+        `,
+        )
         .eq("id", authUser.id)
-
         .single();
 
       if (error) {
-
-        console.error(error);
+        console.error("GET CURRENT USER ERROR:", error);
 
         setUser(null);
-
         return;
       }
 
       setUser({
-
         id: data.id,
-
-        fullName:
-          data.full_name ?? "",
-
-        username:
-          data.username ?? "",
-
-        avatarUrl:
-          data.avatar_url ?? "",
-
-        bio:
-          data.bio ?? "",
-
-        location:
-          data.location ?? "",
-
-        verificationStatus:
-          data.verification_status ?? "",
-
+        fullName: data.full_name ?? "",
+        username: data.username ?? "",
+        avatarUrl: data.avatar_url ?? "",
+        bio: data.bio ?? "",
+        location: data.location ?? "",
+        verificationStatus: data.verification_status ?? "",
       });
-
     } catch (error) {
+      console.error("REFRESH CURRENT USER ERROR:", error);
 
-      console.error(error);
-
+      setUser(null);
     } finally {
-
       setLoading(false);
-
     }
-
-  }
-
-  useEffect(() => {
-
-    refresh();
-
   }, []);
 
+  useEffect(() => {
+    // Initial profile fetch is intentionally triggered from an effect.
+    // The refresh function updates local React state with data from Supabase.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refresh();
+  }, [refresh]);
+
   return {
-
     user,
-
     loading,
-
     refresh,
-
   };
-
 }

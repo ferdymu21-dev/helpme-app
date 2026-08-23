@@ -1,44 +1,23 @@
 "use client";
 
 type Props = {
-
   manualAddress: string;
 
-  onManualAddressChange: (
-    value: string
-  ) => void;
-
+  onManualAddressChange: (value: string) => void;
 };
 
 export default function ManualAddressInput({
-
   manualAddress,
 
   onManualAddressChange,
-
 }: Props) {
-
   return (
-
     <textarea
-
       rows={4}
-
       required
-
       value={manualAddress}
-
-      onChange={(e) =>
-
-        onManualAddressChange(
-          e.target.value
-        )
-
-      }
-
-      placeholder="
-Contoh: Jl. Sudirman No.10, dekat Indomaret..."
-
+      onChange={(e) => onManualAddressChange(e.target.value)}
+      placeholder="Contoh: Jl. Sudirman No.10, dekat Indomaret..."
       className="
         mt-4
         w-full
@@ -60,9 +39,6 @@ Contoh: Jl. Sudirman No.10, dekat Indomaret..."
         focus:ring-4
         focus:ring-indigo-100
       "
-
     />
-
   );
-
 }

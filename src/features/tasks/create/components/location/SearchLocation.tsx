@@ -1,19 +1,16 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
   locationSearch: string;
 
   searchingLocation: boolean;
 
-  onLocationSearchChange: (
-    value: string
-  ) => void;
+  onLocationSearchChange: (value: string) => void;
 
-  onSearchLocation: (
-    query: string
-  ) => void;
+  onSearchLocation: (query: string) => void;
 };
 
 export default function SearchLocation({
@@ -22,27 +19,36 @@ export default function SearchLocation({
   onLocationSearchChange,
   onSearchLocation,
 }: Props) {
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function handleChange(
-    e: ChangeEvent<HTMLInputElement>
-  ) {
-
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
 
     onLocationSearchChange(value);
 
-    clearTimeout(
-      (window as any).locationSearchTimeout
-    );
+    // Batalkan timer pencarian sebelumnya
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    (window as any).locationSearchTimeout =
-      setTimeout(() => {
+    // Jangan mencari jika input kosong
+    if (!value.trim()) {
+      return;
+    }
 
-        onSearchLocation(value);
-
-      }, 800);
-
+    // Debounce pencarian
+    searchTimeoutRef.current = setTimeout(() => {
+      onSearchLocation(value.trim());
+    }, 800);
   }
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <>

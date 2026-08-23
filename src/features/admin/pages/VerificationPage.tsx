@@ -1,501 +1,344 @@
 "use client";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 interface VerificationRequest {
+  id: string;
 
-    id: string;
+  user_id: string;
 
-    user_id: string;
+  ktp_url: string;
 
-    ktp_url: string;
+  selfie_url: string;
 
-    selfie_url: string;
+  status: string;
 
-    status: string;
+  rejection_reason?: string;
 
-    rejection_reason?: string;
+  created_at: string;
 
-    created_at: string;
+  users?: {
+    full_name: string;
 
-    users?: {
-
-        full_name: string;
-
-        avatar_url: string | null;
-
-    };
-
+    avatar_url: string | null;
+  };
 }
 
 export default function VerificationPage() {
+  const [requests, setRequests] = useState<VerificationRequest[]>([]);
 
-    const [
-        requests,
-        setRequests,
-    ] = useState<
-        VerificationRequest[]
-    >([]);
+  const [loading, setLoading] = useState(true);
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
+  const [selectedRequest, setSelectedRequest] =
+    useState<VerificationRequest | null>(null);
 
-    const [
-        selectedRequest,
-        setSelectedRequest,
-    ] = useState<
-        VerificationRequest | null
-    >(
-        null
-    );
+  const [ktpImageUrl, setKtpImageUrl] = useState("");
 
-    const [
-        ktpImageUrl,
-        setKtpImageUrl,
-    ] = useState("");
+  const [selfieImageUrl, setSelfieImageUrl] = useState("");
 
-    const [
-        selfieImageUrl,
-        setSelfieImageUrl,
-    ] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
 
-    const [
-        rejectionReason,
-        setRejectionReason,
-    ] = useState("");
+  const [processing, setProcessing] = useState(false);
 
-    const [
-        processing,
-        setProcessing,
-    ] = useState(false);
+  function closeModal() {
+    setSelectedRequest(null);
 
-    function closeModal() {
+    setKtpImageUrl("");
 
-        setSelectedRequest(
-            null
-        );
+    setSelfieImageUrl("");
 
-        setKtpImageUrl("");
+    setRejectionReason("");
+  }
 
-        setSelfieImageUrl("");
+  async function fetchPendingRequests(): Promise<VerificationRequest[]> {
+    const { data = [], error } = await supabase
+      .from("verification_requests")
+      .select(
+        `
+        *,
+        users (
+          full_name,
+          avatar_url
+        )
+      `,
+      )
+      .eq("status", "PENDING")
+      .order("created_at", {
+        ascending: false,
+      });
 
-        setRejectionReason("");
-
+    if (error) {
+      throw error;
     }
 
-    async function approveVerification(
-        request: VerificationRequest
-    ) {
+    return data as VerificationRequest[];
+  }
 
-        try {
+  async function loadRequests() {
+    try {
+      setLoading(true);
 
-            setProcessing(true);
+      const data = await fetchPendingRequests();
 
-            const {
-                error: requestError,
-            } = await supabase
-                .from("verification_requests")
-                .update({
-                    status: "APPROVED",
-                    reviewed_at:
-                        new Date().toISOString(),
-                })
-                .eq("id", request.id);
-
-            if (requestError) {
-
-                console.error(
-                    requestError
-                );
-
-                return;
-            }
-
-            const {
-                error: userError,
-            } = await supabase
-                .from("users")
-                .update({
-                    verification_status:
-                        "VERIFIED",
-                })
-                .eq(
-                    "id",
-                    request.user_id
-                )
-                .select();
-
-            if (userError) {
-
-                console.error(
-                    userError
-                );
-
-                return;
-            }
-
-            alert(
-                "User berhasil diverifikasi"
-            );
-
-            await supabase
-                .from("notifications")
-                .insert({
-
-                    user_id:
-                        request.user_id,
-
-                    title:
-                        "Verifikasi Disetujui",
-
-                    message:
-                        "Selamat! Akun Anda berhasil diverifikasi.",
-
-                    type:
-                        "VERIFICATION_APPROVED",
-
-                });
-
-            await supabase
-                .from("notifications")
-                .insert({
-
-                    user_id:
-                        request.user_id,
-
-                    title:
-                        "Verifikasi Ditolak",
-
-                    message:
-                        rejectionReason,
-
-                    type:
-                        "VERIFICATION_REJECTED",
-
-                });
-
-            await loadRequests();
-
-            closeModal();
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-        finally {
-
-            setProcessing(false);
-
-        }
-
+      setRequests(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    async function rejectVerification(
-        request: VerificationRequest
-    ) {
+  async function approveVerification(request: VerificationRequest) {
+    try {
+      setProcessing(true);
 
-        try {
+      const { error: requestError } = await supabase
+        .from("verification_requests")
+        .update({
+          status: "APPROVED",
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", request.id);
 
-            setProcessing(true);
+      if (requestError) {
+        console.error(requestError);
 
-            const {
-                error: requestError,
-            } = await supabase
-                .from(
-                    "verification_requests"
-                )
-                .update({
-                    status: "REJECTED",
-                    rejection_reason:
-                        rejectionReason,
-                    reviewed_at:
-                        new Date().toISOString(),
-                })
-                .eq(
-                    "id",
-                    request.id
-                );
+        return;
+      }
 
-            if (requestError) {
+      const { error: userError } = await supabase
+        .from("users")
+        .update({
+          verification_status: "VERIFIED",
+        })
+        .eq("id", request.user_id);
 
-                console.error(
-                    requestError
-                );
+      if (userError) {
+        alert(userError.message);
 
-                return;
-            }
+        console.error(userError);
 
-            const {
-                error: userError,
-            } = await supabase
-                .from("users")
-                .update({
-                    verification_status:
-                        "REJECTED",
-                })
-                .eq(
-                    "id",
-                    request.user_id
-                );
+        return;
+      }
 
-            if (userError) {
+      alert("User berhasil diverifikasi");
 
-                console.error(
-                    userError
-                );
+      await supabase.from("notifications").insert({
+        user_id: request.user_id,
 
-                return;
-            }
+        title: "Verifikasi Disetujui",
 
-            alert(
-                "Verifikasi ditolak"
-            );
+        message: "Selamat! Akun Anda berhasil diverifikasi.",
 
-            await loadRequests();
+        type: "VERIFICATION_APPROVED",
+      });
 
-            closeModal();
+      await loadRequests();
 
-        } catch (error) {
-
-            console.error(error);
-
-        }
-        finally {
-
-            setProcessing(false);
-
-        }
-
+      closeModal();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessing(false);
     }
+  }
 
-    useEffect(() => {
+  async function rejectVerification(request: VerificationRequest) {
+    try {
+      setProcessing(true);
 
-        loadRequests();
+      const { error: requestError } = await supabase
+        .from("verification_requests")
+        .update({
+          status: "REJECTED",
+          rejection_reason: rejectionReason,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", request.id);
 
-    }, []);
+      if (requestError) {
+        console.error(requestError);
 
-    async function loadRequests() {
+        return;
+      }
 
-        try {
+      const { error: userError } = await supabase
+        .from("users")
+        .update({
+          verification_status: "REJECTED",
+        })
+        .eq("id", request.user_id);
 
-            setLoading(true);
+      if (userError) {
+        console.error(userError);
 
-            const {
-                data = [],
-                error,
-            } = await supabase
-                .from(
-                    "verification_requests"
-                )
-                .select(`
-                *,
-                users (
-                    full_name,
-                    avatar_url
-                )
-            `)
-                .eq(
-                    "status",
-                    "PENDING"
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false,
-                    }
-                );
+        return;
+      }
 
-            if (error) {
+      alert("Verifikasi ditolak");
 
-                console.error(error);
+      await supabase.from("notifications").insert({
+        user_id: request.user_id,
 
-                return;
-            }
+        title: "Verifikasi Ditolak",
 
-            setRequests(data || []);
+        message: rejectionReason,
 
-        } catch (error) {
+        type: "VERIFICATION_REJECTED",
+      });
 
-            console.error(error);
+      await loadRequests();
 
-        } finally {
+      closeModal();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessing(false);
+    }
+  }
 
-            setLoading(false);
+  useEffect(() => {
+    let cancelled = false;
 
+    const loadInitialRequests = async () => {
+      try {
+        const data = await fetchPendingRequests();
+
+        if (cancelled) {
+          return;
         }
 
-    }
+        setRequests(data);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
 
-    return (
+        console.error(error);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
 
-        <main className="p-8">
+    void loadInitialRequests();
 
-            <h1
-                className="
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <main className="p-8">
+      <h1
+        className="
           text-3xl
           font-black
           text-slate-900
         "
-            >
-                Verification Requests
-            </h1>
+      >
+        Verification Requests
+      </h1>
 
-            {loading && (
+      {loading && <p className="mt-6">Loading...</p>}
 
-                <p className="mt-6">
-                    Loading...
-                </p>
-
-            )}
-
-            <div className="mt-8 space-y-6">
-
-                {requests.map(
-                    (request) => (
-
-                        <div
-                            key={request.id}
-                            className="
+      <div className="mt-8 space-y-6">
+        {requests.map((request) => (
+          <div
+            key={request.id}
+            className="
                 rounded-3xl
                 bg-white
                 p-6
                 shadow-sm
               "
-                        >
-
-                            <div
-                                className="
+          >
+            <div
+              className="
                   flex
                   items-center
                   gap-4
                 "
-                            >
-
-                                <img
-                                    src={
-                                        request.users
-                                            ?.avatar_url ||
-                                        "/avatar.png"
-                                    }
-                                    alt=""
-                                    className="
+            >
+              <img
+                src={request.users?.avatar_url || "/avatar.png"}
+                alt=""
+                className="
                     h-14
                     w-14
                     rounded-full
                     object-cover
                   "
-                                />
+              />
 
-                                <div>
-
-                                    <p
-                                        className="
+              <div>
+                <p
+                  className="
                       font-bold
                     "
-                                    >
-                                        {
-                                            request.users
-                                                ?.full_name
-                                        }
-                                    </p>
+                >
+                  {request.users?.full_name}
+                </p>
 
-                                    <p
-                                        className="
+                <p
+                  className="
     text-xs
     text-slate-500
   "
-                                    >
-                                        {new Date(
-                                            request.created_at
-                                        ).toLocaleString()}
-                                    </p>
+                >
+                  {new Date(request.created_at).toLocaleString()}
+                </p>
 
-                                    <p
-                                        className="
+                <p
+                  className="
                       text-sm
                       text-slate-500
                     "
-                                    >
-                                        {request.status}
-                                    </p>
+                >
+                  {request.status}
+                </p>
 
-                                    <div
-                                        className="
+                <div
+                  className="
     mt-5
   "
-                                    >
+                >
+                  <button
+                    onClick={async () => {
+                      const { data: ktpSigned, error: ktpError } =
+                        await supabase.storage
+                          .from("verifications")
+                          .createSignedUrl(request.ktp_url, 3600);
 
-                                        <button
-                                            onClick={async () => {
+                      const { data: selfieSigned, error: selfieError } =
+                        await supabase.storage
+                          .from("verifications")
+                          .createSignedUrl(request.selfie_url, 3600);
 
-                                                const {
-                                                    data: ktpSigned,
-                                                    error: ktpError,
-                                                } =
-                                                    await supabase
-                                                        .storage
-                                                        .from("verifications")
-                                                        .createSignedUrl(
-                                                            request.ktp_url,
-                                                            3600
-                                                        );
+                      if (ktpError) {
+                        console.error(ktpError);
 
-                                                const {
-                                                    data: selfieSigned,
-                                                    error: selfieError,
-                                                } =
-                                                    await supabase
-                                                        .storage
-                                                        .from("verifications")
-                                                        .createSignedUrl(
-                                                            request.selfie_url,
-                                                            3600
-                                                        );
+                        return;
+                      }
 
-                                                if (ktpError) {
+                      if (selfieError) {
+                        console.error(selfieError);
 
-                                                    console.error(
-                                                        ktpError
-                                                    );
+                        return;
+                      }
 
-                                                    return;
-                                                }
+                      setKtpImageUrl(ktpSigned.signedUrl);
 
-                                                if (selfieError) {
+                      setSelfieImageUrl(selfieSigned.signedUrl);
 
-                                                    console.error(
-                                                        selfieError
-                                                    );
+                      setRejectionReason("");
 
-                                                    return;
-                                                }
-
-                                                setKtpImageUrl(
-                                                    ktpSigned.signedUrl
-                                                );
-
-                                                setSelfieImageUrl(
-                                                    selfieSigned.signedUrl
-                                                );
-
-                                                setRejectionReason("");
-
-                                                setSelectedRequest(
-                                                    request
-                                                );
-
-                                            }}
-
-                                            className="
+                      setSelectedRequest(request);
+                    }}
+                    className="
       rounded-xl
       bg-slate-100
       px-4
@@ -505,27 +348,19 @@ export default function VerificationPage() {
       transition
       hover:bg-slate-200
     "
-                                        >
-                                            Lihat Dokumen
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    )
-                )}
-
+                  >
+                    Lihat Dokumen
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+        ))}
+      </div>
 
-            {selectedRequest && (
-
-                <div
-                    className="
+      {selectedRequest && (
+        <div
+          className="
                       fixed
                       inset-0
                       z-50
@@ -533,10 +368,9 @@ export default function VerificationPage() {
                     bg-black/60
                       p-4
                     "
-                >
-
-                    <div
-                        className="
+        >
+          <div
+            className="
                           mx-auto
                           my-10
                           w-full
@@ -545,153 +379,123 @@ export default function VerificationPage() {
                         bg-white
                           p-6
                         "
-                    >
+          >
+            {/* HEADER */}
 
-                        {/* HEADER */}
-
-                        <div
-                            className="
+            <div
+              className="
           flex
           items-center
           justify-between
         "
-                        >
-
-                            <div>
-
-                                <h2
-                                    className="
+            >
+              <div>
+                <h2
+                  className="
               text-xl
               font-black
             "
-                                >
-                                    {
-                                        selectedRequest
-                                            .users
-                                            ?.full_name
-                                    }
-                                </h2>
+                >
+                  {selectedRequest.users?.full_name}
+                </h2>
 
-                                <p
-                                    className="
+                <p
+                  className="
               text-sm
               text-slate-500
             "
-                                >
-                                    {
-                                        selectedRequest
-                                            .status
-                                    }
-                                </p>
+                >
+                  {selectedRequest.status}
+                </p>
+              </div>
 
-                            </div>
-
-                            <button
-                                disabled={processing}
-                                onClick={() =>
-                                    closeModal()
-                                }
-                                className="
+              <button
+                disabled={processing}
+                onClick={() => closeModal()}
+                className="
             rounded-xl
             bg-slate-100
             px-4
             py-2
             disabled:opacity-50
           "
-                            >
-                                Tutup
-                            </button>
+              >
+                Tutup
+              </button>
+            </div>
 
-                        </div>
+            {/* KTP */}
 
-                        {/* KTP */}
-
-                        <div className="mt-8">
-
-                            <h3
-                                className="
+            <div className="mt-8">
+              <h3
+                className="
             mb-3
             font-bold
           "
-                            >
-                                Foto KTP
-                            </h3>
+              >
+                Foto KTP
+              </h3>
 
-                            <img
-                                src={
-                                    ktpImageUrl
-                                }
-
-                                alt="KTP"
-                                className="
+              <img
+                src={ktpImageUrl}
+                alt="KTP"
+                className="
             w-full
             rounded-2xl
             border
             object-contain
           "
-                            />
+              />
+            </div>
 
-                        </div>
+            {/* SELFIE */}
 
-                        {/* SELFIE */}
-
-                        <div className="mt-8">
-
-                            <h3
-                                className="
+            <div className="mt-8">
+              <h3
+                className="
                                   mb-3
                                   font-bold
                                 "
-                            >
-                                Foto Selfie
-                            </h3>
+              >
+                Foto Selfie
+              </h3>
 
-                            <img
-                                src={
-                                    selfieImageUrl
-                                }
-
-                                alt="Selfie"
-                                className="
+              <img
+                src={selfieImageUrl}
+                alt="Selfie"
+                className="
             w-full
             rounded-2xl
             border
             object-contain
           "
-                            />
+              />
 
-                            <div className="mt-8">
-
-                                <div className="
+              <div className="mt-8">
+                <div
+                  className="
                                        mt-8
                                        w-full           
                                      "
-                                >
-
-                                    <p
-                                        className="
+                >
+                  <p
+                    className="
             mb-2
             text-sm
             font-semibold
             text-slate-700
         "
-                                    >
-                                        Alasan Penolakan
-                                    </p>
+                  >
+                    Alasan Penolakan
+                  </p>
 
-                                    <textarea
-                                        value={
-                                            rejectionReason
-                                        }
-                                        onChange={(e) =>
-                                            setRejectionReason(
-                                                e.target.value
-                                            )
-                                        }
-                                        placeholder="
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="
 Masukkan alasan jika verifikasi ditolak...
 "
-                                        className="
+                    className="
             h-32
             w-full
             rounded-2xl
@@ -700,40 +504,26 @@ Masukkan alasan jika verifikasi ditolak...
             p-4
             outline-none
         "
-                                    />
+                  />
+                </div>
 
-                                </div>
-
-                                <div
-                                    className="
+                <div
+                  className="
         mt-6
         flex
         gap-4
     "
-                                >
+                >
+                  <button
+                    disabled={processing}
+                    onClick={() => {
+                      if (!selectedRequest) return;
 
-                                    <button
-                                        disabled={processing}
-                                        onClick={() => {
-
-                                            if (!selectedRequest)
-                                                return;
-
-                                            if (
-                                                confirm(
-                                                    "Yakin ingin memverifikasi user ini?"
-                                                )
-                                            ) {
-
-                                                approveVerification(
-                                                    selectedRequest
-                                                );
-
-                                            }
-
-                                        }}
-
-                                        className="
+                      if (confirm("Yakin ingin memverifikasi user ini?")) {
+                        approveVerification(selectedRequest);
+                      }
+                    }}
+                    className="
             flex-1
             rounded-2xl
             bg-emerald-600
@@ -741,47 +531,26 @@ Masukkan alasan jika verifikasi ditolak...
             font-bold
             text-white
         "
-                                    >
-                                        {
-                                            processing
-                                                ? "Memproses..."
-                                                : "Approve"
-                                        }
-                                    </button>
+                  >
+                    {processing ? "Memproses..." : "Approve"}
+                  </button>
 
-                                    <button
-                                        disabled={processing}
-                                        onClick={() => {
+                  <button
+                    disabled={processing}
+                    onClick={() => {
+                      if (!selectedRequest) return;
 
-                                            if (!selectedRequest)
-                                                return;
+                      if (!rejectionReason.trim()) {
+                        alert("Masukkan alasan penolakan");
 
-                                            if (
-                                                !rejectionReason.trim()
-                                            ) {
+                        return;
+                      }
 
-                                                alert(
-                                                    "Masukkan alasan penolakan"
-                                                );
-
-                                                return;
-                                            }
-
-                                            if (
-                                                confirm(
-                                                    "Yakin ingin menolak verifikasi ini?"
-                                                )
-                                            ) {
-
-                                                rejectVerification(
-                                                    selectedRequest
-                                                );
-
-                                            }
-
-                                        }}
-
-                                        className="
+                      if (confirm("Yakin ingin menolak verifikasi ini?")) {
+                        rejectVerification(selectedRequest);
+                      }
+                    }}
+                    className="
             flex-1
             rounded-2xl
             bg-red-600
@@ -789,27 +558,15 @@ Masukkan alasan jika verifikasi ditolak...
             font-bold
             text-white
         "
-                                    >
-                                        {
-                                            processing
-                                                ? "Memproses..."
-                                                : "Reject"
-                                        }
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
+                  >
+                    {processing ? "Memproses..." : "Reject"}
+                  </button>
                 </div>
-
-            )}
-
-        </main>
-
-    );
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
 }

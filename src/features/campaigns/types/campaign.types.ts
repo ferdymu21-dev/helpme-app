@@ -1,139 +1,121 @@
-import type {
-    NotificationCategoryValue,
-} from "../../notifications/constants/notification-category";
+import type { NotificationCategoryValue } from "../../notifications/constants/notification-category";
 
-import type {
-    NotificationTypeValue,
-} from "../../notifications/constants/notification-type";
+import type { NotificationTypeValue } from "../../notifications/constants/notification-type";
 
-import type {
-    CampaignStatusValue,
-} from "../constants/campaign-status";
+import type { CampaignStatusValue } from "../constants/campaign-status";
 
-import type {
-    CampaignTargetValue,
-} from "../constants/campaign-target";
+import type { CampaignTargetValue } from "../constants/campaign-target";
 
-import type {
-    CampaignActionValue,
-} from "../constants/campaign-action";
+import type { CampaignActionValue } from "../constants/campaign-action";
 
 export interface NotificationCampaign {
+  id: string;
 
-    id: string;
+  title: string;
 
-    title: string;
+  message: string;
 
-    message: string;
+  image_url: string | null;
 
-    image_url: string | null;
+  redirect_url: string | null;
 
-    redirect_url: string | null;
+  category: NotificationCategoryValue;
 
-    category: NotificationCategoryValue;
+  type: NotificationTypeValue;
 
-    type: NotificationTypeValue;
+  status: CampaignStatusValue;
 
-    status: CampaignStatusValue;
+  target_type: CampaignTargetValue;
 
-    target_type: CampaignTargetValue;
+  target_value: string | null;
 
-    target_value: string | null;
+  scheduled_at: string | null;
 
-    scheduled_at: string | null;
+  published_at: string | null;
 
-    published_at: string | null;
+  expires_at: string | null;
 
-    expires_at: string | null;
+  created_at: string;
 
-    created_at: string;
+  updated_at: string;
 
-    updated_at: string;
+  created_by: string | null;
 
-    created_by: string | null;
+  total_sent: number;
 
-    total_sent: number;
+  total_opened: number;
 
-    total_opened: number;
-
-    total_clicked: number;
-
+  total_clicked: number;
 }
 
 export interface CreateCampaignPayload {
+  title: string;
 
-    title: string;
+  message: string;
 
-    message: string;
+  imageUrl?: string;
 
-    imageUrl?: string;
+  redirectUrl?: string;
 
-    redirectUrl?: string;
+  category: NotificationCategoryValue;
 
-    category: NotificationCategoryValue;
+  type: NotificationTypeValue;
 
-    type: NotificationTypeValue;
+  action: CampaignActionValue;
 
-    action: CampaignActionValue;
+  targetType: CampaignTargetValue;
 
-    targetType: CampaignTargetValue;
+  targetValue?: string;
 
-    targetValue?: string;
+  scheduledAt?: string;
 
-    scheduledAt?: string;
-
-    expiresAt?: string;
-
+  expiresAt?: string;
 }
 
 export interface InsertCampaignPayload {
+  title: string;
 
-    title: string;
+  message: string;
 
-    message: string;
+  image_url: string | null;
 
-    image_url: string | null;
+  redirect_url: string | null;
 
-    redirect_url: string | null;
+  category: NotificationCategoryValue;
 
-    category: NotificationCategoryValue;
+  type: NotificationTypeValue;
 
-    type: NotificationTypeValue;
+  status: CampaignStatusValue;
 
-    status: CampaignStatusValue;
+  target_type: CampaignTargetValue;
 
-    target_type: CampaignTargetValue;
+  target_value: string | null;
 
-    target_value: string | null;
+  scheduled_at: string | null;
 
-    scheduled_at: string | null;
+  published_at: string | null;
 
-    published_at: string | null;
-
-    expires_at: string | null;
-
+  expires_at: string | null;
 }
 
 export interface UpdateCampaignPayload {
+  id: string;
 
-    id: string;
+  title?: string;
 
-    title?: string;
+  message?: string;
 
-    message?: string;
+  imageUrl?: string;
 
-    imageUrl?: string;
+  redirectUrl?: string;
 
-    redirectUrl?: string;
+  status?: CampaignStatusValue;
 
-    status?: CampaignStatusValue;
+  targetType?: CampaignTargetValue;
 
-    targetType?: CampaignTargetValue;
+  targetValue?: string;
 
-    targetValue?: string;
+  scheduledAt?: string;
 
-    scheduledAt?: string;
-
-    expiresAt?: string;
-
+  expiresAt?: string;
 }

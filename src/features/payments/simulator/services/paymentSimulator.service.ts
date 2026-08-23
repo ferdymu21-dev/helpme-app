@@ -1,152 +1,79 @@
-import type {
-    SimulatorPayment,
-} from "../types/paymentSimulator";
+import type { SimulatorPayment } from "../types/paymentSimulator";
 
 export async function loadPaymentTypes(): Promise<string[]> {
+  const response = await fetch("/api/dev/payment/types");
 
-    const response =
-        await fetch(
-            "/api/dev/payment/types"
-        );
+  if (!response.ok) {
+    throw new Error("Failed to load payment types.");
+  }
 
-    if (!response.ok) {
-
-        throw new Error(
-            "Failed to load payment types."
-        );
-
-    }
-
-    return await response.json();
-
+  return await response.json();
 }
 
 export async function loadPayments(
-    paymentType: string
+  paymentType: string,
 ): Promise<SimulatorPayment[]> {
+  const response = await fetch(
+    `/api/dev/payment/list?paymentType=${paymentType}`,
+  );
 
-    const response = await fetch(
+  if (!response.ok) {
+    throw new Error("Failed to load payments.");
+  }
 
-        `/api/dev/payment/list?paymentType=${paymentType}`
-
-    );
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Failed to load payments."
-        );
-
-    }
-
-    return await response.json();
-
+  return await response.json();
 }
 
 export interface SimulateWebhookPayload {
+  orderId: string;
 
-    orderId: string;
+  amount: number;
 
-    amount: number;
+  paymentMethod: string;
 
-    paymentMethod: string;
+  transactionStatus: string;
 
-    transactionStatus: string;
-
-    transactionId: string;
-
+  transactionId: string;
 }
 
-export async function simulateWebhook(
+export async function simulateWebhook(payload: SimulateWebhookPayload) {
+  const response = await fetch(
+    "/api/dev/payment/simulate",
 
-    payload: SimulateWebhookPayload
+    {
+      method: "POST",
 
-) {
+      headers: {
+        "Content-Type": "application/json",
+      },
 
-    const response =
+      body: JSON.stringify({
+        order_id: payload.orderId,
 
-        await fetch(
+        transaction_id: payload.transactionId,
 
-            "/api/dev/payment/simulate",
+        transaction_status: payload.transactionStatus.toLowerCase(),
 
-            {
+        payment_type: payload.paymentMethod.toLowerCase(),
 
-                method: "POST",
+        gross_amount: payload.amount.toFixed(2),
 
-                headers: {
+        status_code: payload.transactionStatus === "SETTLEMENT" ? "200" : "201",
 
-                    "Content-Type":
+        fraud_status: "accept",
 
-                        "application/json",
+        settlement_time: new Date().toISOString(),
 
-                },
+        expiry_time: new Date().toISOString(),
 
-                body: JSON.stringify({
+        signature_key: "",
+      }),
+    },
+  );
 
-                    order_id:
+  if (!response.ok) {
+    throw new Error("Simulation failed.");
+  }
 
-                        payload.orderId,
-
-                    transaction_id:
-
-                        payload.transactionId,
-
-                    transaction_status:
-
-                        payload.transactionStatus.toLowerCase(),
-
-                    payment_type:
-
-                        payload.paymentMethod.toLowerCase(),
-
-                    gross_amount:
-
-                        payload.amount.toFixed(2),
-
-                    status_code:
-
-                        payload.transactionStatus === "SETTLEMENT"
-
-                            ? "200"
-
-                            : "201",
-
-                    fraud_status:
-
-                        "accept",
-
-                    settlement_time:
-
-                        new Date().toISOString(),
-
-                    expiry_time:
-
-                        new Date().toISOString(),
-
-                    signature_key:
-
-                        "",
-
-                }),
-
-            }
-
-        );
-
-    if (
-
-        !response.ok
-
-    ) {
-
-        throw new Error(
-
-            "Simulation failed."
-
-        );
-
-    }
-
-    return await response.json();
-
+  return await response.json();
 }

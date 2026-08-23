@@ -4,14 +4,9 @@ import Link from "next/link";
 
 import Image from "next/image";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  calculateDistance,
-} from "@/lib/location/distance";
+import { calculateDistance } from "@/lib/location/distance";
 
 interface Task {
   id: string;
@@ -43,91 +38,43 @@ interface Props {
   tasks: Task[];
 }
 
-export default function MobileTaskFeed({
-  tasks,
-}: Props) {
+export default function MobileTaskFeed({ tasks }: Props) {
+  const [userLatitude, setUserLatitude] = useState<number | null>(null);
 
-  const [
-    userLatitude,
-    setUserLatitude,
-  ] = useState<
-    number | null
-  >(null);
-
-  const [
-    userLongitude,
-    setUserLongitude,
-  ] = useState<
-    number | null
-  >(null);
+  const [userLongitude, setUserLongitude] = useState<number | null>(null);
 
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      setUserLatitude(position.coords.latitude);
 
-    navigator.geolocation
-      .getCurrentPosition(
-        (position) => {
-
-          setUserLatitude(
-            position.coords.latitude
-          );
-
-          setUserLongitude(
-            position.coords.longitude
-          );
-        }
-      );
-
+      setUserLongitude(position.coords.longitude);
+    });
   }, []);
 
-  const [
-    activeCategory,
-    setActiveCategory,
-  ] = useState("Semua");
+  const [activeCategory, setActiveCategory] = useState("Semua");
 
-  const filteredTasks =
+  const filteredTasks = (
+    activeCategory === "Semua"
+      ? tasks
+      : tasks.filter((task) => task.category === activeCategory)
+  ).sort((a, b) => {
+    if (a.is_urgent && !b.is_urgent) {
+      return -1;
+    }
 
-    (
-      activeCategory ===
-        "Semua"
+    if (!a.is_urgent && b.is_urgent) {
+      return 1;
+    }
 
-        ? tasks
-
-        : tasks.filter(
-          (task) =>
-            task.category ===
-            activeCategory
-        )
-    )
-
-      .sort((a, b) => {
-
-        if (
-          a.is_urgent &&
-          !b.is_urgent
-        ) {
-          return -1;
-        }
-
-        if (
-          !a.is_urgent &&
-          b.is_urgent
-        ) {
-          return 1;
-        }
-
-        return 0;
-      });
+    return 0;
+  });
 
   return (
     <section className="px-6 pt-8 pb-20">
-
       <div className="mx-auto max-w-300">
-
         {/* HEADER */}
         <div className="flex items-center justify-between">
-
           <div>
-
             <h2
               className="
                 text-sm
@@ -149,9 +96,7 @@ export default function MobileTaskFeed({
             >
               Temukan task di sekitar kamu
             </p>
-
           </div>
-
         </div>
 
         {/* FILTERS */}
@@ -166,53 +111,46 @@ export default function MobileTaskFeed({
             scrollbar-hide
           "
         >
+          {[
+            {
+              label: "Semua",
+              icon: "/icons/semua.svg",
+            },
 
-          {
+            {
+              label: "Antri",
+              icon: "/icons/antri.svg",
+            },
 
-            [
-              {
-                label: "Semua",
-                icon: "/icons/semua.svg",
-              },
+            {
+              label: "Dokumen",
+              icon: "/icons/dokumen.svg",
+            },
 
-              {
-                label: "Antri",
-                icon: "/icons/antri.svg",
-              },
+            {
+              label: "Kondangan",
+              icon: "/icons/kondangan.svg",
+            },
 
-              {
-                label: "Dokumen",
-                icon: "/icons/dokumen.svg",
-              },
+            {
+              label: "Kurir",
+              icon: "/icons/kurir.svg",
+            },
 
-              {
-                label: "Kondangan",
-                icon: "/icons/kondangan.svg",
-              },
+            {
+              label: "Belanja",
+              icon: "/icons/belanja.svg",
+            },
 
-              {
-                label: "Kurir",
-                icon: "/icons/kurir.svg",
-              },
-
-              {
-                label: "Belanja",
-                icon: "/icons/belanja.svg",
-              },
-
-              {
-                label: "Lainnya",
-                icon: "/icons/lainnya.svg",
-              },
-            ]
-
-              .map((item, index) => (
-                <button
-                  key={item.label}
-                  onClick={() =>
-                    setActiveCategory(item.label)
-                  }
-                  className={`
+            {
+              label: "Lainnya",
+              icon: "/icons/lainnya.svg",
+            },
+          ].map((item, index) => (
+            <button
+              key={item.label}
+              onClick={() => setActiveCategory(item.label)}
+              className={`
                 shrink-0
                 whitespace-nowrap
                 rounded-2xl
@@ -225,46 +163,37 @@ export default function MobileTaskFeed({
                 duration-200
                 hover:-translate-y-0.5
 
-                ${activeCategory === item.label
-                      ? "bg-indigo-600 text-white"
-                      : "border border-slate-200 bg-white text-slate-600"
-                    }
+                ${
+                  activeCategory === item.label
+                    ? "bg-indigo-600 text-white"
+                    : "border border-slate-200 bg-white text-slate-600"
+                }
               `}
-                >
-
-                  <div
-                    className="
+            >
+              <div
+                className="
       flex
       items-center
       gap-2
     "
-                  >
+              >
+                {item.icon && (
+                  <Image
+                    src={item.icon}
+                    alt={item.label}
+                    width={14}
+                    height={14}
+                  />
+                )}
 
-                    {item.icon && (
-
-                      <Image
-                        src={item.icon}
-                        alt={item.label}
-                        width={14}
-                        height={14}
-                      />
-
-                    )}
-
-                    <span>
-                      {item.label}
-                    </span>
-
-                  </div>
-
-                </button>
-              ))}
-
+                <span>{item.label}</span>
+              </div>
+            </button>
+          ))}
         </div>
 
         {/* TASK LIST */}
         <div className="mt-3.5 space-y-2.5">
-
           {filteredTasks.map((task) => (
             <Link
               key={task.id}
@@ -282,10 +211,8 @@ export default function MobileTaskFeed({
                 active:scale-[0.98]
               "
             >
-
               {/* TOP */}
               <div className="flex items-center justify-between">
-
                 {/* CATEGORY */}
                 <div
                   className="
@@ -304,9 +231,7 @@ export default function MobileTaskFeed({
 
                 {/* STATUS */}
                 <div className="flex items-center gap-2">
-
                   {task.is_urgent && (
-
                     <div
                       className="
         rounded-full
@@ -320,7 +245,6 @@ export default function MobileTaskFeed({
                     >
                       🔥 Mendesak
                     </div>
-
                   )}
 
                   <div
@@ -336,9 +260,7 @@ export default function MobileTaskFeed({
                   >
                     {task.status}
                   </div>
-
                 </div>
-
               </div>
 
               {/* TITLE */}
@@ -365,9 +287,7 @@ export default function MobileTaskFeed({
                   justify-between
                 "
               >
-
                 <div className="space-y-2">
-
                   {/* LOCATION */}
                   <p
                     className="
@@ -376,46 +296,24 @@ export default function MobileTaskFeed({
       text-slate-500
     "
                   >
-                    📍 {
+                    📍{" "}
+                    {(() => {
+                      const location =
+                        task.location_type === "SEARCH"
+                          ? task.location_name || "Lokasi tidak tersedia"
+                          : task.manual_address || "Alamat manual";
 
-                      (() => {
-
-                        const location =
-
-                          task.location_type ===
-                            "SEARCH"
-
-                            ? (
-                              task.location_name ||
-                              "Lokasi tidak tersedia"
-                            )
-
-                            : (
-                              task.manual_address ||
-                              "Alamat manual"
-                            );
-
-                        return location.length > 20
-                          ? `${location.slice(0, 20)}...`
-                          : location;
-
-                      })()
-                    }
+                      return location.length > 20
+                        ? `${location.slice(0, 20)}...`
+                        : location;
+                    })()}
                   </p>
 
                   {/* DISTANCE */}
-                  {
-                    userLatitude &&
+                  {userLatitude &&
                     userLongitude &&
-                    (
-                      task.latitude ||
-                      task.owner_latitude
-                    ) &&
-                    (
-                      task.longitude ||
-                      task.owner_longitude
-                    ) && (
-
+                    (task.latitude || task.owner_latitude) &&
+                    (task.longitude || task.owner_longitude) && (
                       <p
                         className="
                         ml-3.5
@@ -423,28 +321,19 @@ export default function MobileTaskFeed({
           text-slate-400
         "
                       >
+                        🛵{" "}
+                        {calculateDistance(
+                          userLatitude,
 
-                        🛵 {
+                          userLongitude,
 
-                          calculateDistance(
+                          task.latitude || task.owner_latitude!,
 
-                            userLatitude,
-
-                            userLongitude,
-
-                            task.latitude ||
-                            task.owner_latitude!,
-
-                            task.longitude ||
-                            task.owner_longitude!
-                          )
-                            .toFixed(1)
-
-                        } km dari kamu
-
+                          task.longitude || task.owner_longitude!,
+                        ).toFixed(1)}{" "}
+                        km dari kamu
                       </p>
                     )}
-
                 </div>
 
                 {/* PRICE */}
@@ -459,20 +348,13 @@ export default function MobileTaskFeed({
                   "
                 >
                   Rp
-                  {task.budget.toLocaleString(
-                    "id-ID"
-                  )}
+                  {task.budget.toLocaleString("id-ID")}
                 </div>
-
               </div>
-
             </Link>
           ))}
-
         </div>
-
       </div>
-
     </section>
   );
 }

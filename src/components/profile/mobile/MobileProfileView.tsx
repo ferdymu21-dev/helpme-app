@@ -1,25 +1,18 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import Link from "next/link";
 
 import Image from "next/image";
 
-import {
-  SignOut,
-} from "@phosphor-icons/react";
+import { SignOut } from "@phosphor-icons/react";
 
-import {
-  logout,
-} from "@/features/auth/services/auth.service";
+import { logout } from "@/features/auth/services/auth.service";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
-import ReportUserModal
-  from "@/features/reports/components/ReportUserModal";
+import ReportUserModal from "@/features/reports/components/ReportUserModal";
 
 interface Props {
   profile: {
@@ -42,7 +35,6 @@ interface Props {
     averageRating: string;
 
     badges: {
-
       label: string;
 
       icon: string;
@@ -51,22 +43,6 @@ interface Props {
     }[];
   };
 
-  reviews: {
-    id: string;
-
-    rating: number;
-
-    comment: string;
-
-    created_at: string;
-
-    reviewer: {
-      id: string;
-
-      full_name: string;
-    }[];
-  }[];
-
   profileUserId?: string;
 
   isPublicProfile?: boolean;
@@ -74,35 +50,21 @@ interface Props {
 
 export default function MobileProfileView({
   profile,
-  reviews,
   profileUserId,
   isPublicProfile = false,
-
 }: Props) {
-
-  const [
-    showReportModal,
-    setShowReportModal,
-  ] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   async function handleLogout() {
-
-    const confirmLogout =
-      confirm(
-        "Keluar dari akun?"
-      );
+    const confirmLogout = confirm("Keluar dari akun?");
 
     if (!confirmLogout) return;
 
     try {
-
       await logout();
 
-      window.location.href =
-        "/login";
-
+      window.location.href = "/login";
     } catch (error) {
-
       console.error(error);
 
       alert("Gagal logout");
@@ -110,11 +72,9 @@ export default function MobileProfileView({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-32 lg:hidden">
-
+    <main className="bg-slate-50 pb-32 lg:hidden">
       {/* CONTAINER */}
       <div className="px-6 py-7">
-
         {/* PROFILE CARD */}
         <div
           className="
@@ -124,15 +84,11 @@ export default function MobileProfileView({
             shadow-[0_10px_30px_rgba(15,23,42,0.05)]
           "
         >
-
           {/* TOP */}
           <div className="flex items-start justify-between">
-
             <div className="flex items-center gap-4">
-
               {/* AVATAR */}
               {profile.avatarUrl ? (
-
                 <img
                   src={profile.avatarUrl}
                   alt="Avatar"
@@ -143,9 +99,7 @@ export default function MobileProfileView({
       object-cover
     "
                 />
-
               ) : (
-
                 <div
                   className="
       flex
@@ -162,14 +116,11 @@ export default function MobileProfileView({
                 >
                   {profile.initials}
                 </div>
-
               )}
 
               {/* INFO */}
               <div>
-
                 <div className="flex items-center gap-2">
-
                   <h1
                     className="
                     text-sm
@@ -180,7 +131,6 @@ export default function MobileProfileView({
                   >
                     {profile.fullName}
                   </h1>
-
                 </div>
 
                 <p
@@ -194,7 +144,6 @@ export default function MobileProfileView({
                 </p>
 
                 {profile.bio ? (
-
                   <p
                     className="
       mt-1
@@ -205,9 +154,7 @@ export default function MobileProfileView({
                   >
                     {profile.bio}
                   </p>
-
                 ) : (
-
                   <p
                     className="
       mt-1
@@ -216,14 +163,11 @@ export default function MobileProfileView({
       text-slate-500
     "
                   >
-                    Helper aktif yang siap
-                    membantu task harianmu.
+                    Helper aktif yang siap membantu task harianmu.
                   </p>
-
                 )}
 
                 {profile.location && (
-
                   <div
                     className="
       mt-1
@@ -234,7 +178,6 @@ export default function MobileProfileView({
                   >
                     📍 {profile.location}
                   </div>
-
                 )}
 
                 {/* BADGES */}
@@ -248,14 +191,10 @@ export default function MobileProfileView({
     scrollbar-hide
   "
                 >
-
-                  {(profile.badges || []).map(
-                    (badge, index) => (
-
-                      <div
-                        key={index}
-
-                        className={`
+                  {(profile.badges || []).map((badge, index) => (
+                    <div
+                      key={index}
+                      className={`
           shrink-0
           rounded-full
           px-2
@@ -266,49 +205,35 @@ export default function MobileProfileView({
 
           ${badge.className}
         `}
-                      >
-
-                        {badge.icon}
-                        {" "}
-                        {badge.label}
-
-                      </div>
-
-                    )
-                  )}
-
+                    >
+                      {badge.icon} {badge.label}
+                    </div>
+                  ))}
                 </div>
-
               </div>
-
             </div>
 
-            <button
-              onClick={handleLogout}
-
-              className="
-    flex
-    h-11
-    w-11
-    items-center
-    justify-center
-    rounded-2xl
-    border
-    border-slate-200
-    bg-slate-50
-    text-slate-600
-    transition
-    active:scale-95
-  "
-            >
-
-              <SignOut
-                size={15}
-                weight="bold"
-              />
-
-            </button>
-
+            {!isPublicProfile && (
+              <button
+                onClick={handleLogout}
+                className="
+      flex
+      h-11
+      w-11
+      items-center
+      justify-center
+      rounded-2xl
+      border
+      border-slate-200
+      bg-slate-50
+      text-slate-600
+      transition
+      active:scale-95
+    "
+              >
+                <SignOut size={15} weight="bold" />
+              </button>
+            )}
           </div>
 
           {/* STATS */}
@@ -320,7 +245,6 @@ export default function MobileProfileView({
               gap-3
             "
           >
-
             <div
               className="
                 rounded-2xl
@@ -328,7 +252,6 @@ export default function MobileProfileView({
                 p-4
               "
             >
-
               <p
                 className="
     text-xs
@@ -363,9 +286,7 @@ export default function MobileProfileView({
                 >
                   {profile.averageRating}
                 </span>
-
               </div>
-
             </div>
 
             <div
@@ -375,7 +296,6 @@ export default function MobileProfileView({
                 p-4
               "
             >
-
               <p
                 className="
     text-xs
@@ -410,9 +330,7 @@ export default function MobileProfileView({
                 >
                   {profile.completedTasks}
                 </span>
-
               </div>
-
             </div>
 
             <div
@@ -422,7 +340,6 @@ export default function MobileProfileView({
                 p-4
               "
             >
-
               <p
                 className="
     text-xs
@@ -457,17 +374,13 @@ export default function MobileProfileView({
                 >
                   {profile.totalReviews}
                 </span>
-
               </div>
-
             </div>
-
           </div>
 
           {/* BUTTON */}
 
           {!isPublicProfile ? (
-
             <Link
               href="/profile/edit"
               className="
@@ -484,7 +397,6 @@ export default function MobileProfileView({
   "
             >
               <div className="flex items-center gap-2">
-
                 <Image
                   src="/icons/profile/edit-profile.svg"
                   alt="Edit Profile"
@@ -493,20 +405,11 @@ export default function MobileProfileView({
                 />
 
                 <span>Edit Profile</span>
-
               </div>
             </Link>
-
           ) : (
-
             <button
-
-              onClick={() =>
-                setShowReportModal(
-                  true
-                )
-              }
-
+              onClick={() => setShowReportModal(true)}
               className="
     mt-6
     flex
@@ -522,7 +425,6 @@ export default function MobileProfileView({
   "
             >
               <div className="flex items-center gap-2">
-
                 <Image
                   src="/icons/profile/laporkan.svg"
                   alt="Report"
@@ -531,19 +433,14 @@ export default function MobileProfileView({
                 />
 
                 <span>Laporkan</span>
-
               </div>
             </button>
-
           )}
-
         </div>
 
         {/* MENU */}
         {!isPublicProfile && (
-
           <div className="mt-6 space-y-3">
-
             {[
               {
                 label: "Riwayat Task",
@@ -575,7 +472,6 @@ export default function MobileProfileView({
                 icon: "/icons/profile/review.svg",
               },
             ].map((item) => (
-
               <Link
                 key={item.label}
                 href={item.href}
@@ -592,9 +488,7 @@ export default function MobileProfileView({
       shadow-sm
     "
               >
-
                 <div className="flex items-center gap-3">
-
                   <Image
                     src={item.icon}
                     alt={item.label}
@@ -611,43 +505,22 @@ export default function MobileProfileView({
                   >
                     {item.label}
                   </span>
-
                 </div>
 
-                <span className="text-slate-400">
-                  →
-                </span>
-
+                <span className="text-slate-400">→</span>
               </Link>
-
             ))}
-
           </div>
-
         )}
-
       </div>
 
       <ReportUserModal
-
-        open={
-          showReportModal
-        }
-
-        onClose={() =>
-          setShowReportModal(
-            false
-          )
-        }
-
-        reportedUserId={
-          profileUserId || ""
-        }
-
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportedUserId={profileUserId || ""}
       />
 
       <MobileBottomNavbar />
-
     </main>
   );
 }

@@ -4,22 +4,15 @@ import { useState } from "react";
 
 import DesktopHomeHeader from "@/components/layout/desktop/DesktopHomeHeader";
 
-import DesktopGreetingSection from "@/components/home/desktop/DesktopGreetingSection";
-
 import DesktopQuickActions from "@/components/home/desktop/DesktopQuickActions";
 
-import DesktopTipsBanner
-  from "@/components/home/desktop/DesktopTipsBanner";
-
-import DesktopAdsBanner
-  from "@/components/home/desktop/DesktopAdsBanner";
+import DesktopAdsBanner from "@/components/home/desktop/DesktopAdsBanner";
 
 import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
-import PaymentRoot
-from "@/features/payments/components/PaymentRoot";
+import PaymentRoot from "@/features/payments/components/PaymentRoot";
 
 interface Task {
   id: string;
@@ -64,7 +57,7 @@ export default function DesktopHomeView({
 
         <DesktopQuickActions />
 
-        <DesktopTipsBanner />
+        <DesktopAdsBanner />
 
         <DesktopTaskFeed tasks={tasks} />
 

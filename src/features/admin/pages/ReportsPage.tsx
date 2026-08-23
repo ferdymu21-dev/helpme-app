@@ -1,391 +1,251 @@
 "use client";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import Link
-    from "next/link";
+import Link from "next/link";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 interface Report {
+  id: string;
 
-    id: string;
+  reason: string;
 
-    reason: string;
+  description: string | null;
 
-    description: string | null;
+  status: string;
 
-    status: string;
+  created_at: string;
 
-    created_at: string;
-
-    admin_notes: string | null;
-
+  admin_notes: string | null;
 }
 
 export default function ReportsPage() {
-    function getStatusColor(
-        status: string
-    ) {
-
-        switch (status) {
-
-            case "PENDING":
-
-                return `
+  function getStatusColor(status: string) {
+    switch (status) {
+      case "PENDING":
+        return `
                 bg-amber-100
                 text-amber-700
             `;
 
-            case "REVIEWED":
-
-                return `
+      case "REVIEWED":
+        return `
                 bg-blue-100
                 text-blue-700
             `;
 
-            case "RESOLVED":
-
-                return `
+      case "RESOLVED":
+        return `
                 bg-emerald-100
                 text-emerald-700
             `;
 
-            default:
-
-                return `
+      default:
+        return `
                 bg-slate-100
                 text-slate-700
             `;
-
-        }
-
     }
+  }
 
-    const [
-        reports,
-        setReports,
-    ] = useState<Report[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-    const [
-        selectedReport,
-        setSelectedReport,
-    ] = useState<Report | null>(
-        null
-    );
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
-    const [
-        adminNotes,
-        setAdminNotes,
-    ] = useState("");
+  const [adminNotes, setAdminNotes] = useState("");
 
-    const [
-        processing,
-        setProcessing,
-    ] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
-    async function loadReports() {
+  const loadReports = useCallback(async () => {
+    try {
+      setLoading(true);
 
-        try {
+      const { data, error } = await supabase
+        .from("reports")
+        .select("*")
+        .in("status", ["PENDING", "REVIEWED"])
+        .order("created_at", {
+          ascending: false,
+        });
 
-            setLoading(true);
+      if (error) {
+        console.error(error);
 
-            const {
-                data,
-                error,
-            } = await supabase
-                .from("reports")
-                .select("*")
+        return;
+      }
 
-                .in(
-                    "status",
-                    [
-                        "PENDING",
-                        "REVIEWED",
-                    ]
-                )
-
-                .order(
-                    "created_at",
-                    {
-                        ascending: false,
-                    }
-                );
-
-            if (error) {
-
-                console.error(error);
-
-                return;
-
-            }
-
-            setReports(
-                data || []
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+      setReports(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    async function reviewReport() {
+  async function reviewReport() {
+    if (!selectedReport) return;
 
-        if (!selectedReport)
-            return;
+    try {
+      setProcessing(true);
 
-        try {
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          status: "REVIEWED",
 
-            setProcessing(true);
+          reviewed_at: new Date().toISOString(),
 
-            const {
-                error,
-            } = await supabase
-                .from("reports")
-                .update({
+          admin_notes: adminNotes,
+        })
+        .eq("id", selectedReport.id);
 
-                    status:
-                        "REVIEWED",
+      if (error) {
+        console.error(error);
 
-                    reviewed_at:
-                        new Date()
-                            .toISOString(),
+        return;
+      }
 
-                    admin_notes:
-                        adminNotes,
+      alert("Report berhasil direview");
 
-                })
-                .eq(
-                    "id",
-                    selectedReport.id
-                );
+      await loadReports();
 
-            if (error) {
-
-                console.error(
-                    error
-                );
-
-                return;
-
-            }
-
-            alert(
-                "Report berhasil direview"
-            );
-
-            await loadReports();
-
-            setSelectedReport(
-                null
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setProcessing(false);
-
-        }
-
+      setSelectedReport(null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessing(false);
     }
+  }
 
-    async function resolveReport() {
+  async function resolveReport() {
+    if (!selectedReport) return;
 
-        if (!selectedReport)
-            return;
+    try {
+      setProcessing(true);
 
-        try {
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          status: "RESOLVED",
 
-            setProcessing(true);
+          reviewed_at: new Date().toISOString(),
 
-            const {
-                error,
-            } = await supabase
-                .from("reports")
-                .update({
+          admin_notes: adminNotes,
+        })
+        .eq("id", selectedReport.id);
 
-                    status:
-                        "RESOLVED",
+      if (error) {
+        console.error(error);
 
-                    reviewed_at:
-                        new Date()
-                            .toISOString(),
+        return;
+      }
 
-                    admin_notes:
-                        adminNotes,
+      alert("Report berhasil diselesaikan");
 
-                })
-                .eq(
-                    "id",
-                    selectedReport.id
-                );
+      await loadReports();
 
-            if (error) {
-
-                console.error(
-                    error
-                );
-
-                return;
-
-            }
-
-            alert(
-                "Report berhasil diselesaikan"
-            );
-
-            await loadReports();
-
-            setSelectedReport(
-                null
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setProcessing(false);
-
-        }
-
+      setSelectedReport(null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessing(false);
     }
+  }
 
-    useEffect(() => {
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadReports();
+    }, 0);
 
-        loadReports();
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [loadReports]);
 
-    }, []);
-
-    return (
-
-        <main className="p-8">
-
-            <h1
-                className="
+  return (
+    <main className="p-8">
+      <h1
+        className="
                 text-3xl
                 font-black
             "
-            >
-                Reports
-            </h1>
+      >
+        Reports
+      </h1>
 
-            {loading && (
+      {loading && <p className="mt-6">Loading...</p>}
 
-                <p className="mt-6">
-                    Loading...
-                </p>
-
-            )}
-
-            <div
-                className="
+      <div
+        className="
                 mt-8
                 space-y-4
             "
-            >
-
-                {reports.map(
-                    (report) => (
-
-                        <div
-                            key={report.id}
-                            className="
+      >
+        {reports.map((report) => (
+          <div
+            key={report.id}
+            className="
                             rounded-3xl
                             bg-white
                             p-6
                             shadow-sm
                         "
-                        >
-
-                            <div
-                                className="
+          >
+            <div
+              className="
                                 flex
                                 items-center
                                 justify-between
                             "
-                            >
-
-                                <h2
-                                    className="
+            >
+              <h2
+                className="
                                     font-bold
                                 "
-                                >
-                                    {
-                                        report.reason
-                                    }
-                                </h2>
+              >
+                {report.reason}
+              </h2>
 
-                                <span
-                                    className={`
+              <span
+                className={`
     rounded-full
     px-3
     py-1
     text-xs
-    ${getStatusColor(
-                                        report.status
-                                    )}
+    ${getStatusColor(report.status)}
 `}
-                                >
-                                    {
-                                        report.status
-                                    }
-                                </span>
+              >
+                {report.status}
+              </span>
+            </div>
 
-                            </div>
-
-                            <p
-                                className="
+            <p
+              className="
                                 mt-3
                                 text-sm
                                 text-slate-500
                             "
-                            >
-                                {
-                                    report.description ||
-                                    "-"
-                                }
-                            </p>
+            >
+              {report.description || "-"}
+            </p>
 
-                            <p
-                                className="
+            <p
+              className="
                                 mt-3
                                 text-xs
                                 text-slate-400
                             "
-                            >
-                                {
-                                    new Date(
-                                        report.created_at
-                                    ).toLocaleString()
-                                }
-                            </p>
+            >
+              {new Date(report.created_at).toLocaleString()}
+            </p>
 
-                            <div className="mt-4">
-
-                                <Link
-                                    href={`/admin/reports/${report.id}`}
-                                    className="
+            <div className="mt-4">
+              <Link
+                href={`/admin/reports/${report.id}`}
+                className="
             inline-flex
             rounded-xl
             bg-indigo-600
@@ -395,25 +255,18 @@ export default function ReportsPage() {
             font-semibold
             text-white
         "
-                                >
-                                    Tinjau
-                                </Link>
+              >
+                Tinjau
+              </Link>
+            </div>
 
-                            </div>
+            <button
+              onClick={() => {
+                setSelectedReport(report);
 
-                            <button
-                                onClick={() => {
-
-                                    setSelectedReport(
-                                        report
-                                    );
-
-                                    setAdminNotes(
-                                        report.admin_notes || ""
-                                    );
-
-                                }}
-                                className="
+                setAdminNotes(report.admin_notes || "");
+              }}
+              className="
         mt-4
         rounded-xl
         bg-slate-100
@@ -422,21 +275,16 @@ export default function ReportsPage() {
         text-sm
         font-semibold
     "
-                            >
-                                Detail Report
-                            </button>
+            >
+              Detail Report
+            </button>
+          </div>
+        ))}
+      </div>
 
-                        </div>
-
-                    )
-                )}
-
-            </div>
-
-            {selectedReport && (
-
-                <div
-                    className="
+      {selectedReport && (
+        <div
+          className="
         fixed
         inset-0
         z-50
@@ -444,10 +292,9 @@ export default function ReportsPage() {
         p-4
         overflow-y-auto
     "
-                >
-
-                    <div
-                        className="
+        >
+          <div
+            className="
             mx-auto
             mt-10
             max-w-2xl
@@ -455,133 +302,84 @@ export default function ReportsPage() {
             bg-white
             p-6
         "
-                    >
-
-                        <div
-                            className="
+          >
+            <div
+              className="
                 flex
                 items-center
                 justify-between
             "
-                        >
-
-                            <h2
-                                className="
+            >
+              <h2
+                className="
                     text-xl
                     font-black
                 "
-                            >
-                                Detail Report
-                            </h2>
+              >
+                Detail Report
+              </h2>
 
-                            <button
-                                onClick={() =>
-                                    setSelectedReport(
-                                        null
-                                    )
-                                }
-                            >
-                                ✕
-                            </button>
+              <button onClick={() => setSelectedReport(null)}>✕</button>
+            </div>
 
-                        </div>
+            <div className="mt-6">
+              <p>
+                <strong>Reason:</strong>
+              </p>
 
-                        <div className="mt-6">
+              <p>{selectedReport.reason}</p>
+            </div>
 
-                            <p>
-                                <strong>
-                                    Reason:
-                                </strong>
-                            </p>
+            <div className="mt-6">
+              <p>
+                <strong>Description:</strong>
+              </p>
 
-                            <p>
-                                {
-                                    selectedReport.reason
-                                }
-                            </p>
+              <p>{selectedReport.description || "-"}</p>
+            </div>
 
-                        </div>
+            <div className="mt-6">
+              <p>
+                <strong>Status:</strong>
+              </p>
 
-                        <div className="mt-6">
+              <p>{selectedReport.status}</p>
+            </div>
 
-                            <p>
-                                <strong>
-                                    Description:
-                                </strong>
-                            </p>
-
-                            <p>
-                                {
-                                    selectedReport.description ||
-                                    "-"
-                                }
-                            </p>
-
-                        </div>
-
-                        <div className="mt-6">
-
-                            <p>
-                                <strong>
-                                    Status:
-                                </strong>
-                            </p>
-
-                            <p>
-                                {
-                                    selectedReport.status
-                                }
-                            </p>
-
-                        </div>
-
-                        <div className="mt-6">
-
-                            <p
-                                className="
+            <div className="mt-6">
+              <p
+                className="
                     mb-2
                     font-semibold
                 "
-                            >
-                                Admin Notes
-                            </p>
+              >
+                Admin Notes
+              </p>
 
-                            <textarea
-                                value={
-                                    adminNotes
-                                }
-                                onChange={(e) =>
-                                    setAdminNotes(
-                                        e.target.value
-                                    )
-                                }
-                                className="
+              <textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                className="
                     h-32
                     w-full
                     rounded-2xl
                     border
                     p-4
                 "
-                            />
+              />
+            </div>
 
-                        </div>
-
-                        <div
-                            className="
+            <div
+              className="
                 mt-6
                 flex
                 gap-4
             "
-                        >
-
-                            <button
-                                disabled={
-                                    processing
-                                }
-                                onClick={
-                                    reviewReport
-                                }
-                                className="
+            >
+              <button
+                disabled={processing}
+                onClick={reviewReport}
+                className="
                     flex-1
                     rounded-2xl
                     bg-amber-500
@@ -589,18 +387,14 @@ export default function ReportsPage() {
                     font-bold
                     text-white
                 "
-                            >
-                                Review
-                            </button>
+              >
+                Review
+              </button>
 
-                            <button
-                                disabled={
-                                    processing
-                                }
-                                onClick={
-                                    resolveReport
-                                }
-                                className="
+              <button
+                disabled={processing}
+                onClick={resolveReport}
+                className="
                     flex-1
                     rounded-2xl
                     bg-emerald-600
@@ -608,20 +402,13 @@ export default function ReportsPage() {
                     font-bold
                     text-white
                 "
-                            >
-                                Resolve
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
-
-        </main>
-
-    );
-
+              >
+                Resolve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
 }

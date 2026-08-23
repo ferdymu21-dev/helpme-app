@@ -12,7 +12,6 @@ import SelectedLocationCard from "./SelectedLocationCard";
 import ManualAddressInput from "./ManualAddressInput";
 
 type Props = {
-
   locationMethod: LocationMethod;
 
   locationSearch: string;
@@ -25,46 +24,26 @@ type Props = {
 
   manualAddress: string;
 
-  onLocationMethodChange: (
-    value: LocationMethod
-  ) => void;
+  onLocationMethodChange: (value: LocationMethod) => void;
 
-  onLocationSearchChange: (
-    value: string
-  ) => void;
+  onLocationSearchChange: (value: string) => void;
 
-  onManualAddressChange: (
-    value: string
-  ) => void;
+  onManualAddressChange: (value: string) => void;
 
-  onSelectedLocationChange: (
-    value: NominatimLocation | null
-  ) => void;
+  onSelectedLocationChange: (value: NominatimLocation | null) => void;
 
-  onSearchResultsChange: (
-    value: NominatimLocation[]
-  ) => void;
+  onSearchResultsChange: (value: NominatimLocation[]) => void;
 
-  onLatitudeChange: (
-    value: number | null
-  ) => void;
+  onLatitudeChange: (value: number | null) => void;
 
-  onLongitudeChange: (
-    value: number | null
-  ) => void;
+  onLongitudeChange: (value: number | null) => void;
 
-  onLocationQueryChange: (
-    value: string
-  ) => void;
+  onLocationQueryChange: (value: string) => void;
 
-  onSearchLocation: (
-    query: string
-  ) => void;
-
+  onSearchLocation: (query: string) => void;
 };
 
 export default function LocationSection({
-
   locationMethod,
 
   locationSearch,
@@ -94,11 +73,8 @@ export default function LocationSection({
   onLocationQueryChange,
 
   onSearchLocation,
-
 }: Props) {
-
   return (
-
     <section
       className="
         rounded-3xl
@@ -110,7 +86,6 @@ export default function LocationSection({
         sm:p-6
       "
     >
-
       <p
         className="
           text-[11px]
@@ -123,124 +98,50 @@ export default function LocationSection({
         Lokasi
       </p>
 
-      <h2 className="mt-1 text-lg font-bold text-slate-900">
+      <h2 className="mt-1 text-sm font-bold text-slate-900">
         Di mana bantuan dibutuhkan?
       </h2>
 
       <LocationMethodTabs
-
         locationMethod={locationMethod}
-
-        onLocationMethodChange={
-          onLocationMethodChange
-        }
-
-        onManualAddressChange={
-          onManualAddressChange
-        }
-
-        onSelectedLocationChange={
-          onSelectedLocationChange
-        }
-
-        onLatitudeChange={
-          onLatitudeChange
-        }
-
-        onLongitudeChange={
-          onLongitudeChange
-        }
-
-        onLocationQueryChange={
-          onLocationQueryChange
-        }
-
+        onLocationMethodChange={onLocationMethodChange}
+        onManualAddressChange={onManualAddressChange}
+        onSelectedLocationChange={onSelectedLocationChange}
+        onLatitudeChange={onLatitudeChange}
+        onLongitudeChange={onLongitudeChange}
+        onLocationQueryChange={onLocationQueryChange}
       />
 
       {locationMethod === "SEARCH" && (
-
         <>
-
           <SearchLocation
-
             locationSearch={locationSearch}
-
-            searchingLocation={
-              searchingLocation
-            }
-
-            onLocationSearchChange={
-              onLocationSearchChange
-            }
-
-            onSearchLocation={
-              onSearchLocation
-            }
-
+            searchingLocation={searchingLocation}
+            onLocationSearchChange={onLocationSearchChange}
+            onSearchLocation={onSearchLocation}
           />
 
           <SearchResults
-
-            searchResults={
-              searchResults
-            }
-
-            onSelectedLocationChange={
-              onSelectedLocationChange
-            }
-
-            onLatitudeChange={
-              onLatitudeChange
-            }
-
-            onLongitudeChange={
-              onLongitudeChange
-            }
-
-            onLocationQueryChange={
-              onLocationQueryChange
-            }
-
-            onSearchResultsChange={
-              onSearchResultsChange
-            }
-
+            searchResults={searchResults}
+            onSelectedLocationChange={onSelectedLocationChange}
+            onLatitudeChange={onLatitudeChange}
+            onLongitudeChange={onLongitudeChange}
+            onLocationQueryChange={onLocationQueryChange}
+            onSearchResultsChange={onSearchResultsChange}
           />
 
           {selectedLocation && (
-
-            <SelectedLocationCard
-
-              selectedLocation={
-                selectedLocation
-              }
-
-            />
-
+            <SelectedLocationCard selectedLocation={selectedLocation} />
           )}
-
         </>
-
       )}
 
       {locationMethod === "MANUAL" && (
-
         <ManualAddressInput
-
-          manualAddress={
-            manualAddress
-          }
-
-          onManualAddressChange={
-            onManualAddressChange
-          }
-
+          manualAddress={manualAddress}
+          onManualAddressChange={onManualAddressChange}
         />
-
       )}
-
     </section>
-
   );
-
 }

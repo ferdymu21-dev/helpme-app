@@ -1,37 +1,22 @@
 "use client";
 
-import type {
-  NominatimLocation,
-} from "../../types/create-task.types";
+import type { NominatimLocation } from "../../types/create-task.types";
 
 type Props = {
-
   searchResults: NominatimLocation[];
 
-  onSelectedLocationChange: (
-    value: NominatimLocation
-  ) => void;
+  onSelectedLocationChange: (value: NominatimLocation) => void;
 
-  onLocationQueryChange: (
-    value: string
-  ) => void;
+  onLocationQueryChange: (value: string) => void;
 
-  onLatitudeChange: (
-    value: number
-  ) => void;
+  onLatitudeChange: (value: number) => void;
 
-  onLongitudeChange: (
-    value: number
-  ) => void;
+  onLongitudeChange: (value: number) => void;
 
-  onSearchResultsChange: (
-    value: NominatimLocation[]
-  ) => void;
-
+  onSearchResultsChange: (value: NominatimLocation[]) => void;
 };
 
 export default function SearchResults({
-
   searchResults,
 
   onSelectedLocationChange,
@@ -43,17 +28,12 @@ export default function SearchResults({
   onLongitudeChange,
 
   onSearchResultsChange,
-
 }: Props) {
-
   if (searchResults.length === 0) {
-
     return null;
-
   }
 
   return (
-
     <div
       className="
         mt-3
@@ -66,35 +46,21 @@ export default function SearchResults({
         shadow-lg
       "
     >
-
       {searchResults.map((location) => (
-
         <button
-
           key={location.place_id}
-
           type="button"
-
           onClick={() => {
-
             onSelectedLocationChange(location);
 
-            onLocationQueryChange(
-              location.display_name
-            );
+            onLocationQueryChange(location.display_name);
 
-            onLatitudeChange(
-              Number(location.lat)
-            );
+            onLatitudeChange(Number(location.lat));
 
-            onLongitudeChange(
-              Number(location.lon)
-            );
+            onLongitudeChange(Number(location.lon));
 
             onSearchResultsChange([]);
-
           }}
-
           className="
             w-full
             border-b
@@ -107,7 +73,6 @@ export default function SearchResults({
             hover:bg-slate-50
           "
         >
-
           <p
             className="
               text-xs
@@ -118,13 +83,8 @@ export default function SearchResults({
           >
             {location.display_name}
           </p>
-
         </button>
-
       ))}
-
     </div>
-
   );
-
 }

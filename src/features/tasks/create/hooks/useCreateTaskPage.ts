@@ -1,315 +1,253 @@
 "use client";
 
-import {
-    useTaskLocation,
-} from "./useTaskLocation";
+import { useTaskLocation } from "./useTaskLocation";
 
-import {
-    useTaskLoading,
-} from "./useTaskLoading";
+import { useTaskLoading } from "./useTaskLoading";
 
 import { useRouter } from "next/navigation";
 
-import {
-    useTaskForm,
-} from "./useTaskForm";
+import { useTaskForm } from "./useTaskForm";
 
-import {
-    useLocationSearch,
-} from "./useLocationSearch";
+import { useLocationSearch } from "./useLocationSearch";
 
-import {
-    useOwnerLocation,
-} from "./useOwnerLocation";
+import { useOwnerLocation } from "./useOwnerLocation";
 
-import {
-    useTaskPremium,
-} from "./useTaskPremium";
+import { useTaskPremium } from "./useTaskPremium";
 
-import {
-    useCreateTask,
-} from "./useCreateTask";
+import { useCreateTask } from "./useCreateTask";
 
 export function useCreateTaskPage() {
+  const router = useRouter();
 
-    const router =
-        useRouter();
+  const {
+    ownerLatitude,
 
-    const {
+    ownerLongitude,
+  } = useOwnerLocation();
 
-        ownerLatitude,
+  const {
+    title,
+    setTitle,
 
-        ownerLongitude,
+    description,
+    setDescription,
 
-    } =
-        useOwnerLocation();
+    category,
+    setCategory,
 
-    const {
+    budget,
+    setBudget,
 
-        title,
-        setTitle,
+    taskDate,
+    setTaskDate,
 
-        description,
-        setDescription,
+    taskTime,
+    setTaskTime,
 
-        category,
-        setCategory,
+    isUrgent,
+    setIsUrgent,
+  } = useTaskForm();
 
-        budget,
-        setBudget,
+  const {
+    loading,
 
-        taskDate,
-        setTaskDate,
+    setLoading,
+  } = useTaskLoading();
 
-        taskTime,
-        setTaskTime,
+  const {
+    premiumServices,
 
-        isUrgent,
-        setIsUrgent,
+    hasPremiumService,
 
-    } =
-        useTaskForm();
+    totalPremiumAmount,
+  } = useTaskPremium({
+    isUrgent,
+  });
 
-    const {
+  const {
+    locationMethod,
 
-        loading,
+    setLocationMethod,
 
-        setLoading,
+    locationQuery,
 
-    } = useTaskLoading();
+    setLocationQuery,
 
-    const {
+    selectedLocation,
 
-        premiumServices,
+    setSelectedLocation,
 
-        hasPremiumService,
+    latitude,
 
-        totalPremiumAmount,
+    setLatitude,
 
-    } = useTaskPremium({
+    longitude,
 
-        isUrgent,
+    setLongitude,
 
-    });
+    manualAddress,
 
-    const {
+    setManualAddress,
+  } = useTaskLocation();
 
-        locationMethod,
+  const {
+    searchResults,
 
-        setLocationMethod,
+    setSearchResults,
 
-        locationQuery,
+    locationSearch,
 
-        setLocationQuery,
+    setLocationSearch,
 
-        selectedLocation,
+    searchingLocation,
 
-        setSelectedLocation,
+    searchLocation,
+  } = useLocationSearch();
 
-        latitude,
+  const {
+    handleCreateTask,
 
-        setLatitude,
+    result,
 
-        longitude,
+    closeResult,
 
-        setLongitude,
+    orderId,
 
-        manualAddress,
+    paymentAmount,
 
-        setManualAddress,
+    paymentType,
 
-    } = useTaskLocation();
+    taskId,
+  } = useCreateTask({
+    router,
 
-    const {
+    ownerLatitude,
 
-        searchResults,
+    ownerLongitude,
+  });
 
-        setSearchResults,
+  return {
+    title,
 
-        locationSearch,
+    description,
 
-        setLocationSearch,
+    category,
 
-        searchingLocation,
+    budget,
 
-        searchLocation,
+    taskDate,
 
-    } =
-        useLocationSearch();
+    taskTime,
 
-    const {
+    isUrgent,
 
-        handleCreateTask,
+    premiumServices,
 
-        result,
+    hasPremiumService,
 
-        closeResult,
+    totalPremiumAmount,
 
-        orderId,
+    loading,
 
-        paymentAmount,
+    locationMethod,
 
-        paymentType,
+    locationQuery,
 
-        taskId,
+    latitude,
 
-    } = useCreateTask({
+    longitude,
 
-        router,
+    locationSearch,
 
-        ownerLatitude,
+    searchResults,
 
-        ownerLongitude,
+    searchingLocation,
 
-    });
+    selectedLocation,
 
-    return {
+    manualAddress,
 
-        title,
+    onTitleChange: setTitle,
 
-        description,
+    onDescriptionChange: setDescription,
 
-        category,
+    onCategoryChange: setCategory,
 
-        budget,
+    onBudgetChange: setBudget,
 
-        taskDate,
+    onTaskDateChange: setTaskDate,
 
-        taskTime,
+    onTaskTimeChange: setTaskTime,
 
-        isUrgent,
+    onUrgentChange: setIsUrgent,
 
-        premiumServices,
+    onLocationMethodChange: setLocationMethod,
 
-        hasPremiumService,
+    onLocationSearchChange: setLocationSearch,
 
-        totalPremiumAmount,
+    onManualAddressChange: setManualAddress,
 
-        loading,
+    onSelectedLocationChange: setSelectedLocation,
 
-        locationMethod,
+    onSearchResultsChange: setSearchResults,
 
-        locationQuery,
+    onLatitudeChange: setLatitude,
 
-        latitude,
+    onLongitudeChange: setLongitude,
 
-        longitude,
+    onLocationQueryChange: setLocationQuery,
 
-        locationSearch,
+    onSubmit: (e: React.FormEvent) =>
+      handleCreateTask(
+        e,
 
-        searchResults,
+        {
+          title,
 
-        searchingLocation,
+          description,
 
-        selectedLocation,
+          category,
 
-        manualAddress,
+          budget,
 
-        onTitleChange:
-            setTitle,
+          taskDate,
 
-        onDescriptionChange:
-            setDescription,
+          taskTime,
 
-        onCategoryChange:
-            setCategory,
+          isUrgent,
 
-        onBudgetChange:
-            setBudget,
+          premiumServices,
 
-        onTaskDateChange:
-            setTaskDate,
+          locationMethod,
 
-        onTaskTimeChange:
-            setTaskTime,
+          locationQuery,
 
-        onUrgentChange:
-            setIsUrgent,
+          latitude,
 
-        onLocationMethodChange:
-            setLocationMethod,
+          longitude,
 
-        onLocationSearchChange:
-            setLocationSearch,
+          manualAddress,
 
-        onManualAddressChange:
-            setManualAddress,
+          selectedLocation,
 
-        onSelectedLocationChange:
-            setSelectedLocation,
+          setLoading,
+        },
+      ),
 
-        onSearchResultsChange:
-            setSearchResults,
+    onSearchLocation: searchLocation,
 
-        onLatitudeChange:
-            setLatitude,
+    onBack: () => router.back(),
 
-        onLongitudeChange:
-            setLongitude,
+    paymentResult: result,
 
-        onLocationQueryChange:
-            setLocationQuery,
+    closePaymentResult: closeResult,
 
-        onSubmit: (e: React.FormEvent) =>
+    paymentOrderId: orderId,
 
-            handleCreateTask(
+    paymentAmount,
 
-                e,
+    paymentType,
 
-                {
-
-                    title,
-
-                    description,
-
-                    category,
-
-                    budget,
-
-                    taskDate,
-
-                    taskTime,
-
-                    isUrgent,
-
-                    premiumServices,
-
-                    locationMethod,
-
-                    locationQuery,
-
-                    latitude,
-
-                    longitude,
-
-                    manualAddress,
-
-                    selectedLocation,
-
-                    setLoading,
-
-                }
-
-            ),
-
-        onSearchLocation:
-            searchLocation,
-
-        onBack:
-            () =>
-                router.back(),
-
-        paymentResult: result,
-
-        closePaymentResult: closeResult,
-
-        paymentOrderId: orderId,
-
-        paymentAmount,
-
-        paymentType,
-
-        taskId,
-
-    };
+    taskId,
+  };
 }

@@ -1,32 +1,27 @@
 "use client";
 
-import MobileTaskDetailView
-  from "@/components/tasks/mobile/MobileTaskDetailView";
+import MobileTaskDetailView from "@/components/tasks/mobile/MobileTaskDetailView";
 
-import DesktopTaskDetailView
-  from "@/components/tasks/desktop/DesktopTaskDetailView";
+import DesktopTaskDetailView from "@/components/tasks/desktop/DesktopTaskDetailView";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useParams } from "next/navigation";
 
-import Link from "next/link";
-
 import { supabase } from "@/lib/supabase/client";
+
+import { completeTask, confirmTaskCompletion } from "@/features/tasks/services";
 
 import {
   acceptHelper,
   applyTask,
   cancelTask,
-  getConversationByTask,
   getTaskApplications,
   getTaskById,
   expireTasks,
 } from "@/features/tasks/services/task.service";
 
-import {
-  getUserReputation,
-} from "@/features/profile/services/reputation.service";
+import { getUserReputation } from "@/features/profile/services/reputation.service";
 
 interface Task {
   id: string;
@@ -35,17 +30,11 @@ interface Task {
   category: string;
   budget: number;
   location_type?: string;
-
   location_name?: string;
-
   manual_address?: string;
-
   latitude?: number;
-
   longitude?: number;
-
   owner_latitude?: number;
-
   owner_longitude?: number;
   users?: {
     id: string;
@@ -59,6 +48,7 @@ interface Task {
   created_at: string;
   user_id: string;
   selected_helper_id: string | null;
+  completion_proof_photo?: string;
 }
 
 interface Applicant {
@@ -79,91 +69,65 @@ interface Applicant {
   };
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "";
+}
+
 export default function TaskDetailPage() {
-
   const params = useParams();
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [applying, setApplying] = useState(false);
+  const [acceptingHelperId, setAcceptingHelperId] = useState<string | null>(
+  null,
+);
+  const [applications, setApplications] = useState<Applicant[]>([]);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [hasApplied, setHasApplied] = useState(false);
 
-  const [task, setTask] =
-    useState<Task | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [applying, setApplying] =
-    useState(false);
-
-  const [accepting, setAccepting] =
-    useState(false);
-
-  const [applications, setApplications] =
-    useState<Applicant[]>([]);
-
-  const [currentUserId, setCurrentUserId] =
-    useState("");
-
-  const [hasApplied, setHasApplied] =
-    useState(false);
-
-  async function loadCurrentUser() {
-
+  const loadCurrentUser = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    setCurrentUserId(
-      user?.id || ""
-    );
-  }
+    setCurrentUserId(user?.id || "");
+  }, []);
 
-  async function loadTask() {
+  const loadTask = useCallback(async () => {
+    await expireTasks();
 
-  await expireTasks();
+    const data = await getTaskById(params.id as string);
 
-  const data =
-    await getTaskById(
-      params.id as string
-    );
+    setTask(data);
+  }, [params.id]);
 
-  setTask(data);
-}
-
-  async function loadApplications() {
-
-    const data =
-      await getTaskApplications(
-        params.id as string
-      );
+  const loadApplications = useCallback(async () => {
+    const data = await getTaskApplications(params.id as string);
 
     /* =========================
        LOAD REPUTATION
     ========================= */
 
-    const applicationsWithReputation =
-      await Promise.all(
+    const applicationsWithReputation = await Promise.all(
+      (data || []).map(async (application) => {
+        if (!application.helper) {
+          return application;
+        }
 
-        (data || []).map(
-          async (application) => {
+        const reputation = await getUserReputation(application.helper.id);
 
-            if (!application.helper) {
-              return application;
-            }
-
-            const reputation =
-              await getUserReputation(
-                application.helper.id
-              );
-
-            return {
-              ...application,
-              reputation,
-            };
-          }
-        )
-      );
-
-    setApplications(
-      applicationsWithReputation
+        return {
+          ...application,
+          reputation,
+        };
+      }),
     );
+
+    setApplications(applicationsWithReputation);
 
     const {
       data: { user },
@@ -171,248 +135,163 @@ export default function TaskDetailPage() {
 
     if (!user) return;
 
-    const alreadyApplied =
-      data?.some(
-        (application) =>
-          application.helper_id ===
-          user.id
-      );
-
-    setHasApplied(
-      !!alreadyApplied
+    const alreadyApplied = data?.some(
+      (application) => application.helper_id === user.id,
     );
-  }
+
+    setHasApplied(!!alreadyApplied);
+  }, [params.id]);
 
   useEffect(() => {
-
     async function init() {
-
       try {
-
         await loadCurrentUser();
 
         await loadTask();
 
         await loadApplications();
-
       } catch (error) {
-
         console.error(error);
-
       } finally {
-
         setLoading(false);
       }
     }
 
     init();
-
-  }, [params.id]);
+  }, [loadCurrentUser, loadTask, loadApplications]);
 
   async function handleApplyTask() {
-
     try {
-
       setApplying(true);
 
-      await applyTask(
-        params.id as string
-      );
+      await applyTask(params.id as string);
 
-      alert(
-        "Berhasil melamar task"
-      );
+      alert("Berhasil melamar task");
 
       await loadApplications();
-
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
 
       if (
-        error.message ===
-        "Kamu sudah melamar task ini" ||
-        error.message ===
-        "Tidak bisa melamar task sendiri" ||
-        error.message ===
-        "Task sudah tidak tersedia"
+        message === "Kamu sudah melamar task ini" ||
+        message === "Tidak bisa melamar task sendiri" ||
+        message === "Task sudah tidak tersedia"
       ) {
-
-        alert(error.message);
+        alert(message);
 
         return;
       }
 
       console.error(error);
 
-      alert(
-        "Terjadi kesalahan"
-      );
-
+      alert("Terjadi kesalahan");
     } finally {
-
       setApplying(false);
     }
   }
 
-  async function handleAcceptHelper(
-    helperId: string
-  ) {
-
+  async function handleAcceptHelper(helperId: string) {
     if (!task) return;
 
     try {
+      setAcceptingHelperId(helperId);
 
-      setAccepting(true);
+      await acceptHelper(task.id, helperId);
 
-      await acceptHelper(
-        task.id,
-        helperId
-      );
-
-      alert(
-        "Helper berhasil diterima"
-      );
+      alert("Helper berhasil diterima");
 
       await loadTask();
 
       await loadApplications();
-
     } catch (error) {
-
       console.error(error);
 
-      alert(
-        "Gagal menerima helper"
-      );
-
+      alert("Gagal menerima helper");
     } finally {
-
-      setAccepting(false);
+      setAcceptingHelperId(null);
     }
   }
 
-  async function handleCompleteTask() {
-
+  async function handleCompleteTask(proofUrl: string) {
     if (!task) return;
 
     try {
-
-      const { error } =
-        await supabase
-          .from("tasks")
-          .update({
-            status: "COMPLETED",
-          })
-          .eq("id", task.id);
-
-      if (error) {
-
-        console.error(error);
-
-        alert(
-          "Gagal menyelesaikan task"
-        );
-
-        return;
-      }
+      await completeTask(task.id, proofUrl);
 
       alert(
-        "Task berhasil diselesaikan!"
+        "Bukti penyelesaian berhasil dikirim. Menunggu konfirmasi dari pemilik task.",
       );
-
-      window.location.href =
-        `/review/${task.id}`;
 
       await loadTask();
-
     } catch (error) {
-
       console.error(error);
 
-      alert(
-        "Terjadi kesalahan"
-      );
+      alert("Terjadi kesalahan");
+
+      throw error;
     }
   }
 
   async function handleCancelTask() {
+    if (!task) return;
 
-  if (!task) return;
+    const confirmCancel = window.confirm("Yakin ingin membatalkan task?");
 
-  const confirmCancel =
-    window.confirm(
-      "Yakin ingin membatalkan task?"
-    );
+    if (!confirmCancel) {
+      return;
+    }
 
-  if (!confirmCancel) {
-    return;
+    try {
+      await cancelTask(task.id);
+
+      alert("Task berhasil dibatalkan");
+
+      await loadTask();
+    } catch (error) {
+      console.error(error);
+
+      alert("Gagal membatalkan task");
+    }
   }
-
-  try {
-
-    await cancelTask(
-      task.id
-    );
-
-    alert(
-      "Task berhasil dibatalkan"
-    );
-
-    await loadTask();
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Gagal membatalkan task"
-    );
-  }
-}
 
   if (loading) {
-    return (
-      <div className="p-6">
-        Memuat task...
-      </div>
-    );
+    return <div className="p-6">Memuat task...</div>;
   }
 
   if (!task) {
-    return (
-      <div className="p-6">
-        Task tidak ditemukan
-      </div>
-    );
+    return <div className="p-6">Task tidak ditemukan</div>;
   }
 
-  const isOwner =
-    currentUserId === task.user_id;
+  async function handleConfirmCompletion() {
+  if (!task) return;
 
-  const alreadyApplied =
-    hasApplied;
+  try {
+    await confirmTaskCompletion(task.id);
 
-  const isSelectedHelper =
-    currentUserId ===
-    task.selected_helper_id;
+    alert("Task berhasil dikonfirmasi.");
 
-  const canAccessChat =
-    isOwner ||
-    isSelectedHelper;
+    window.location.href = `/review/${task.id}`;
+  } catch (error) {
+    console.error(error);
+
+    alert("Gagal mengonfirmasi task.");
+  }
+}
 
   return (
     <>
-
       <MobileTaskDetailView
         task={task}
         applications={applications}
         currentUserId={currentUserId}
         hasApplied={hasApplied}
         applying={applying}
-        accepting={accepting}
+        acceptingHelperId={acceptingHelperId}
         handleApplyTask={handleApplyTask}
         handleAcceptHelper={handleAcceptHelper}
         handleCompleteTask={handleCompleteTask}
         handleCancelTask={handleCancelTask}
+        handleConfirmCompletion={handleConfirmCompletion}
       />
 
       <DesktopTaskDetailView
@@ -421,13 +300,13 @@ export default function TaskDetailPage() {
         currentUserId={currentUserId}
         hasApplied={hasApplied}
         applying={applying}
-        accepting={accepting}
+        acceptingHelperId={acceptingHelperId}
         handleApplyTask={handleApplyTask}
         handleAcceptHelper={handleAcceptHelper}
         handleCompleteTask={handleCompleteTask}
+        handleConfirmCompletion={handleConfirmCompletion}
         handleCancelTask={handleCancelTask}
       />
-
     </>
   );
 }

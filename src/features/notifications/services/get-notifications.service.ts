@@ -1,20 +1,15 @@
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
-import type {
-    Notification,
-} from "../types/notification.types";
+import type { Notification } from "../types/notification.types";
 
 const PAGE_SIZE = 5;
 
 export interface NotificationPage {
+  notifications: Notification[];
 
-    notifications: Notification[];
+  hasMore: boolean;
 
-    hasMore: boolean;
-
-    nextCursor: string | null;
-
+  nextCursor: string | null;
 }
 
 /* =========================
@@ -22,93 +17,54 @@ export interface NotificationPage {
 ========================= */
 
 export async function getMyNotifications(
-
-    cursor?: string | null,
-
+  cursor?: string | null,
 ): Promise<NotificationPage> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const {
+  if (!user) {
+    throw new Error("User belum login");
+  }
 
-        data: { user },
+  let query = supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(PAGE_SIZE + 1);
 
-    } = await supabase.auth.getUser();
+  if (cursor) {
+    query = query.lt("created_at", cursor);
+  }
 
-    if (!user) {
+  const {
+    data,
 
-        throw new Error(
-            "User belum login"
-        );
+    error,
+  } = await query;
 
-    }
+  if (error) {
+    throw error;
+  }
 
-    let query =
+  const rows = data ?? [];
 
-        supabase
-            .from("notifications")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", {
+  const hasMore = rows.length > PAGE_SIZE;
 
-                ascending: false,
+  const notifications = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
 
-            })
-            .limit(PAGE_SIZE + 1);
+  const nextCursor = hasMore
+    ? notifications[notifications.length - 1].created_at
+    : null;
 
-    if (cursor) {
+  return {
+    notifications,
 
-        query = query.lt(
-            "created_at",
-            cursor,
-        );
+    hasMore,
 
-    }
-
-    const {
-
-        data,
-
-        error,
-
-    } = await query;
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    const rows = data ?? [];
-
-    const hasMore =
-
-        rows.length > PAGE_SIZE;
-
-    const notifications =
-
-        hasMore
-
-            ? rows.slice(0, PAGE_SIZE)
-
-            : rows;
-
-    const nextCursor =
-
-        hasMore
-
-            ? notifications[
-                notifications.length - 1
-            ].created_at
-
-            : null;
-
-    return {
-
-        notifications,
-
-        hasMore,
-
-        nextCursor,
-
-    };
-
+    nextCursor,
+  };
 }

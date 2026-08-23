@@ -1,33 +1,22 @@
-import {
-    CampaignStatus,
-} from "../constants/campaign-status";
+import { CampaignStatus } from "../constants/campaign-status";
 
-import {
-    buildCampaignBase,
-} from "./buildCampaignBase";
+import { buildCampaignBase } from "./buildCampaignBase";
 
 import type {
-    CreateCampaignPayload,
-    InsertCampaignPayload,
+  CreateCampaignPayload,
+  InsertCampaignPayload,
 } from "../types/campaign.types";
 
 export function buildScheduledCampaign(
-
-    payload: CreateCampaignPayload,
-
+  payload: CreateCampaignPayload,
 ): InsertCampaignPayload {
+  return {
+    ...buildCampaignBase(payload),
 
-    return {
+    status: CampaignStatus.SCHEDULED,
 
-        ...buildCampaignBase(payload),
+    scheduled_at: payload.scheduledAt!,
 
-        status: CampaignStatus.SCHEDULED,
-
-        scheduled_at:
-            payload.scheduledAt!,
-
-        published_at: null,
-
-    };
-
+    published_at: null,
+  };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import BottomNavbar from "./BottomNavbar";
+import MobileBottomNavbar from "./mobile/MobileBottomNavbar";
 
 export default function AppShell({
   children,
@@ -21,7 +21,7 @@ export default function AppShell({
         {children}
       </div>
 
-      <BottomNavbar />
+      <MobileBottomNavbar />
     </div>
   );
 }

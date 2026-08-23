@@ -1,3 +1,5 @@
+import { Send } from "lucide-react";
+
 interface Message {
   id: string;
 
@@ -144,7 +146,7 @@ export default function MobileChatRoomView({
             Memuat pesan...
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
 
             {messages.map((item) => {
               const isMine =
@@ -166,11 +168,11 @@ export default function MobileChatRoomView({
                   <div
                     className={`
                       max-w-[80%]
-                      rounded-3xl
-                      px-5
-                      py-4
-                      text-sm
-                      leading-7
+                      rounded-2xl
+                      px-3
+                      py-2
+                      text-[14px]
+                      leading-5
 
                       ${isMine
                         ? "bg-indigo-600 text-white"
@@ -208,41 +210,49 @@ export default function MobileChatRoomView({
           <div className="flex gap-3">
 
             <input
-              value={message}
-              onChange={(e) =>
-                setMessage(
-                  e.target.value
-                )
-              }
-              placeholder="Tulis pesan..."
-              className="
-                h-14
-                flex-1
-                rounded-2xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-5
-                outline-none
-              "
-            />
+  value={message}
+  onChange={(e) => setMessage(e.target.value)}
+  placeholder="Tulis pesan..."
+  className="
+    h-12
+    flex-1
+    rounded-2xl
+    border
+    border-slate-200
+    bg-slate-50
+    px-4
+    text-sm
+    outline-none
+  "
+/>
 
             <button
-              onClick={
-                handleSendMessage
-              }
-              disabled={sending}
-              className="
-                rounded-2xl
-                bg-indigo-600
-                px-6
-                text-sm
-                font-semibold
-                text-white
-              "
-            >
-              Kirim
-            </button>
+  onClick={handleSendMessage}
+  disabled={sending}
+  aria-label="Kirim pesan"
+  title="Kirim pesan"
+  className="
+    flex
+    h-12
+    w-12
+    shrink-0
+    items-center
+    justify-center
+    rounded-full
+    bg-indigo-600
+    text-white
+    transition
+    hover:bg-indigo-700
+    active:scale-95
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  "
+>
+  <Send
+    className="h-5 w-5"
+    strokeWidth={2.3}
+  />
+</button>
 
           </div>
 

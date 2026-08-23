@@ -15,10 +15,10 @@ interface Props {
   tasks: Task[];
   loading: boolean;
   activeFilter: string;
-  setActiveFilter: (
-    value: string
-  ) => void;
-  filters: string[];
+  setActiveFilter: (value: string) => void;
+  openCount: number;
+  acceptedCount: number;
+  completedCount: number;
 }
 
 export default function DesktopMyTasksView({
@@ -26,7 +26,9 @@ export default function DesktopMyTasksView({
   loading,
   activeFilter,
   setActiveFilter,
-  filters,
+  openCount,
+  acceptedCount,
+  completedCount,
 }: Props) {
   return (
     <main
@@ -37,16 +39,11 @@ export default function DesktopMyTasksView({
         lg:block
       "
     >
-
-      {/* CONTAINER */}
       <div className="mx-auto max-w-7xl px-10 py-10">
 
         {/* HEADER */}
         <div className="flex items-end justify-between">
-
           <div>
-
-            {/* BADGE */}
             <div
               className="
                 inline-flex
@@ -62,7 +59,6 @@ export default function DesktopMyTasksView({
               Owner Dashboard
             </div>
 
-            {/* TITLE */}
             <h1
               className="
                 mt-6
@@ -75,7 +71,6 @@ export default function DesktopMyTasksView({
               Task Saya
             </h1>
 
-            {/* SUBTITLE */}
             <p
               className="
                 mt-4
@@ -85,12 +80,9 @@ export default function DesktopMyTasksView({
                 text-slate-500
               "
             >
-              Kelola task, lihat pelamar,
-              dan pantau progress task kamu.
+              Kelola task, lihat pelamar, dan pantau progress task kamu.
             </p>
-
           </div>
-
         </div>
 
         {/* STATS */}
@@ -98,15 +90,12 @@ export default function DesktopMyTasksView({
 
           {/* OPEN */}
           <button
-            onClick={() =>
-              setActiveFilter("OPEN")
-            }
+            onClick={() => setActiveFilter("OPEN")}
             className={`
               rounded-4xl
               p-7
               text-left
               transition-all
-
               ${
                 activeFilter === "OPEN"
                   ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white shadow-[0_20px_60px_rgba(79,70,229,0.25)]"
@@ -114,7 +103,6 @@ export default function DesktopMyTasksView({
               }
             `}
           >
-
             <p
               className={
                 activeFilter === "OPEN"
@@ -125,49 +113,29 @@ export default function DesktopMyTasksView({
               Task Aktif
             </p>
 
-            <h2
-              className="
-                mt-4
-                text-6xl
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status === "OPEN"
-                ).length
-              }
+            <h2 className="mt-4 text-6xl font-black">
+              {openCount}
             </h2>
-
           </button>
 
           {/* ACCEPTED */}
           <button
-            onClick={() =>
-              setActiveFilter(
-                "ACCEPTED"
-              )
-            }
+            onClick={() => setActiveFilter("ACCEPTED")}
             className={`
               rounded-4xl
               p-7
               text-left
               transition-all
-
               ${
-                activeFilter ===
-                "ACCEPTED"
+                activeFilter === "ACCEPTED"
                   ? "bg-amber-500 text-white shadow-[0_20px_60px_rgba(245,158,11,0.25)]"
                   : "border border-slate-200 bg-white text-slate-900 hover:border-amber-200"
               }
             `}
           >
-
             <p
               className={
-                activeFilter ===
-                "ACCEPTED"
+                activeFilter === "ACCEPTED"
                   ? "text-amber-100"
                   : "text-slate-500"
               }
@@ -175,50 +143,29 @@ export default function DesktopMyTasksView({
               Sedang Dikerjakan
             </p>
 
-            <h2
-              className="
-                mt-4
-                text-6xl
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status ===
-                    "ACCEPTED"
-                ).length
-              }
+            <h2 className="mt-4 text-6xl font-black">
+              {acceptedCount}
             </h2>
-
           </button>
 
           {/* COMPLETED */}
           <button
-            onClick={() =>
-              setActiveFilter(
-                "COMPLETED"
-              )
-            }
+            onClick={() => setActiveFilter("COMPLETED")}
             className={`
               rounded-4xl
               p-7
               text-left
               transition-all
-
               ${
-                activeFilter ===
-                "COMPLETED"
+                activeFilter === "COMPLETED"
                   ? "bg-emerald-500 text-white shadow-[0_20px_60px_rgba(16,185,129,0.25)]"
                   : "border border-slate-200 bg-white text-slate-900 hover:border-emerald-200"
               }
             `}
           >
-
             <p
               className={
-                activeFilter ===
-                "COMPLETED"
+                activeFilter === "COMPLETED"
                   ? "text-emerald-100"
                   : "text-slate-500"
               }
@@ -226,33 +173,16 @@ export default function DesktopMyTasksView({
               Selesai
             </p>
 
-            <h2
-              className="
-                mt-4
-                text-6xl
-                font-black
-              "
-            >
-              {
-                tasks.filter(
-                  (task) =>
-                    task.status ===
-                    "COMPLETED"
-                ).length
-              }
+            <h2 className="mt-4 text-6xl font-black">
+              {completedCount}
             </h2>
-
           </button>
-
         </div>
 
         {/* TASK GRID */}
         <div className="mt-10 grid grid-cols-3 gap-6">
-
           {loading ? (
-            <div>
-              Memuat task...
-            </div>
+            <div>Memuat task...</div>
           ) : tasks.length === 0 ? (
             <div
               className="
@@ -266,7 +196,6 @@ export default function DesktopMyTasksView({
                 text-center
               "
             >
-
               <h3
                 className="
                   text-2xl
@@ -280,7 +209,6 @@ export default function DesktopMyTasksView({
               <p className="mt-4 text-slate-500">
                 Buat task pertama kamu sekarang.
               </p>
-
             </div>
           ) : (
             tasks.map((task) => (
@@ -302,11 +230,8 @@ export default function DesktopMyTasksView({
                   hover:shadow-xl
                 "
               >
-
                 {/* TOP */}
                 <div className="flex items-center justify-between">
-
-                  {/* CATEGORY */}
                   <div
                     className="
                       inline-flex
@@ -322,7 +247,6 @@ export default function DesktopMyTasksView({
                     {task.category}
                   </div>
 
-                  {/* STATUS */}
                   <div
                     className="
                       rounded-full
@@ -336,7 +260,6 @@ export default function DesktopMyTasksView({
                   >
                     {task.status}
                   </div>
-
                 </div>
 
                 {/* TITLE */}
@@ -364,13 +287,7 @@ export default function DesktopMyTasksView({
                     justify-between
                   "
                 >
-
-                  <p
-                    className="
-                      text-sm
-                      text-slate-500
-                    "
-                  >
+                  <p className="text-sm text-slate-500">
                     📍 {task.address}
                   </p>
 
@@ -383,21 +300,14 @@ export default function DesktopMyTasksView({
                     "
                   >
                     Rp
-                    {task.budget.toLocaleString(
-                      "id-ID"
-                    )}
+                    {task.budget.toLocaleString("id-ID")}
                   </div>
-
                 </div>
-
               </Link>
             ))
           )}
-
         </div>
-
       </div>
-
     </main>
   );
 }

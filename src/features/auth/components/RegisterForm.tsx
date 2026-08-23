@@ -2,28 +2,18 @@
 
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { register } from "../services/auth.service";
 
 export default function RegisterForm() {
-  const router = useRouter();
+  const [fullName, setFullName] = useState("");
 
-  const [fullName, setFullName] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [email, setEmail] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
-
-  async function handleRegister(
-    e: React.FormEvent
-  ) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
 
     if (loading) return;
@@ -40,25 +30,25 @@ export default function RegisterForm() {
       alert("Register berhasil");
 
       window.location.href = "/login";
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat register.";
+
+      alert(message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form
-      onSubmit={handleRegister}
-      className="space-y-4"
-    >
+    <form onSubmit={handleRegister} className="space-y-4">
       <input
         type="text"
         placeholder="Nama Lengkap"
         value={fullName}
-        onChange={(e) =>
-          setFullName(e.target.value)
-        }
+        onChange={(e) => setFullName(e.target.value)}
         className="
           w-full rounded-xl border
           p-3 outline-none
@@ -70,9 +60,7 @@ export default function RegisterForm() {
         type="email"
         placeholder="Email"
         value={email}
-        onChange={(e) =>
-          setEmail(e.target.value)
-        }
+        onChange={(e) => setEmail(e.target.value)}
         className="
           w-full rounded-xl border
           p-3 outline-none
@@ -84,9 +72,7 @@ export default function RegisterForm() {
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
+        onChange={(e) => setPassword(e.target.value)}
         className="
           w-full rounded-xl border
           p-3 outline-none
@@ -107,9 +93,7 @@ export default function RegisterForm() {
           disabled:opacity-50
         "
       >
-        {loading
-          ? "Loading..."
-          : "Register"}
+        {loading ? "Loading..." : "Register"}
       </button>
     </form>
   );

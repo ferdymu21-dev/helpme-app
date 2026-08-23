@@ -1,27 +1,21 @@
 interface Props {
+  onGenerateIds: () => void;
 
-    onGenerateIds: () => void;
+  onCopyPayload: () => void;
 
-    onCopyPayload: () => void;
-
-    onCopyResponse: () => void;
-
+  onCopyResponse: () => void;
 }
 
 export default function SimulatorToolbar({
+  onGenerateIds,
 
-    onGenerateIds,
+  onCopyPayload,
 
-    onCopyPayload,
-
-    onCopyResponse,
-
+  onCopyResponse,
 }: Props) {
-
-    return (
-
-        <div
-            className="
+  return (
+    <div
+      className="
                 flex
                 flex-wrap
                 gap-3
@@ -30,12 +24,11 @@ export default function SimulatorToolbar({
                 bg-slate-50
                 p-4
             "
-        >
-
-            <button
-                type="button"
-                onClick={onGenerateIds}
-                className="
+    >
+      <button
+        type="button"
+        onClick={onGenerateIds}
+        className="
                     rounded-xl
                     border
                     border-slate-300
@@ -46,14 +39,14 @@ export default function SimulatorToolbar({
                     transition
                     hover:bg-slate-100
                 "
-            >
-                🔄 Generate New IDs
-            </button>
+      >
+        🔄 Generate New IDs
+      </button>
 
-            <button
-                type="button"
-                onClick={onCopyPayload}
-                className="
+      <button
+        type="button"
+        onClick={onCopyPayload}
+        className="
                     rounded-xl
                     border
                     border-slate-300
@@ -64,14 +57,14 @@ export default function SimulatorToolbar({
                     transition
                     hover:bg-slate-100
                 "
-            >
-                📋 Copy Payload
-            </button>
+      >
+        📋 Copy Payload
+      </button>
 
-            <button
-                type="button"
-                onClick={onCopyResponse}
-                className="
+      <button
+        type="button"
+        onClick={onCopyResponse}
+        className="
                     rounded-xl
                     border
                     border-slate-300
@@ -82,12 +75,9 @@ export default function SimulatorToolbar({
                     transition
                     hover:bg-slate-100
                 "
-            >
-                📄 Copy Response
-            </button>
-
-        </div>
-
-    );
-
+      >
+        📄 Copy Response
+      </button>
+    </div>
+  );
 }

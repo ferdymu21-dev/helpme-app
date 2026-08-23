@@ -1,77 +1,37 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import {
+import { getLatestNotifications } from "../services";
 
-  getLatestNotifications,
+import { subscribeNotifications } from "../realtime";
 
-} from "../services";
-
-import {
-
-  subscribeNotifications,
-
-} from "../realtime";
-
-import type {
-
-  Notification,
-
-} from "../types/notification.types";
+import type { Notification } from "../types/notification.types";
 
 export function useLatestNotifications() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const [
+  const load = useCallback(async () => {
+    const data = await getLatestNotifications();
 
-    notifications,
-
-    setNotifications,
-
-  ] = useState<Notification[]>([]);
-
-  const load =
-    useCallback(async () => {
-
-      const data =
-        await getLatestNotifications();
-
-      setNotifications(data);
-
-    }, []);
+    setNotifications(data);
+  }, []);
 
   useEffect(() => {
+  let unsubscribe: (() => void) | undefined;
 
-    let unsubscribe:
-      (() => void) | undefined;
+  void Promise.resolve().then(() => load());
 
-    load();
+  (async () => {
+    unsubscribe = await subscribeNotifications(load);
+  })();
 
-    (async () => {
-
-      unsubscribe =
-        await subscribeNotifications(
-          load
-        );
-
-    })();
-
-    return () => {
-
-      unsubscribe?.();
-
-    };
-
-  }, [load]);
+  return () => {
+    unsubscribe?.();
+  };
+}, [load]);
 
   return {
-
     notifications,
-
   };
-
 }

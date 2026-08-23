@@ -1,30 +1,20 @@
 interface Props {
+  loading: boolean;
 
-    loading: boolean;
-
-    onClick: () => void;
-
+  onClick: () => void;
 }
 
 export default function SimulatorButton({
+  loading,
 
-    loading,
-
-    onClick,
-
+  onClick,
 }: Props) {
-
-    return (
-
-        <button
-
-            type="button"
-
-            onClick={onClick}
-
-            disabled={loading}
-
-            className="
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="
                 w-full
                 rounded-xl
                 bg-indigo-600
@@ -36,21 +26,8 @@ export default function SimulatorButton({
                 disabled:opacity-50
                 hover:bg-indigo-700
             "
-
-        >
-
-            {
-
-                loading
-
-                    ? "Sending..."
-
-                    : "Send Webhook"
-
-            }
-
-        </button>
-
-    );
-
+    >
+      {loading ? "Sending..." : "Send Webhook"}
+    </button>
+  );
 }

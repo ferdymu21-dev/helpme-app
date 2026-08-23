@@ -1,247 +1,251 @@
 "use client";
 
 import {
-    suspendUser,
-    banUser,
+  suspendUser,
+  banUser,
 } from "@/features/admin/services/user-moderation.service";
 
-import {
-    removeTask,
-} from "@/features/admin/services/task-moderation.service";
+import { removeTask } from "@/features/admin/services/task-moderation.service";
 
-import { useEffect, useState }
-    from "react";
+import { useEffect, useState } from "react";
 
-import { useParams }
-    from "next/navigation";
+import { useParams } from "next/navigation";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
-import {
-    updateReportStatus,
-} from "@/features/admin/services/report-admin.service";
+import { updateReportStatus } from "@/features/admin/services/report-admin.service";
+
+interface ReportUser {
+  id: string;
+  full_name: string;
+  verification_status: string | null;
+}
+
+interface ReportTask {
+  id: string;
+  title: string;
+  status: string;
+  budget: number | null;
+}
+
+interface Report {
+  id: string;
+  reporter_id: string;
+  reported_user_id: string;
+  reason: string;
+  description: string | null;
+  status: "PENDING" | "REVIEWED" | "RESOLVED" | "REJECTED" | string;
+  admin_notes: string | null;
+  created_at: string;
+  reporter: ReportUser | null;
+  reported_user: ReportUser | null;
+  task: ReportTask | null;
+}
 
 export default function ReportDetailPage() {
+  const params = useParams();
 
-    const params =
-        useParams();
+  const reportId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-    const [
-        report,
-        setReport,
-    ] = useState<any>(null);
+  const [report, setReport] = useState<Report | null>(null);
 
-    const [
-        adminNotes,
-        setAdminNotes,
-    ] = useState("");
+  const [adminNotes, setAdminNotes] = useState("");
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-    async function loadReport() {
+  async function loadReport() {
+    try {
+      setLoading(true);
 
-        try {
-
-            setLoading(true);
-
-            const {
-                data,
-                error,
-            } = await supabase
-                .from("reports")
-                .select(`
-        *,
-        reporter:users!reports_reporter_id_fkey (
-            id,
-            full_name,
-            verification_status
-        ),
-        reported_user:users!reports_reported_user_id_fkey (
-            id,
-            full_name,
-            verification_status
-        ),
-        task:tasks (
-            id,
-            title,
-            status,
-            budget
+      const { data, error } = await supabase
+        .from("reports")
+        .select(
+          `
+            *,
+            reporter:users!reports_reporter_id_fkey (
+              id,
+              full_name,
+              verification_status
+            ),
+            reported_user:users!reports_reported_user_id_fkey (
+              id,
+              full_name,
+              verification_status
+            ),
+            task:tasks (
+              id,
+              title,
+              status,
+              budget
+            )
+          `,
         )
-    `)
-                .eq(
-                    "id",
-                    params.id
-                )
-                .single();
+        .eq("id", reportId)
+        .single();
 
-            if (error) {
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-                console.error(error);
+      const reportData = data as Report;
 
-                return;
-
-            }
-
-            setReport(data);
-
-            setAdminNotes(
-                data.admin_notes || ""
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+      setReport(reportData);
+      setAdminNotes(reportData.admin_notes || "");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    useEffect(() => {
+  useEffect(() => {
+    let cancelled = false;
 
-        loadReport();
+    async function fetchReport() {
+      try {
+        setLoading(true);
 
-    }, []);
-
-    async function handleUpdateStatus(
-
-        status:
-            | "REVIEWED"
-            | "RESOLVED"
-            | "REJECTED"
-
-    ) {
-
-        if (!report) {
-            return;
-        }
-
-        try {
-
-            await updateReportStatus(
-
-                report.id,
-
+        const { data, error } = await supabase
+          .from("reports")
+          .select(
+            `
+              *,
+              reporter:users!reports_reporter_id_fkey (
+                id,
+                full_name,
+                verification_status
+              ),
+              reported_user:users!reports_reported_user_id_fkey (
+                id,
+                full_name,
+                verification_status
+              ),
+              task:tasks (
+                id,
+                title,
                 status,
+                budget
+              )
+            `,
+          )
+          .eq("id", reportId)
+          .single();
 
-                adminNotes
-
-            );
-
-            alert(
-                "Status berhasil diperbarui"
-            );
-
-            await loadReport();
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Gagal memperbarui report"
-            );
-
+        if (cancelled) {
+          return;
         }
+
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        const reportData = data as Report;
+
+        setReport(reportData);
+        setAdminNotes(reportData.admin_notes || "");
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
 
-    if (loading) {
+    void fetchReport();
 
-        return (
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId]);
 
-            <main className="p-8">
-
-                Loading...
-
-            </main>
-
-        );
-
-    }
-
+  async function handleUpdateStatus(
+    status: "REVIEWED" | "RESOLVED" | "REJECTED",
+  ) {
     if (!report) {
-
-        return (
-
-            <main className="p-8">
-
-                Report tidak ditemukan
-
-            </main>
-
-        );
-
+      return;
     }
 
-    return (
+    try {
+      await updateReportStatus(
+        report.id,
 
-        <main className="p-8">
+        status,
 
-            <h1
-                className="
+        adminNotes,
+      );
+
+      alert("Status berhasil diperbarui");
+
+      await loadReport();
+    } catch (error) {
+      console.error(error);
+
+      alert("Gagal memperbarui report");
+    }
+  }
+
+  if (loading) {
+    return <main className="p-8">Loading...</main>;
+  }
+
+  if (!report) {
+    return <main className="p-8">Report tidak ditemukan</main>;
+  }
+
+  return (
+    <main className="p-8">
+      <h1
+        className="
                     text-3xl
                     font-black
                 "
-            >
-                Report Detail
-            </h1>
+      >
+        Report Detail
+      </h1>
 
-            <div
-                className="
+      <div
+        className="
                     mt-8
                     rounded-3xl
                     bg-white
                     p-6
                     shadow-sm
                 "
-            >
-
-                <div className="space-y-6">
-
-                    <div>
-
-                        <p
-                            className="
+      >
+        <div className="space-y-6">
+          <div>
+            <p
+              className="
             text-xs
             text-slate-500
         "
-                        >
-                            Pelapor
-                        </p>
+            >
+              Pelapor
+            </p>
 
-                        <div
-                            className="
+            <div
+              className="
             flex
             items-center
             gap-2
         "
-                        >
-
-                            <p
-                                className="
+            >
+              <p
+                className="
                 font-semibold
             "
-                            >
-                                {
-                                    report.reporter
-                                        ?.full_name
-                                }
-                            </p>
+              >
+                {report.reporter?.full_name}
+              </p>
 
-                            {
-                                report.reporter
-                                    ?.verification_status ===
-                                "VERIFIED" && (
-
-                                    <span
-                                        className="
+              {report.reporter?.verification_status === "VERIFIED" && (
+                <span
+                  className="
                         rounded-full
                         bg-emerald-100
                         px-2
@@ -250,75 +254,60 @@ export default function ReportDetailPage() {
                         font-bold
                         text-emerald-700
                     "
-                                    >
-                                        ✓ Verified
-                                    </span>
+                >
+                  ✓ Verified
+                </span>
+              )}
+            </div>
+          </div>
 
-                                )
-                            }
-
-                        </div>
-
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
                                 text-xs
                                 text-slate-500
                             "
-                        >
-                            Report ID
-                        </p>
+            >
+              Report ID
+            </p>
 
-                        <p
-                            className="
+            <p
+              className="
                                 font-semibold
                             "
-                        >
-                            {report.id}
-                        </p>
+            >
+              {report.id}
+            </p>
+          </div>
 
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
             text-xs
             text-slate-500
         "
-                        >
-                            Dilaporkan
-                        </p>
+            >
+              Dilaporkan
+            </p>
 
-                        <div
-                            className="
+            <div
+              className="
             flex
             items-center
             gap-2
         "
-                        >
-
-                            <p
-                                className="
+            >
+              <p
+                className="
                 font-semibold
             "
-                            >
-                                {
-                                    report.reported_user
-                                        ?.full_name
-                                }
-                            </p>
+              >
+                {report.reported_user?.full_name}
+              </p>
 
-                            {
-                                report.reported_user
-                                    ?.verification_status ===
-                                "VERIFIED" && (
-
-                                    <span
-                                        className="
+              {report.reported_user?.verification_status === "VERIFIED" && (
+                <span
+                  className="
                         rounded-full
                         bg-emerald-100
                         px-2
@@ -327,95 +316,76 @@ export default function ReportDetailPage() {
                         font-bold
                         text-emerald-700
                     "
-                                    >
-                                        ✓ Verified
-                                    </span>
+                >
+                  ✓ Verified
+                </span>
+              )}
+            </div>
+          </div>
 
-                                )
-                            }
-
-                        </div>
-
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
             text-xs
             text-slate-500
         "
-                        >
-                            Task
-                        </p>
+            >
+              Task
+            </p>
 
-                        <p
-                            className="
+            <p
+              className="
             font-semibold
         "
-                        >
-                            {
-                                report.task?.title ||
-                                "-"
-                            }
-                        </p>
+            >
+              {report.task?.title || "-"}
+            </p>
+          </div>
 
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
                                 text-xs
                                 text-slate-500
                             "
-                        >
-                            Reason
-                        </p>
+            >
+              Reason
+            </p>
 
-                        <p
-                            className="
+            <p
+              className="
                                 font-semibold
                             "
-                        >
-                            {report.reason}
-                        </p>
+            >
+              {report.reason}
+            </p>
+          </div>
 
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
                                 text-xs
                                 text-slate-500
                             "
-                        >
-                            Description
-                        </p>
+            >
+              Description
+            </p>
 
-                        <p>
-                            {
-                                report.description ||
-                                "-"
-                            }
-                        </p>
+            <p>{report.description || "-"}</p>
+          </div>
 
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
             text-xs
             text-slate-500
         "
-                        >
-                            Status
-                        </p>
+            >
+              Status
+            </p>
 
-                        <span
-                            className="
+            <span
+              className="
             inline-flex
             rounded-full
             bg-amber-100
@@ -425,98 +395,72 @@ export default function ReportDetailPage() {
             font-bold
             text-amber-700
         "
-                        >
-                            {report.status}
-                        </span>
+            >
+              {report.status}
+            </span>
+          </div>
 
-                    </div>
-
-                    <div>
-
-                        <p
-                            className="
+          <div>
+            <p
+              className="
                                 text-xs
                                 text-slate-500
                             "
-                        >
-                            Dibuat
-                        </p>
+            >
+              Dibuat
+            </p>
 
-                        <p>
-                            {
-                                new Date(
-                                    report.created_at
-                                ).toLocaleString()
-                            }
-                        </p>
+            <p>{new Date(report.created_at).toLocaleString()}</p>
+          </div>
 
-                    </div>
-
-                    <div className="mt-8">
-
-                        <p
-                            className="
+          <div className="mt-8">
+            <p
+              className="
             mb-2
             text-sm
             font-semibold
         "
-                        >
-                            Admin Notes
-                        </p>
+            >
+              Admin Notes
+            </p>
 
-                        <textarea
-
-                            value={
-                                adminNotes
-                            }
-
-                            onChange={(e) =>
-                                setAdminNotes(
-                                    e.target.value
-                                )
-                            }
-
-                            placeholder="
+            <textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="
 Catatan admin mengenai hasil investigasi laporan...
 "
-
-                            className="
+              className="
         h-32
         w-full
         rounded-2xl
         border
         p-4
     "
-                        />
+            />
 
-                        <div
-                            className="
+            <div
+              className="
         mt-6
         rounded-2xl
         border
         border-slate-200
         p-5
     "
-                        >
-
-                            <h3
-                                className="
+            >
+              <h3
+                className="
             mb-4
             font-bold
         "
-                            >
-                                Report Actions
-                            </h3>
+              >
+                Report Actions
+              </h3>
 
-                            <div className="flex flex-wrap gap-3">
-
-                                <button
-                                    onClick={() =>
-                                        handleUpdateStatus(
-                                            "REVIEWED"
-                                        )
-                                    }
-                                    className="
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => handleUpdateStatus("REVIEWED")}
+                  className="
                 rounded-xl
                 bg-amber-500
                 px-5
@@ -524,17 +468,13 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Review
-                                </button>
+                >
+                  Review
+                </button>
 
-                                <button
-                                    onClick={() =>
-                                        handleUpdateStatus(
-                                            "RESOLVED"
-                                        )
-                                    }
-                                    className="
+                <button
+                  onClick={() => handleUpdateStatus("RESOLVED")}
+                  className="
                 rounded-xl
                 bg-emerald-600
                 px-5
@@ -542,17 +482,13 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Resolve
-                                </button>
+                >
+                  Resolve
+                </button>
 
-                                <button
-                                    onClick={() =>
-                                        handleUpdateStatus(
-                                            "REJECTED"
-                                        )
-                                    }
-                                    className="
+                <button
+                  onClick={() => handleUpdateStatus("REJECTED")}
+                  className="
                 rounded-xl
                 bg-red-600
                 px-5
@@ -560,67 +496,54 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Reject
-                                </button>
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
 
-                            </div>
-
-                        </div>
-
-                        {
-                            report.task?.id && (
-
-                                <div className="mb-8">
-
-                                    <h2
-                                        className="
+            {report.task?.id && (
+              <div className="mb-8">
+                <h2
+                  className="
                     mb-3
                     text-lg
                     font-black
                 "
-                                    >
-                                        Task Moderation
-                                    </h2>
+                >
+                  Task Moderation
+                </h2>
 
-                                    <button
+                <button
+                  onClick={async () => {
+                    const confirmAction = window.confirm(
+                      "Hapus task ini dari platform?",
+                    );
 
-                                        onClick={async () => {
+                    if (!confirmAction) {
+                      return;
+                    }
 
-                                            const confirmAction =
-                                                window.confirm(
-                                                    "Hapus task ini dari platform?"
-                                                );
+                    try {
+                      const taskId = report.task?.id;
 
-                                            if (!confirmAction) {
-                                                return;
-                                            }
+                      if (!taskId) {
+                        alert("Task tidak ditemukan");
+                        return;
+                      }
 
-                                            try {
+                      await removeTask(taskId);
 
-                                                await removeTask(
-                                                    report.task.id
-                                                );
+                      alert("Task berhasil dihapus");
 
-                                                alert(
-                                                    "Task berhasil dihapus"
-                                                );
+                      await loadReport();
+                    } catch (error) {
+                      console.error(error);
 
-                                                await loadReport();
-
-                                            } catch (error) {
-
-                                                console.error(error);
-
-                                                alert(
-                                                    "Gagal menghapus task"
-                                                );
-
-                                            }
-
-                                        }}
-
-                                        className="
+                      alert("Gagal menghapus task");
+                    }
+                  }}
+                  className="
                     rounded-xl
                     bg-red-600
                     px-5
@@ -628,17 +551,14 @@ Catatan admin mengenai hasil investigasi laporan...
                     font-semibold
                     text-white
                 "
-                                    >
-                                        Hapus Task
-                                    </button>
+                >
+                  Hapus Task
+                </button>
+              </div>
+            )}
 
-                                </div>
-
-                            )
-                        }
-
-                        <div
-                            className="
+            <div
+              className="
         mt-6
         rounded-2xl
         border
@@ -646,77 +566,58 @@ Catatan admin mengenai hasil investigasi laporan...
         bg-red-50
         p-5
     "
-                        >
-
-                            <h2
-                                className="
+            >
+              <h2
+                className="
         text-lg
         font-black
         text-red-700
     "
-                            >
-                                User Moderation
-                            </h2>
+              >
+                User Moderation
+              </h2>
 
-                            <p
-                                className="
+              <p
+                className="
         mt-2
         mb-4
         text-sm
         text-red-600
     "
-                            >
-                                Tindakan ini akan mempengaruhi akun user.
-                            </p>
+              >
+                Tindakan ini akan mempengaruhi akun user.
+              </p>
 
-                            <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={async () => {
+                    if (!report.reported_user?.id) return;
 
-                                <button
+                    const confirmAction = window.confirm(
+                      "Suspend user 3 hari?",
+                    );
 
-                                    onClick={async () => {
+                    if (!confirmAction) {
+                      return;
+                    }
 
-                                        if (
-                                            !report.reported_user?.id
-                                        ) return;
+                    try {
+                      await suspendUser(
+                        report.reported_user.id,
 
-                                        const confirmAction =
-                                            window.confirm(
-                                                "Suspend user 3 hari?"
-                                            );
+                        3,
 
-                                        if (!confirmAction) {
-                                            return;
-                                        }
+                        report.reason,
+                      );
 
-                                        try {
+                      alert("User berhasil disuspend 3 hari");
+                    } catch (error) {
+                      console.error(error);
 
-                                            await suspendUser(
-
-                                                report.reported_user.id,
-
-                                                3,
-
-                                                report.reason
-
-                                            );
-
-                                            alert(
-                                                "User berhasil disuspend 3 hari"
-                                            );
-
-                                        } catch (error) {
-
-                                            console.error(error);
-
-                                            alert(
-                                                "Gagal suspend user"
-                                            );
-
-                                        }
-
-                                    }}
-
-                                    className="
+                      alert("Gagal suspend user");
+                    }
+                  }}
+                  className="
                 rounded-xl
                 bg-amber-500
                 px-4
@@ -724,56 +625,39 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Suspend 3 Hari
-                                </button>
+                >
+                  Suspend 3 Hari
+                </button>
 
-                                <button
+                <button
+                  onClick={async () => {
+                    if (!report.reported_user?.id) return;
 
-                                    onClick={async () => {
+                    const confirmAction = window.confirm(
+                      "Suspend user 7 hari?",
+                    );
 
-                                        if (
-                                            !report.reported_user?.id
-                                        ) return;
+                    if (!confirmAction) {
+                      return;
+                    }
 
-                                        const confirmAction =
-                                            window.confirm(
-                                                "Suspend user 7 hari?"
-                                            );
+                    try {
+                      await suspendUser(
+                        report.reported_user.id,
 
-                                        if (!confirmAction) {
-                                            return;
-                                        }
+                        7,
 
-                                        try {
+                        report.reason,
+                      );
 
-                                            await suspendUser(
+                      alert("User berhasil disuspend 7 hari");
+                    } catch (error) {
+                      console.error(error);
 
-                                                report.reported_user.id,
-
-                                                7,
-
-                                                report.reason
-
-                                            );
-
-                                            alert(
-                                                "User berhasil disuspend 7 hari"
-                                            );
-
-                                        } catch (error) {
-
-                                            console.error(error);
-
-                                            alert(
-                                                "Gagal suspend user"
-                                            );
-
-                                        }
-
-                                    }}
-
-                                    className="
+                      alert("Gagal suspend user");
+                    }
+                  }}
+                  className="
                 rounded-xl
                 bg-red-500
                 px-4
@@ -781,56 +665,39 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Suspend 7 Hari
-                                </button>
+                >
+                  Suspend 7 Hari
+                </button>
 
-                                <button
+                <button
+                  onClick={async () => {
+                    if (!report.reported_user?.id) return;
 
-                                    onClick={async () => {
+                    const confirmAction = window.confirm(
+                      "Suspend user 30 hari?",
+                    );
 
-                                        if (
-                                            !report.reported_user?.id
-                                        ) return;
+                    if (!confirmAction) {
+                      return;
+                    }
 
-                                        const confirmAction =
-                                            window.confirm(
-                                                "Suspend user 30 hari?"
-                                            );
+                    try {
+                      await suspendUser(
+                        report.reported_user.id,
 
-                                        if (!confirmAction) {
-                                            return;
-                                        }
+                        30,
 
-                                        try {
+                        report.reason,
+                      );
 
-                                            await suspendUser(
+                      alert("User berhasil disuspend 30 hari");
+                    } catch (error) {
+                      console.error(error);
 
-                                                report.reported_user.id,
-
-                                                30,
-
-                                                report.reason
-
-                                            );
-
-                                            alert(
-                                                "User berhasil disuspend 30 hari"
-                                            );
-
-                                        } catch (error) {
-
-                                            console.error(error);
-
-                                            alert(
-                                                "Gagal suspend user"
-                                            );
-
-                                        }
-
-                                    }}
-
-                                    className="
+                      alert("Gagal suspend user");
+                    }
+                  }}
+                  className="
         rounded-xl
         bg-red-600
         px-4
@@ -838,50 +705,31 @@ Catatan admin mengenai hasil investigasi laporan...
         font-semibold
         text-white
     "
-                                >
-                                    Suspend 30 Hari
-                                </button>
+                >
+                  Suspend 30 Hari
+                </button>
 
-                                <button
+                <button
+                  onClick={async () => {
+                    if (!report.reported_user?.id) return;
 
-                                    onClick={async () => {
+                    const confirmAction = window.confirm("Ban user permanen?");
 
-                                        if (
-                                            !report.reported_user?.id
-                                        ) return;
+                    if (!confirmAction) {
+                      return;
+                    }
 
-                                        const confirmAction =
-                                            window.confirm(
-                                                "Ban user permanen?"
-                                            );
+                    try {
+                      await banUser(report.reported_user.id);
 
-                                        if (!confirmAction) {
-                                            return;
-                                        }
+                      alert("User berhasil dibanned");
+                    } catch (error) {
+                      console.error(error);
 
-                                        try {
-
-                                            await banUser(
-                                                report.reported_user.id
-                                            );
-
-                                            alert(
-                                                "User berhasil dibanned"
-                                            );
-
-                                        } catch (error) {
-
-                                            console.error(error);
-
-                                            alert(
-                                                "Gagal ban user"
-                                            );
-
-                                        }
-
-                                    }}
-
-                                    className="
+                      alert("Gagal ban user");
+                    }
+                  }}
+                  className="
                 rounded-xl
                 bg-black
                 px-4
@@ -889,22 +737,14 @@ Catatan admin mengenai hasil investigasi laporan...
                 font-semibold
                 text-white
             "
-                                >
-                                    Ban Permanen
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+                >
+                  Ban Permanen
+                </button>
+              </div>
             </div>
-
-        </main>
-
-    );
-
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }

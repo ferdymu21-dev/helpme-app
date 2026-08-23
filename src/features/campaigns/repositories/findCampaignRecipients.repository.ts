@@ -1,132 +1,97 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import {
-    CampaignTarget,
-} from "../constants/campaign-target";
+import { CampaignTarget } from "../constants/campaign-target";
 
 interface FindCampaignRecipientsParams {
+  targetType: string;
 
-    targetType: string;
-
-    targetValue?: string | null;
-
+  targetValue?: string | null;
 }
 
 export async function findCampaignRecipientsRepository({
+  targetType,
 
-    targetType,
-
-    targetValue,
-
+  targetValue,
 }: FindCampaignRecipientsParams) {
+  let query = adminSupabase
 
-    let query = adminSupabase
+    .from("users")
 
-        .from("users")
+    .select("id")
 
-        .select("id")
+    .eq("is_banned", false)
 
-        .eq("is_banned", false)
+    .eq("is_suspended", false);
 
-        .eq("is_suspended", false);
+  switch (targetType) {
+    case CampaignTarget.ALL:
+      break;
 
-    switch (targetType) {
+    case CampaignTarget.USER:
+      query = query.eq(
+        "role",
 
-        case CampaignTarget.ALL:
+        "USER",
+      );
 
-            break;
+      break;
 
-        case CampaignTarget.USER:
+    case CampaignTarget.HELPER:
+      query = query.eq(
+        "role",
 
-            query = query.eq(
+        "HELPER",
+      );
 
-                "role",
+      break;
 
-                "USER",
+    case CampaignTarget.VERIFIED:
+      query = query.eq(
+        "verification_status",
 
-            );
+        "VERIFIED",
+      );
 
-            break;
+      break;
 
-        case CampaignTarget.HELPER:
+    case CampaignTarget.UNVERIFIED:
+      query = query.neq(
+        "verification_status",
 
-            query = query.eq(
+        "VERIFIED",
+      );
 
-                "role",
+      break;
 
-                "HELPER",
+    case CampaignTarget.CITY:
+      if (targetValue) {
+        query = query.eq(
+          "location",
 
-            );
+          targetValue,
+        );
+      }
 
-            break;
+      break;
 
-        case CampaignTarget.VERIFIED:
+    case CampaignTarget.RADIUS:
+      /**
+       * Akan diimplementasikan
+       * menggunakan PostGIS
+       */
 
-            query = query.eq(
+      break;
+  }
 
-                "verification_status",
+  const {
+    data,
 
-                "VERIFIED",
+    error,
+  } = await query;
 
-            );
+  if (error) {
+    throw error;
+  }
 
-            break;
-
-        case CampaignTarget.UNVERIFIED:
-
-            query = query.neq(
-
-                "verification_status",
-
-                "VERIFIED",
-
-            );
-
-            break;
-
-        case CampaignTarget.CITY:
-
-            if (targetValue) {
-
-                query = query.eq(
-
-                    "location",
-
-                    targetValue,
-
-                );
-
-            }
-
-            break;
-
-        case CampaignTarget.RADIUS:
-
-            /**
-             * Akan diimplementasikan
-             * menggunakan PostGIS
-             */
-
-            break;
-
-    }
-
-    const {
-
-        data,
-
-        error,
-
-    } = await query;
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data ?? [];
-
+  return data ?? [];
 }

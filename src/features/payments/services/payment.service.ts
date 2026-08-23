@@ -1,85 +1,54 @@
-import {
-    supabase,
-} from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
+
+import type { DonationResponse } from "@/lib/payments/types/donation";
 
 import type {
-    DonationResponse,
-} from "@/lib/payments/types/donation";
-
-import type {
-    CreatePaymentPayload,
-    CreatePaymentResponse,
+  CreatePaymentPayload,
+  CreatePaymentResponse,
 } from "../types/payment";
 
 export async function createPayment(
-    payload: CreatePaymentPayload
+  payload: CreatePaymentPayload,
 ): Promise<CreatePaymentResponse> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    const {
-        data: {
-            session,
-        },
-    } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error("User is not authenticated.");
+  }
 
-    if (!session) {
+  const response = await fetch(
+    "/api/payments/create",
 
-        throw new Error(
-            "User is not authenticated."
-        );
+    {
+      method: "POST",
 
-    }
+      headers: {
+        "Content-Type": "application/json",
 
-    const response = await fetch(
+        Authorization: `Bearer ${session.access_token}`,
+      },
 
-        "/api/payments/create",
+      body: JSON.stringify(payload),
+    },
+  );
 
-        {
+  if (!response.ok) {
+    const error = await response.json();
 
-            method: "POST",
+    throw new Error(error.message);
+  }
 
-            headers: {
-
-                "Content-Type":
-                    "application/json",
-
-                Authorization:
-                    `Bearer ${session.access_token}`,
-
-            },
-
-            body: JSON.stringify(payload),
-
-        }
-
-    );
-
-    if (!response.ok) {
-
-        const error =
-            await response.json();
-
-        throw new Error(
-            error.message
-        );
-
-    }
-
-    return await response.json();
-
+  return await response.json();
 }
 
 export async function createDonation(
-
-    amount: number
-
+  amount: number,
 ): Promise<DonationResponse> {
+  return await createPayment({
+    paymentType: "DONATION",
 
-    return await createPayment({
-
-        paymentType: "DONATION",
-
-        amount,
-
-    });
-
+    amount,
+  });
 }

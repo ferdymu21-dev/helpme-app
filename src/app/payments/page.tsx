@@ -1,72 +1,27 @@
 "use client";
 
-import {
-    usePaymentHistory,
-} from "@/features/payments/hooks/usePaymentHistory";
+import { usePaymentHistory } from "@/features/payments/hooks/usePaymentHistory";
 
 export default function PaymentPage() {
+  const { history, loading, error } = usePaymentHistory();
 
-    const {
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  return (
+    <pre>
+      {JSON.stringify(
         history,
-        loading,
-        error,
-    } = usePaymentHistory();
 
-    if (
-        loading
+        null,
 
-    ) {
-
-        return (
-
-            <p>
-
-                Loading...
-
-            </p>
-
-        );
-
-    }
-
-    if (
-
-        error
-
-    ) {
-
-        return (
-
-            <p>
-
-                {error}
-
-            </p>
-
-        );
-
-    }
-
-    return (
-
-        <pre>
-
-            {
-
-                JSON.stringify(
-
-                    history,
-
-                    null,
-
-                    2
-
-                )
-
-            }
-
-        </pre>
-
-    );
-
+        2,
+      )}
+    </pre>
+  );
 }

@@ -1,317 +1,256 @@
 "use client";
 
 import {
-    UserBadge,
-    getUserBadges,
+  UserBadge,
+  getUserBadges,
 } from "@/features/badges/services/badge.service";
 
-import DesktopProfileView
-    from "@/components/profile/desktop/DesktopProfileView";
+import DesktopProfileView from "@/components/profile/desktop/DesktopProfileView";
 
-import MobileProfileView
-    from "@/components/profile/mobile/MobileProfileView";
+import MobileProfileView from "@/components/profile/mobile/MobileProfileView";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-    useParams,
-} from "next/navigation";
+import { useParams } from "next/navigation";
 
-import { supabase }
-    from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
+
+import { getUserReputation } from "@/features/profile/services/profile.service";
+
+import { getUserReviews } from "@/features/reviews/services/review.service";
+
+import MobileReviewSection from "@/components/profile/mobile/MobileReviewSection";
+
+import DesktopReviewSection from "@/components/profile/desktop/DesktopReviewSection";
 
 interface UserProfile {
-    id: string;
+  id: string;
 
-    full_name: string;
+  full_name: string;
 
-    username: string;
+  username: string;
 
-    bio?: string;
+  bio?: string;
 
-    location?: string;
+  location?: string;
 
-    verification_status?: string;
+  verification_status?: string;
 
-    rating?: number;
+  rating?: number;
 
-    total_reviews?: number;
+  total_reviews?: number;
 
-    avatar_url?: string;
+  avatar_url?: string;
 }
 
 interface Review {
+  id: string;
+
+  rating: number;
+
+  comment: string;
+
+  created_at: string;
+
+  reviewer: {
     id: string;
 
-    rating: number;
-
-    comment: string;
-
-    created_at: string;
-
-    reviewer: {
-        id: string;
-
-        full_name: string;
-    }[];
+    full_name: string;
+  }[];
 }
 
 export default function PublicProfilePage() {
+  const params = useParams();
 
-    const params = useParams();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-    const [profile, setProfile] =
-        useState<UserProfile | null>(
-            null
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  const [totalReviews, setTotalReviews] = useState(0);
+
+  const REVIEWS_PER_PAGE = 5;
+
+  const [offset, setOffset] = useState(0);
+
+  const [hasMoreReviews, setHasMoreReviews] = useState(true);
+
+  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
+
+  async function loadMoreReviews() {
+    if (loadingMoreReviews || !hasMoreReviews) return;
+
+    try {
+      setLoadingMoreReviews(true);
+
+      const newReviews = await getUserReviews(
+        String(params.id),
+        REVIEWS_PER_PAGE,
+        offset,
+      );
+
+      setReviews((prev) => [...prev, ...newReviews]);
+
+      setOffset((prev) => prev + newReviews.length);
+
+      if (newReviews.length < REVIEWS_PER_PAGE) {
+        setHasMoreReviews(false);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingMoreReviews(false);
+    }
+  }
+
+  const [rating, setRating] = useState(0);
+
+  const [completedTasks, setCompletedTasks] = useState(0);
+
+  const [badges, setBadges] = useState<UserBadge[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        /* =========================
+           PROFILE
+        ========================= */
+
+        const { data: user } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", params.id)
+          .single();
+
+        if (!user) return;
+
+        setProfile(user);
+
+        /* =========================
+           REPUTATION
+        ========================= */
+
+        const reputation = await getUserReputation(String(params.id));
+
+setCompletedTasks(reputation.completedTasks);
+
+setRating(Number(reputation.averageRating));
+
+setTotalReviews(reputation.totalReviews);
+
+        /* =========================
+           REVIEWS
+        ========================= */
+
+        const reviewData = await getUserReviews(
+          String(params.id),
+          REVIEWS_PER_PAGE,
+          0,
         );
 
-    const [reviews, setReviews] =
-        useState<Review[]>([]);
+        setReviews(reviewData);
 
-    const [rating, setRating] =
-        useState(0);
+        setOffset(reviewData.length);
 
-    const [completedTasks,
-        setCompletedTasks] =
-        useState(0);
+        setHasMoreReviews(reviewData.length === REVIEWS_PER_PAGE);
 
-    const [badges, setBadges] =
-        useState<UserBadge[]>([]);
+        /* =========================
+   BADGES
+========================= */
 
-    const [loading, setLoading] =
-        useState(true);
-
-    useEffect(() => {
-
-        async function loadProfile() {
-
-            try {
-
-                /* =========================
-                   PROFILE
-                ========================= */
-
-                const {
-                    data: user,
-                } = await supabase
-                    .from("users")
-                    .select("*")
-                    .eq(
-                        "id",
-                        params.id
-                    )
-                    .single();
-
-                if (!user) return;
-
-                setProfile(user);
-
-                /* =========================
-                   REVIEWS
-                ========================= */
-
-                const {
-                    data: reviewData,
-                } = await supabase
-                    .from("reviews")
-                    .select(`
-                      *,
-                      reviewer:users!reviews_reviewer_id_fkey (
-                        id,
-                        full_name
-                    )
-                `)
-
-                    .eq(
-                        "reviewer_user_id",
-                        params.id
-                    )
-                    .order("created_at", {
-                        ascending: false,
-                    });
-
-                setReviews(
-                    reviewData || []
-                );
-
-                /* =========================
-                   RATING
-                ========================= */
-
-                if (
-                    reviewData &&
-                    reviewData.length > 0
-                ) {
-
-                    const total =
-                        reviewData.reduce(
-                            (sum, item) =>
-                                sum + item.rating,
-                            0
-                        );
-
-                    setRating(
-                        total /
-                        reviewData.length
-                    );
-                }
-
-                /* =========================
-                   COMPLETED TASKS
-                ========================= */
-
-                const {
-                    count,
-                } = await supabase
-                    .from("tasks")
-                    .select("*", {
-                        count: "exact",
-                        head: true,
-                    })
-                    .eq(
-                        "selected_helper_id",
-                        params.id
-                    )
-                    .eq(
-                        "status",
-                        "COMPLETED"
-                    );
-
-                setCompletedTasks(
-                    count || 0
-                );
-
-                const generatedBadges =
-                    getUserBadges(
-
-                        count || 0,
-
-                        Number(
-                            user.rating || 0
-                        ),
-
-                        user.verification_status ===
-                        "VERIFIED"
-                    );
-
-                setBadges(
-                    generatedBadges
-                );
-
-            } catch (error) {
-
-                console.error(error);
-
-            } finally {
-
-                setLoading(false);
-            }
-        }
-
-        loadProfile();
-
-    }, [params.id]);
-
-    if (loading) {
-
-        return (
-            <main className="p-10">
-                Memuat profile...
-            </main>
+        setBadges(
+          getUserBadges(
+            reputation.completedTasks,
+            Number(reputation.averageRating),
+            user.verification_status === "VERIFIED",
+          ),
         );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    if (!profile) {
+    loadProfile();
+  }, [params.id]);
 
-        return (
-            <main className="p-10">
-                User tidak ditemukan
-            </main>
-        );
-    }
+  if (loading) {
+    return <main className="p-10">Memuat profile...</main>;
+  }
 
-    return (
-        <>
+  if (!profile) {
+    return <main className="p-10">User tidak ditemukan</main>;
+  }
 
-            <MobileProfileView
-                profile={{
-                    fullName:
-                        profile.full_name,
+  return (
+    <>
+      <MobileProfileView
+        profile={{
+          fullName: profile.full_name,
 
-                    username:
-                        `@${profile.username || ""}`,
+          username: `@${profile.username || ""}`,
 
-                    bio:
-                        profile.bio || "",
+          bio: profile.bio || "",
 
-                    location:
-                        profile.location || "",
+          location: profile.location || "",
 
-                    avatarUrl:
-                        profile.avatar_url || "",
+          avatarUrl: profile.avatar_url || "",
 
-                    initials:
-                        profile.full_name
-                            ?.charAt(0),
+          initials: profile.full_name?.charAt(0),
 
-                    completedTasks,
+          completedTasks,
 
-                    totalReviews:
-                        reviews.length,
+          totalReviews,
 
-                    averageRating:
-                        rating.toFixed(1),
+          averageRating: rating.toFixed(1),
 
-                    badges,
-                }}
-                reviews={reviews}
+          badges,
+        }}
+        profileUserId={profile.id}
+        isPublicProfile={true}
+      />
 
-                profileUserId={profile.id}
+      <DesktopProfileView
+        profile={{
+          fullName: profile.full_name,
 
-                isPublicProfile={true}
-            />
+          username: `@${profile.username || ""}`,
 
-            <DesktopProfileView
-                profile={{
-                    fullName:
-                        profile.full_name,
+          bio: profile.bio || "",
 
-                    username:
-                        `@${profile.username || ""}`,
+          location: profile.location || "",
 
-                    bio:
-                        profile.bio || "",
+          avatarUrl: profile.avatar_url || "",
 
-                    location:
-                        profile.location || "",
+          initials: profile.full_name?.charAt(0),
 
-                    avatarUrl:
-                        profile.avatar_url || "",
+          completedTasks,
 
-                    initials:
-                        profile.full_name
-                            ?.charAt(0),
+          totalReviews: reviews.length,
 
-                    completedTasks,
+          averageRating: rating.toFixed(1),
 
-                    totalReviews:
-                        reviews.length,
+          badges,
+        }}
+        profileUserId={profile.id}
+        isPublicProfile={true}
+      />
 
-                    averageRating:
-                        rating.toFixed(1),
-                        
-                    badges,
-                }}
-                reviews={reviews}
+      <MobileReviewSection
+        reviews={reviews}
+        hasMore={hasMoreReviews}
+        loading={loadingMoreReviews}
+        onLoadMore={loadMoreReviews}
+      />
 
-                profileUserId={profile.id}
-                
-                isPublicProfile={true}
-            />
-
-        </>
-    );
+      <DesktopReviewSection
+        reviews={reviews}
+        hasMore={hasMoreReviews}
+        loading={loadingMoreReviews}
+        onLoadMore={loadMoreReviews}
+      />
+    </>
+  );
 }

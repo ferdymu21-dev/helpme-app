@@ -2,14 +2,9 @@
 
 import Link from "next/link";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  calculateDistance,
-} from "@/lib/location/distance";
+import { calculateDistance } from "@/lib/location/distance";
 
 interface Task {
   id: string;
@@ -40,9 +35,7 @@ interface Props {
   tasks: Task[];
   loading: boolean;
   activeFilter: string;
-  setActiveFilter: (
-    value: string
-  ) => void;
+  setActiveFilter: (value: string) => void;
   filters: string[];
 }
 
@@ -53,33 +46,16 @@ export default function DesktopHelperTasksView({
   setActiveFilter,
   filters,
 }: Props) {
+  const [userLatitude, setUserLatitude] = useState<number | null>(null);
 
-  const [
-    userLatitude,
-    setUserLatitude,
-  ] = useState<number | null>(null);
-
-  const [
-    userLongitude,
-    setUserLongitude,
-  ] = useState<number | null>(null);
+  const [userLongitude, setUserLongitude] = useState<number | null>(null);
 
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      setUserLatitude(position.coords.latitude);
 
-    navigator.geolocation
-      .getCurrentPosition(
-        (position) => {
-
-          setUserLatitude(
-            position.coords.latitude
-          );
-
-          setUserLongitude(
-            position.coords.longitude
-          );
-        }
-      );
-
+      setUserLongitude(position.coords.longitude);
+    });
   }, []);
 
   return (
@@ -91,10 +67,8 @@ export default function DesktopHelperTasksView({
         lg:block
       "
     >
-
       {/* CONTAINER */}
       <div className="mx-auto max-w-7xl px-10 py-8">
-
         {/* HEADER */}
         <div
           className="
@@ -103,10 +77,8 @@ export default function DesktopHelperTasksView({
             justify-between
           "
         >
-
           {/* LEFT */}
           <div>
-
             <div
               className="
                 inline-flex
@@ -143,10 +115,8 @@ export default function DesktopHelperTasksView({
                 text-slate-500
               "
             >
-              Pantau task yang sedang
-              kamu kerjakan.
+              Pantau task yang sedang kamu kerjakan.
             </p>
-
           </div>
 
           {/* RIGHT */}
@@ -157,7 +127,6 @@ export default function DesktopHelperTasksView({
               gap-3
             "
           >
-
             {/* SEARCH */}
             <div
               className="
@@ -172,10 +141,7 @@ export default function DesktopHelperTasksView({
                 px-4
               "
             >
-
-              <span className="text-slate-400">
-                🔍
-              </span>
+              <span className="text-slate-400">🔍</span>
 
               <input
                 type="text"
@@ -189,11 +155,8 @@ export default function DesktopHelperTasksView({
                   placeholder:text-slate-400
                 "
               />
-
             </div>
-
           </div>
-
         </div>
 
         {/* STATS */}
@@ -205,12 +168,9 @@ export default function DesktopHelperTasksView({
             gap-4
           "
         >
-
           {/* OPEN */}
           <button
-            onClick={() =>
-              setActiveFilter("OPEN")
-            }
+            onClick={() => setActiveFilter("OPEN")}
             className={`
               group
               rounded-3xl
@@ -220,13 +180,13 @@ export default function DesktopHelperTasksView({
               transition-all
               duration-300
 
-              ${activeFilter === "OPEN"
-                ? "border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "border-slate-200 bg-white hover:border-emerald-200"
+              ${
+                activeFilter === "OPEN"
+                  ? "border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                  : "border-slate-200 bg-white hover:border-emerald-200"
               }
             `}
           >
-
             <div
               className="
                 flex
@@ -234,18 +194,16 @@ export default function DesktopHelperTasksView({
                 justify-between
               "
             >
-
               <div>
-
                 <p
                   className={`
                     text-sm
                     font-medium
 
-                    ${activeFilter ===
-                      "OPEN"
-                      ? "text-emerald-100"
-                      : "text-slate-500"
+                    ${
+                      activeFilter === "OPEN"
+                        ? "text-emerald-100"
+                        : "text-slate-500"
                     }
                   `}
                 >
@@ -259,15 +217,8 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "OPEN"
-                    ).length
-                  }
+                  {tasks.filter((task) => task.status === "OPEN").length}
                 </h2>
-
               </div>
 
               <div
@@ -280,27 +231,17 @@ export default function DesktopHelperTasksView({
                   rounded-2xl
                   text-2xl
 
-                  ${activeFilter ===
-                    "OPEN"
-                    ? "bg-white/20"
-                    : "bg-emerald-50"
-                  }
+                  ${activeFilter === "OPEN" ? "bg-white/20" : "bg-emerald-50"}
                 `}
               >
                 📨
               </div>
-
             </div>
-
           </button>
 
           {/* ACCEPTED */}
           <button
-            onClick={() =>
-              setActiveFilter(
-                "ACCEPTED"
-              )
-            }
+            onClick={() => setActiveFilter("ACCEPTED")}
             className={`
               rounded-3xl
               border
@@ -309,14 +250,13 @@ export default function DesktopHelperTasksView({
               transition-all
               duration-300
 
-              ${activeFilter ===
-                "ACCEPTED"
-                ? "border-indigo-500 bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                : "border-slate-200 bg-white hover:border-indigo-200"
+              ${
+                activeFilter === "ACCEPTED"
+                  ? "border-indigo-500 bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                  : "border-slate-200 bg-white hover:border-indigo-200"
               }
             `}
           >
-
             <div
               className="
                 flex
@@ -324,18 +264,16 @@ export default function DesktopHelperTasksView({
                 justify-between
               "
             >
-
               <div>
-
                 <p
                   className={`
                     text-sm
                     font-medium
 
-                    ${activeFilter ===
-                      "ACCEPTED"
-                      ? "text-indigo-100"
-                      : "text-slate-500"
+                    ${
+                      activeFilter === "ACCEPTED"
+                        ? "text-indigo-100"
+                        : "text-slate-500"
                     }
                   `}
                 >
@@ -349,15 +287,8 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "ACCEPTED"
-                    ).length
-                  }
+                  {tasks.filter((task) => task.status === "ACCEPTED").length}
                 </h2>
-
               </div>
 
               <div
@@ -370,27 +301,19 @@ export default function DesktopHelperTasksView({
                   rounded-2xl
                   text-2xl
 
-                  ${activeFilter ===
-                    "ACCEPTED"
-                    ? "bg-white/20"
-                    : "bg-indigo-50"
+                  ${
+                    activeFilter === "ACCEPTED" ? "bg-white/20" : "bg-indigo-50"
                   }
                 `}
               >
                 ⚡
               </div>
-
             </div>
-
           </button>
 
           {/* COMPLETED */}
           <button
-            onClick={() =>
-              setActiveFilter(
-                "COMPLETED"
-              )
-            }
+            onClick={() => setActiveFilter("COMPLETED")}
             className={`
               rounded-3xl
               border
@@ -399,14 +322,13 @@ export default function DesktopHelperTasksView({
               transition-all
               duration-300
 
-              ${activeFilter ===
-                "COMPLETED"
-                ? "border-amber-500 bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                : "border-slate-200 bg-white hover:border-amber-200"
+              ${
+                activeFilter === "COMPLETED"
+                  ? "border-amber-500 bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                  : "border-slate-200 bg-white hover:border-amber-200"
               }
             `}
           >
-
             <div
               className="
                 flex
@@ -414,18 +336,16 @@ export default function DesktopHelperTasksView({
                 justify-between
               "
             >
-
               <div>
-
                 <p
                   className={`
                     text-sm
                     font-medium
 
-                    ${activeFilter ===
-                      "COMPLETED"
-                      ? "text-amber-100"
-                      : "text-slate-500"
+                    ${
+                      activeFilter === "COMPLETED"
+                        ? "text-amber-100"
+                        : "text-slate-500"
                     }
                   `}
                 >
@@ -439,15 +359,8 @@ export default function DesktopHelperTasksView({
                     font-black
                   "
                 >
-                  {
-                    tasks.filter(
-                      (task) =>
-                        task.status ===
-                        "COMPLETED"
-                    ).length
-                  }
+                  {tasks.filter((task) => task.status === "COMPLETED").length}
                 </h2>
-
               </div>
 
               <div
@@ -460,20 +373,15 @@ export default function DesktopHelperTasksView({
                   rounded-2xl
                   text-2xl
 
-                  ${activeFilter ===
-                    "COMPLETED"
-                    ? "bg-white/20"
-                    : "bg-amber-50"
+                  ${
+                    activeFilter === "COMPLETED" ? "bg-white/20" : "bg-amber-50"
                   }
                 `}
               >
                 ✅
               </div>
-
             </div>
-
           </button>
-
         </div>
 
         {/* TASK GRID */}
@@ -485,11 +393,8 @@ export default function DesktopHelperTasksView({
             gap-5
           "
         >
-
           {loading ? (
-            <div>
-              Memuat task...
-            </div>
+            <div>Memuat task...</div>
           ) : tasks.length === 0 ? (
             <div
               className="
@@ -503,7 +408,6 @@ export default function DesktopHelperTasksView({
                 text-center
               "
             >
-
               <h3
                 className="
                   text-2xl
@@ -514,27 +418,17 @@ export default function DesktopHelperTasksView({
                 Belum ada task
               </h3>
 
-              <p className="mt-4 text-slate-500">
-                Kamu belum melamar task.
-              </p>
-
+              <p className="mt-4 text-slate-500">Kamu belum melamar task.</p>
             </div>
           ) : (
             [...tasks]
 
               .sort((a, b) => {
-
-                if (
-                  a.is_urgent &&
-                  !b.is_urgent
-                ) {
+                if (a.is_urgent && !b.is_urgent) {
                   return -1;
                 }
 
-                if (
-                  !a.is_urgent &&
-                  b.is_urgent
-                ) {
+                if (!a.is_urgent && b.is_urgent) {
                   return 1;
                 }
 
@@ -559,7 +453,6 @@ export default function DesktopHelperTasksView({
                   hover:shadow-xl
                 "
                 >
-
                   {/* TOP */}
                   <div
                     className="
@@ -568,7 +461,6 @@ export default function DesktopHelperTasksView({
                     justify-between
                   "
                   >
-
                     {/* CATEGORY */}
                     <div
                       className="
@@ -586,9 +478,7 @@ export default function DesktopHelperTasksView({
                     </div>
 
                     <div className="flex items-center gap-2">
-
                       {task.is_urgent && (
-
                         <div
                           className="
         rounded-full
@@ -602,7 +492,6 @@ export default function DesktopHelperTasksView({
                         >
                           🔥 Mendesak
                         </div>
-
                       )}
 
                       <div
@@ -618,9 +507,7 @@ export default function DesktopHelperTasksView({
                       >
                         {task.status}
                       </div>
-
                     </div>
-
                   </div>
 
                   {/* TITLE */}
@@ -648,35 +535,20 @@ export default function DesktopHelperTasksView({
                     text-slate-500
                   "
                   >
-                    📍 {
+                    📍{" "}
+                    {(() => {
+                      const location =
+                        task.location_type === "SEARCH"
+                          ? task.location_name || "Lokasi tidak tersedia"
+                          : task.manual_address || "Alamat manual";
 
-                      (() => {
-
-                        const location =
-
-                          task.location_type ===
-                            "SEARCH"
-
-                            ? (
-                              task.location_name ||
-                              "Lokasi tidak tersedia"
-                            )
-
-                            : (
-                              task.manual_address ||
-                              "Alamat manual"
-                            );
-
-                        return location.length > 24
-                          ? `${location.slice(0, 24)}...`
-                          : location;
-
-                      })()
-                    }
+                      return location.length > 24
+                        ? `${location.slice(0, 24)}...`
+                        : location;
+                    })()}
                   </p>
 
                   {task.scheduled_at && (
-
                     <p
                       className="
       mt-2
@@ -684,54 +556,25 @@ export default function DesktopHelperTasksView({
       text-slate-500
     "
                     >
-
-                      📅 {
-
-                        new Date(
-                          task.scheduled_at
-                        ).toLocaleDateString(
-                          "id-ID",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          }
-                        )
-
-                      }
-
+                      📅{" "}
+                      {new Date(task.scheduled_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                       {" • "}
-
-                      🕒 {
-
-                        new Date(
-                          task.scheduled_at
-                        ).toLocaleTimeString(
-                          "id-ID",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
-
-                      }
-
+                      🕒{" "}
+                      {new Date(task.scheduled_at).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
-
                   )}
 
-                  {
-                    userLatitude &&
+                  {userLatitude &&
                     userLongitude &&
-                    (
-                      task.latitude ||
-                      task.owner_latitude
-                    ) &&
-                    (
-                      task.longitude ||
-                      task.owner_longitude
-                    ) && (
-
+                    (task.latitude || task.owner_latitude) &&
+                    (task.longitude || task.owner_longitude) && (
                       <p
                         className="
         mt-3
@@ -739,32 +582,19 @@ export default function DesktopHelperTasksView({
         text-slate-400
       "
                       >
+                        🛵{" "}
+                        {calculateDistance(
+                          userLatitude,
 
-                        🛵 {
+                          userLongitude,
 
-                          calculateDistance(
+                          task.latitude || task.owner_latitude!,
 
-                            userLatitude,
-
-                            userLongitude,
-
-                            task.latitude ||
-                            task.owner_latitude!,
-
-                            task.longitude ||
-                            task.owner_longitude!
-
-                          ).toFixed(1)
-
-                        }
-
-                        {" "}
+                          task.longitude || task.owner_longitude!,
+                        ).toFixed(1)}{" "}
                         km dari kamu
-
                       </p>
-
-                    )
-                  }
+                    )}
 
                   {/* BOTTOM */}
                   <div
@@ -775,7 +605,6 @@ export default function DesktopHelperTasksView({
                     justify-between
                   "
                   >
-
                     {/* PRICE */}
                     <div
                       className="
@@ -786,9 +615,7 @@ export default function DesktopHelperTasksView({
                     "
                     >
                       Rp
-                      {task.budget.toLocaleString(
-                        "id-ID"
-                      )}
+                      {task.budget.toLocaleString("id-ID")}
                     </div>
 
                     {/* ACTION */}
@@ -807,17 +634,12 @@ export default function DesktopHelperTasksView({
                     >
                       →
                     </div>
-
                   </div>
-
                 </Link>
               ))
           )}
-
         </div>
-
       </div>
-
     </main>
   );
 }

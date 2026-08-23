@@ -1,73 +1,42 @@
-import {
-    createDonationController,
-} from "./donation.controller";
+import { createDonationController } from "./donation.controller";
 
-import type {
-    CreateDonationCommand,
-} from "@/lib/payments/types/donation";
+import type { CreateDonationCommand } from "@/lib/payments/types/donation";
 
-import {
-    createUrgentTaskController,
-} from "./urgentTask.controller";
+import { createUrgentTaskController } from "./urgentTask.controller";
 
-import type {
-    PaymentType,
-} from "../types/payment";
+import type { PaymentType } from "../types/payment";
 
 interface CreatePaymentCommand {
+  paymentType: PaymentType;
 
-    paymentType: PaymentType;
+  userId: string;
 
-    userId: string;
+  amount: number;
 
-    amount: number;
-
-    metadata?: Record<string, unknown>;
-
+  metadata?: Record<string, unknown>;
 }
 
-export async function createPaymentController(
+export async function createPaymentController(command: CreatePaymentCommand) {
+  switch (command.paymentType) {
+    case "DONATION":
+      const payload: CreateDonationCommand = {
+        userId: command.userId,
 
-    command: CreatePaymentCommand
+        amount: command.amount,
+      };
 
-) {
+      return await createDonationController(payload);
 
-    switch (command.paymentType) {
+    case "URGENT_TASK":
+      return await createUrgentTaskController({
+        userId: command.userId,
 
-        case "DONATION":
+        amount: command.amount,
 
-            const payload: CreateDonationCommand = {
+        metadata: command.metadata,
+      });
 
-                userId: command.userId,
-
-                amount: command.amount,
-
-            };
-
-            return await createDonationController(
-                payload
-            );
-
-        case "URGENT_TASK":
-
-            return await createUrgentTaskController({
-
-                userId: command.userId,
-
-                amount: command.amount,
-
-                metadata: command.metadata,
-
-            });
-
-        default:
-
-            throw new Error(
-
-                `Payment type "${command.paymentType}" belum didukung.`
-
-            );
-
-    }
-
+    default:
+      throw new Error(`Payment type "${command.paymentType}" belum didukung.`);
+  }
 }

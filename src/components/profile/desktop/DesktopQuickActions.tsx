@@ -11,7 +11,6 @@ export default function DesktopQuickActions({
   isPublicProfile = false,
   role,
 }: Props) {
-
   if (isPublicProfile) return null;
 
   const actions = [
@@ -48,7 +47,6 @@ export default function DesktopQuickActions({
   ];
 
   return (
-
     <section
       className="
         rounded-xl
@@ -57,17 +55,10 @@ export default function DesktopQuickActions({
         shadow-sm
       "
     >
-
       <div className="flex items-center justify-between">
-
         <div>
-
-          <p className="mt-1 text-slate-500">
-            Kelola akun dan aktivitasmu.
-          </p>
-
+          <p className="mt-1 text-slate-500">Kelola akun dan aktivitasmu.</p>
         </div>
-
       </div>
 
       <div
@@ -78,9 +69,7 @@ export default function DesktopQuickActions({
           gap-5
         "
       >
-
         {actions.map((item) => (
-
           <Link
             key={item.title}
             href={item.href}
@@ -100,10 +89,7 @@ export default function DesktopQuickActions({
               hover:shadow-lg
             "
           >
-
-            <div className="text-xl">
-              {item.icon}
-            </div>
+            <div className="text-xl">{item.icon}</div>
 
             <h3
               className="
@@ -126,13 +112,10 @@ export default function DesktopQuickActions({
             >
               {item.subtitle}
             </p>
-
           </Link>
-
         ))}
 
         {role === "ADMIN" && (
-
           <Link
             href="/admin"
             className="
@@ -146,10 +129,7 @@ export default function DesktopQuickActions({
               hover:bg-slate-800
             "
           >
-
-            <div className="text-3xl">
-              🛠
-            </div>
+            <div className="text-3xl">🛠</div>
 
             <h3
               className="
@@ -171,15 +151,9 @@ export default function DesktopQuickActions({
             >
               Kelola seluruh sistem aplikasi.
             </p>
-
           </Link>
-
         )}
-
       </div>
-
     </section>
-
   );
-
 }

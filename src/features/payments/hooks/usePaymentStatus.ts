@@ -1,285 +1,130 @@
 "use client";
 
 import {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 export type PaymentStatus =
-
-    | "PENDING"
-
-    | "PAID"
-
-    | "FAILED"
-
-    | "EXPIRED"
-
-    | "CANCELLED";
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED";
 
 interface Options {
-
-    enabled: boolean;
-
-    orderId: string;
-
-    interval?: number;
-
+  enabled: boolean;
+  orderId: string;
+  interval?: number;
 }
 
 interface PaymentStatusResponse {
-
-    status: PaymentStatus;
-
-    paymentType: "DONATION" | "URGENT_TASK";
-
-    taskId?: string | null;
-
+  status: PaymentStatus;
+  paymentType: "DONATION" | "URGENT_TASK";
+  taskId?: string | null;
 }
 
 export function usePaymentStatus({
-
-    enabled,
-
-    orderId,
-
-    interval = 3000,
-
+  enabled,
+  orderId,
+  interval = 3000,
 }: Options) {
+  const [status, setStatus] =
+    useState<PaymentStatus>("PENDING");
 
-    const [
-        status,
-        setStatus,
-    ] = useState<PaymentStatus>("PENDING");
+  const [paymentType, setPaymentType] =
+    useState<"DONATION" | "URGENT_TASK" | null>(null);
 
-    const [
-        paymentType,
-        setPaymentType,
-    ] = useState<string | null>(null);
+  const [taskId, setTaskId] =
+    useState<string | null>(null);
 
-    const [
-        taskId,
-        setTaskId,
-    ] = useState<string | null>(null);
+  const [loading, setLoading] =
+    useState(false);
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(false);
+  const timerRef =
+    useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const timerRef =
+  const fetchStatus = useCallback(async () => {
+    if (!orderId) {
+      return;
+    }
 
-        useRef<NodeJS.Timeout | null>(
+    setLoading(true);
 
-            null
+    try {
+      const response = await fetch(
+        `/api/payments/status/${orderId}`,
+      );
 
-        );
+      if (!response.ok) {
+        return;
+      }
 
-    const fetchStatus =
+      const data =
+        (await response.json()) as PaymentStatusResponse;
 
-        useCallback(
+      setStatus(data.status);
+      setPaymentType(data.paymentType ?? null);
+      setTaskId(data.taskId ?? null);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
 
-            async () => {
+  useEffect(() => {
+    if (!enabled || !orderId) {
+      return;
+    }
 
-                if (
+    let cancelled = false;
 
-                    !orderId
+    const run = async () => {
+      if (cancelled) {
+        return;
+      }
 
-                ) {
-
-                    return;
-
-                }
-
-                setLoading(
-
-                    true
-
-                );
-
-                try {
-
-                    const response =
-
-                        await fetch(
-
-                            `/api/payments/status/${orderId}`
-
-                        );
-
-                    if (
-
-                        !response.ok
-
-                    ) {
-
-                        return;
-
-                    }
-
-                    const data =
-                        await response.json();
-
-                    console.log(
-                        "[PaymentStatus API]",
-                        data
-                    );
-
-                    console.log(
-                        "[PaymentStatus Value]",
-                        data.status
-                    );
-
-                    setStatus(
-                        data.status
-                    );
-
-                    setPaymentType(
-                        data.paymentType ?? null
-                    );
-
-                    setTaskId(
-                        data.taskId ?? null
-                    );
-
-                }
-
-                finally {
-
-                    setLoading(
-
-                        false
-
-                    );
-
-                }
-
-            },
-
-            [
-
-                orderId,
-
-            ]
-
-        );
-
-    useEffect(
-
-        () => {
-
-            if (
-
-                !enabled ||
-
-                !orderId
-
-            ) {
-
-                return;
-
-            }
-
-            fetchStatus();
-
-            timerRef.current =
-
-                setInterval(
-
-                    fetchStatus,
-
-                    interval
-
-                );
-
-            return () => {
-
-                if (
-
-                    timerRef.current
-
-                ) {
-
-                    clearInterval(
-
-                        timerRef.current
-
-                    );
-
-                }
-
-            };
-
-        },
-
-        [
-
-            enabled,
-
-            orderId,
-
-            interval,
-
-            fetchStatus,
-
-        ]
-
-    );
-
-    useEffect(
-
-        () => {
-
-            if (
-
-                status !==
-
-                "PENDING"
-
-            ) {
-
-                if (
-
-                    timerRef.current
-
-                ) {
-
-                    clearInterval(
-
-                        timerRef.current
-
-                    );
-
-                }
-
-            }
-
-        },
-
-        [
-
-            status,
-
-        ]
-
-    );
-
-    return {
-
-        status,
-
-        paymentType,
-
-        taskId,
-
-        loading,
-
-        reload:
-
-            fetchStatus,
-
+      await fetchStatus();
     };
 
+    void run();
+
+    timerRef.current = setInterval(() => {
+      void run();
+    }, interval);
+
+    return () => {
+      cancelled = true;
+
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [
+    enabled,
+    orderId,
+    interval,
+    fetchStatus,
+  ]);
+
+  useEffect(() => {
+    if (status === "PENDING") {
+      return;
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [status]);
+
+  return {
+    status,
+    paymentType,
+    taskId,
+    loading,
+    reload: fetchStatus,
+  };
 }

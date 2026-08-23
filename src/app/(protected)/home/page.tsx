@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-import { supabase }
-  from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
-import {
-  getTasks,
-} from "@/features/tasks/services/client/task.client";
+import { getTasks } from "@/features/tasks/services/client/task.client";
 
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
@@ -23,29 +20,19 @@ interface Task {
 }
 
 export default function HomePage() {
-  const [tasks, setTasks] =
-    useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     async function loadTasks() {
-
       try {
-
-        const data =
-          await getTasks();
+        const data = await getTasks();
 
         setTasks(data || []);
-
       } catch (error) {
-
         console.error(error);
-
       } finally {
-
         setLoading(false);
       }
     }
@@ -56,10 +43,7 @@ export default function HomePage() {
        REALTIME TASKS
     ========================= */
 
-    const channel =
-      supabase.channel(
-        "home-tasks-realtime"
-      );
+    const channel = supabase.channel("home-tasks-realtime");
 
     channel.on(
       "postgres_changes",
@@ -69,20 +53,15 @@ export default function HomePage() {
         table: "tasks",
       },
       () => {
-
         loadTasks();
-      }
+      },
     );
 
     channel.subscribe();
 
     return () => {
-
-      supabase.removeChannel(
-        channel
-      );
+      supabase.removeChannel(channel);
     };
-
   }, []);
 
   if (loading) {

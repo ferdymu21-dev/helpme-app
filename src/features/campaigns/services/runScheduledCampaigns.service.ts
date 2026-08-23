@@ -1,70 +1,45 @@
-import {
-    findScheduledCampaignsRepository,
-} from "../repositories";
+import { findScheduledCampaignsRepository } from "../repositories";
 
-import {
-    publishCampaignEngine,
-} from "../engines/publishCampaign.engine";
+import { publishCampaignEngine } from "../engines/publishCampaign.engine";
 
 export interface RunScheduledCampaignsResult {
+  scanned: number;
 
-    scanned: number;
+  published: number;
 
-    published: number;
-
-    failed: number;
-
+  failed: number;
 }
 
-export async function runScheduledCampaignsService():
+export async function runScheduledCampaignsService(): Promise<RunScheduledCampaignsResult> {
+  const campaigns = await findScheduledCampaignsRepository();
 
-    Promise<RunScheduledCampaignsResult> {
+  let published = 0;
 
-    const campaigns =
-    await findScheduledCampaignsRepository();
+  let failed = 0;
 
-    let published = 0;
+  for (const campaign of campaigns) {
+    try {
+      await publishCampaignEngine(campaign.id);
 
-    let failed = 0;
+      published++;
+    } catch (error) {
+      console.error(
+        "[CAMPAIGN SCHEDULER]",
 
-    for (const campaign of campaigns) {
+        campaign.id,
 
-        try {
+        error,
+      );
 
-            await publishCampaignEngine(
-                campaign.id,
-            );
-
-            published++;
-
-        }
-
-        catch (error) {
-
-            console.error(
-
-                "[CAMPAIGN SCHEDULER]",
-
-                campaign.id,
-
-                error,
-
-            );
-
-            failed++;
-
-        }
-
+      failed++;
     }
+  }
 
-    return {
+  return {
+    scanned: campaigns.length,
 
-        scanned: campaigns.length,
+    published,
 
-        published,
-
-        failed,
-
-    };
-
+    failed,
+  };
 }

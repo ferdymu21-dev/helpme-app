@@ -1,83 +1,59 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import type {
-    NotificationTypeValue,
-} from "../constants/notification-type";
+import type { NotificationTypeValue } from "../constants/notification-type";
 
 interface Params {
+  userId: string;
 
-    userId: string;
+  type: NotificationTypeValue;
 
-    type: NotificationTypeValue;
-
-    taskId?: string;
-
+  taskId?: string;
 }
 
 export async function shouldCreateNotification({
+  userId,
 
-    userId,
+  type,
 
-    type,
-
-    taskId,
-
+  taskId,
 }: Params) {
+  let query = adminSupabase
 
-    let query =
+    .from("notifications")
 
-        adminSupabase
+    .select("id")
 
-            .from("notifications")
+    .eq("user_id", userId)
 
-            .select("id")
+    .eq("type", type);
 
-            .eq("user_id", userId)
+  if (taskId) {
+    query = query.eq(
+      "task_id",
 
-            .eq("type", type);
+      taskId,
+    );
+  }
 
-    if (taskId) {
+  const {
+    data,
 
-        query = query.eq(
+    error,
+  } = await query
 
-            "task_id",
+    .order(
+      "created_at",
 
-            taskId
+      {
+        ascending: false,
+      },
+    )
 
-        );
+    .limit(1);
 
-    }
+  if (error) {
+    throw error;
+  }
 
-    const {
-
-        data,
-
-        error,
-
-    } = await query
-
-        .order(
-
-            "created_at",
-
-            {
-
-                ascending: false,
-
-            }
-
-        )
-
-        .limit(1);
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data.length === 0;
-
+  return data.length === 0;
 }

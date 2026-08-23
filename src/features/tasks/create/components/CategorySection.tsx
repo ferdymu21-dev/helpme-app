@@ -9,27 +9,21 @@ type Props = {
   onCategoryChange: (value: string) => void;
 };
 
-export default function CategorySection({
-  category,
-  onCategoryChange,
-}: Props) {
+export default function CategorySection({ category, onCategoryChange }: Props) {
   return (
     <div className="mt-5">
-      <label className="text-sm font-semibold text-slate-700">
-        Kategori
-      </label>
+      <label className="text-sm font-semibold text-slate-700">Kategori</label>
 
       <div
         className="
           -mx-1
           mt-3
           flex
-          gap-2.5
+          gap-2
           overflow-x-auto
           px-1
           pb-2
           scrollbar-hide
-          sm:flex-wrap
           sm:overflow-visible
         "
       >
@@ -37,9 +31,7 @@ export default function CategorySection({
           <button
             key={item.name}
             type="button"
-            onClick={() =>
-              onCategoryChange(item.name)
-            }
+            onClick={() => onCategoryChange(item.name)}
             className={`
               flex
               shrink-0
@@ -47,8 +39,8 @@ export default function CategorySection({
               gap-2
               rounded-xl
               border
-              px-3.5
-              py-2.5
+              px-3
+              py-2
               text-xs
               font-semibold
               transition-all
@@ -81,19 +73,10 @@ export default function CategorySection({
                 justify-center
                 rounded-lg
 
-                ${
-                  category === item.name
-                    ? "bg-white/15"
-                    : "bg-slate-50"
-                }
+                ${category === item.name ? "bg-white/15" : "bg-slate-50"}
               `}
             >
-              <Image
-                src={item.icon}
-                alt={item.name}
-                width={17}
-                height={17}
-              />
+              <Image src={item.icon} alt={item.name} width={17} height={17} />
             </span>
 
             {item.name}

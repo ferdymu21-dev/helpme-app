@@ -16,7 +16,6 @@ interface Props {
 }
 
 export default function DesktopProfileSidebar({
-
   profile,
 
   isPublicProfile = false,
@@ -24,22 +23,10 @@ export default function DesktopProfileSidebar({
   onEdit,
 
   onReport,
-
 }: Props) {
-
   return (
-
-    <aside
-      className="
-        overflow-hidden
-        rounded-[36px]
-        bg-white
-        shadow-[0_12px_40px_rgba(15,23,42,.06)]
-      "
-    >
-
+    <aside className="overflow-hidden rounded-[36px] bg-white shadow-[0_12px_40px_rgba(15,23,42,.06)]">
       {/* COVER */}
-
       <div
         className="
           relative
@@ -49,8 +36,7 @@ export default function DesktopProfileSidebar({
           via-indigo-400
           to-violet-400
         "
-       >
-
+      >
         <div
           className="
             absolute
@@ -77,38 +63,16 @@ export default function DesktopProfileSidebar({
         />
 
         {/* AVATAR */}
+        <div className="absolute left-1/2 bottom-0 z-20 -translate-x-1/2 translate-y-1/2">
 
-<div
-  className="
-    absolute
-    left-1/2
-    bottom-0
-    z-20
-    -translate-x-1/2
-    translate-y-1/2
-  "
->
-
-  {profile.avatarUrl ? (
-
-    <img
-      src={profile.avatarUrl}
-      alt="Avatar"
-      className="
-        h-32
-        w-32
-        rounded-full
-        border-[6px]
-        border-white
-        object-cover
-        shadow-xl
-      "
-    />
-
-  ) : (
-
-    <div
-      className="
+          {profile.avatarUrl ? (
+            <img
+              src={profile.avatarUrl}
+              alt="Avatar"
+              className="h-45 w-45 rounded-full border-[6px] border-white object-cover shadow-xl"/>
+          ) : (
+            <div
+              className="
         flex
         h-32
         w-32
@@ -122,19 +86,15 @@ export default function DesktopProfileSidebar({
         font-black
         text-indigo-700
       "
-    >
-      {profile.initials}
-    </div>
+            >
+              {profile.initials}
+            </div>
+          )}
+        </div>
+      </div>
 
-  )}
-
-</div>
-
-       </div>
-
-       {/* CONTENT */}
-
-       <div
+      {/* CONTENT */}
+      <div
         className="
          pt-20
          flex
@@ -143,47 +103,24 @@ export default function DesktopProfileSidebar({
          px-8
          pb-8
          "
-        >
-
+      >
         {/* NAME */}
-
         <div
-          className="
-    mt-5
-    w-full
-    text-center
-  "
-        >
-
+          className="mt-10 w-full text-center">
+            
           <h1
-            className="
-              text-xl
-              font-black
-              tracking-tight
-              text-slate-900
-            "
-          >
+            className="text-xl font-black tracking-tight text-slate-900">
 
             {profile.fullName}
-
           </h1>
 
           <p
-            className="
-              mt-2
-              text-lg
-              text-slate-500
-            "
-          >
-
+            className="mt-2 text-lg text-slate-500">
             {profile.username}
-
           </p>
-
         </div>
 
         {/* BIO */}
-
         <p
           className="
             mt-8
@@ -192,19 +129,13 @@ export default function DesktopProfileSidebar({
             text-slate-500
           "
         >
-
           {profile.bio ||
-
-            "Helper aktif yang siap membantu berbagai kebutuhan harian pengguna."
-
-          }
-
+            "Helper aktif yang siap membantu berbagai kebutuhan harian pengguna."}
         </p>
 
         {/* LOCATION */}
 
         {profile.location && (
-
           <div
             className="
               mt-6
@@ -217,95 +148,18 @@ export default function DesktopProfileSidebar({
               text-slate-500
             "
           >
-
             📍 {profile.location}
-
           </div>
-
         )}
 
-        {/* INFO */}
-
-        <div
-          className="
-            mt-8
-            space-y-4
-            rounded-3xl
-            bg-slate-50
-            p-5
-          "
-        >
-
-          <div className="flex justify-between">
-
-            <span className="text-slate-500">
-
-              ⭐ Member
-
-            </span>
-
-            <span className="font-semibold">
-
-              Mei 2026
-
-            </span>
-
-          </div>
-
-          <div className="flex justify-between">
-
-            <span className="text-slate-500">
-
-              ✔ Status
-
-            </span>
-
-            <span
-              className="
-                rounded-full
-                bg-emerald-100
-                px-3
-                py-1
-                text-xs
-                font-semibold
-                text-emerald-700
-              "
-            >
-
-              Aktif
-
-            </span>
-
-          </div>
-
-          <div className="flex justify-between">
-
-            <span className="text-slate-500">
-
-              ⚡ Response
-
-            </span>
-
-            <span className="font-semibold">
-
-              {"< 2 jam"}
-
-            </span>
-
-          </div>
-
-        </div>
+        
 
         {/* BUTTON */}
-
         {!isPublicProfile ? (
-
           <button
-
             onClick={onEdit}
-
             className="
-              mt-8
+              mt-10
               flex
               h-14
               w-full
@@ -319,19 +173,12 @@ export default function DesktopProfileSidebar({
               transition
               hover:bg-slate-800
             "
-
           >
-
             ✏ Edit Profile
-
           </button>
-
         ) : (
-
           <button
-
             onClick={onReport}
-
             className="
               mt-8
               flex
@@ -349,19 +196,11 @@ export default function DesktopProfileSidebar({
               transition
               hover:bg-red-100
             "
-
           >
-
             🚩 Laporkan Pengguna
-
           </button>
-
         )}
-
       </div>
-
     </aside>
-
   );
-
 }

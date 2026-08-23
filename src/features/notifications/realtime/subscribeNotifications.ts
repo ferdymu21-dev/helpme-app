@@ -1,65 +1,36 @@
 import { supabase } from "@/lib/supabase/client";
 
 export async function subscribeNotifications(
-
-    onNotification: () => void,
-
+  onNotification: () => void,
 ) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const {
+  if (!user) {
+    return () => {};
+  }
 
-        data: { user },
+  const channel = supabase.channel(
+    `notifications-${user.id}-${Date.now()}`,
+  );
 
-    } = await supabase.auth.getUser();
+  channel.on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "notifications",
+      filter: `user_id=eq.${user.id}`,
+    },
+    () => {
+      onNotification();
+    },
+  );
 
-    if (!user) {
+  channel.subscribe();
 
-        return () => {};
-
-    }
-
-    const channel = supabase.channel(
-
-    `notifications-${user.id}-${Date.now()}`
-
-);
-
-    channel.on(
-
-        "postgres_changes",
-
-        {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${user.id}`,
-        },
-
-        (payload) => {
-
-            console.log(
-                "[Notification INSERT]"
-            );
-
-            onNotification();
-
-        }
-
-    );
-
-    channel.subscribe((status) => {
-
-        console.log(
-            "[Realtime]",
-            status
-        );
-
-    });
-
-    return () => {
-
-        supabase.removeChannel(channel);
-
-    };
-
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }

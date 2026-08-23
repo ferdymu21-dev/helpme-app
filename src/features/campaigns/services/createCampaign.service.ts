@@ -1,67 +1,34 @@
-import {
-    CampaignAction,
-} from "../constants/campaign-action";
+import { CampaignAction } from "../constants/campaign-action";
 
 import {
-    buildDraftCampaign,
-    buildPublishedCampaign,
-    buildScheduledCampaign,
+  buildDraftCampaign,
+  buildPublishedCampaign,
+  buildScheduledCampaign,
 } from "../factories";
 
-import {
-    createCampaignRepository,
-} from "../repositories";
+import { createCampaignRepository } from "../repositories";
 
-import {
-    validateCreateCampaign,
-} from "../validators";
+import { validateCreateCampaign } from "../validators";
 
-import type {
-    CreateCampaignPayload,
-} from "../types/campaign.types";
+import type { CreateCampaignPayload } from "../types/campaign.types";
 
 export async function createCampaignService(
-
-    payload: CreateCampaignPayload,
-
+  payload: CreateCampaignPayload
 ) {
 
-    validateCreateCampaign(payload);
+  validateCreateCampaign(payload);
 
-    switch (payload.action) {
+  switch (payload.action) {
+    case CampaignAction.DRAFT:
+      return createCampaignRepository(buildDraftCampaign(payload));
 
-        case CampaignAction.DRAFT:
+    case CampaignAction.PUBLISH:
+      return createCampaignRepository(buildPublishedCampaign(payload));
 
-            return createCampaignRepository(
+    case CampaignAction.SCHEDULE:
+      return createCampaignRepository(buildScheduledCampaign(payload));
 
-                buildDraftCampaign(payload)
-
-            );
-
-        case CampaignAction.PUBLISH:
-
-            return createCampaignRepository(
-
-                buildPublishedCampaign(payload)
-
-            );
-
-        case CampaignAction.SCHEDULE:
-
-            return createCampaignRepository(
-
-                buildScheduledCampaign(payload)
-
-            );
-
-        default:
-
-            throw new Error(
-
-                "Campaign action tidak dikenali."
-
-            );
-
-    }
-
+    default:
+      throw new Error("Campaign action tidak dikenali.");
+  }
 }

@@ -10,40 +10,22 @@ import { supabase } from "@/lib/supabase/client";
 
 import { useRouter } from "next/navigation";
 
-import {
-  useNotificationBadge,
-} from "@/features/notifications/hooks/useNotificationBadge";
+import { useNotificationBadge } from "@/features/notifications/hooks/useNotificationBadge";
 
-import {
-  useNotifications,
-} from "@/features/notifications/hooks/useNotifications";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 interface Props {
-
   onOpenSupport: () => void;
-
 }
 
-export default function MobileHomeHeader({
+export default function MobileHomeHeader({ onOpenSupport }: Props) {
+  const [initials, setInitials] = useState("U");
 
-  onOpenSupport,
+  const [avatarUrl, setAvatarUrl] = useState("");
 
-}: Props) {
+  const { hasUnread, unreadCount } = useNotificationBadge();
 
-  const [initials, setInitials] =
-    useState("U");
-
-  const [avatarUrl, setAvatarUrl] =
-    useState("");
-
-  const {
-    hasUnread,
-    unreadCount,
-  } = useNotificationBadge();
-
-  const {
-    notifications,
-  } = useNotifications();
+  const { notifications } = useNotifications();
 
   const router = useRouter();
 
@@ -56,44 +38,33 @@ export default function MobileHomeHeader({
 
         if (!user) return;
 
-        const { data: profile } =
-          await supabase
-            .from("users")
-            .select(`
+        const { data: profile } = await supabase
+          .from("users")
+          .select(
+            `
       avatar_url
-    `)
-            .eq("id", user.id)
-            .single();
+    `,
+          )
+          .eq("id", user.id)
+          .single();
 
         if (profile?.avatar_url) {
-
-          setAvatarUrl(
-            profile.avatar_url
-          );
-
+          setAvatarUrl(profile.avatar_url);
         }
 
-        const fullName =
-          user.user_metadata?.full_name;
+        const fullName = user.user_metadata?.full_name;
 
         if (!fullName) return;
 
-        const words =
-          fullName.split(" ");
+        const words = fullName.split(" ");
 
-        const first =
-          words[0]?.charAt(0) || "";
+        const first = words[0]?.charAt(0) || "";
 
-        const second =
-          words[1]?.charAt(0) || "";
+        const second = words[1]?.charAt(0) || "";
 
-        const result =
-          `${first}${second}`;
+        const result = `${first}${second}`;
 
-        setInitials(
-          result.toUpperCase()
-        );
-
+        setInitials(result.toUpperCase());
       } catch (error) {
         console.error(error);
       }
@@ -114,7 +85,6 @@ export default function MobileHomeHeader({
         backdrop-blur
       "
     >
-
       <div
         className="
           mx-auto
@@ -126,20 +96,18 @@ export default function MobileHomeHeader({
           px-6
         "
       >
-
         {/* LEFT */}
         <Image
-          src="/logo_brand.svg"
-          alt="HelpMe Logo"
-          width={1170}
-          height={332}
-          priority
-          className="h-auto w-30"
-        />
+  src="/logo_brand.svg"
+  alt="HelpMe Logo"
+  width={120}
+  height={34}
+  priority
+  className="h-auto w-30"
+/>
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
-
           <button
             onClick={onOpenSupport}
             className="
@@ -161,18 +129,16 @@ export default function MobileHomeHeader({
             <Image
               src="/icons/support.svg"
               alt="Support HelpMe"
-              width={24}
-              height={30}
-              className="h-7 w-7 object-contain"
+              width={20}
+              height={20}
+              className="h-6 w-6 object-contain"
             />
           </button>
 
           {/* NOTIFICATION */}
           <div className="relative">
-
             <button
               onClick={() => router.push("/notifications")}
-
               className="
 relative
 flex
@@ -186,19 +152,16 @@ border-slate-200
 bg-white
 hover:bg-slate-50
 "
-
             >
-
               <Image
                 src="/icons/notif.svg"
                 alt="Notifications"
-                width={24}
-                height={24}
-                className="h-7 w-7"
+                width={20}
+                height={20}
+                className="h-6 w-6"
               />
 
               {hasUnread && (
-
                 <span
                   className="
 absolute
@@ -218,25 +181,16 @@ leading-none
 text-white
 "
                 >
-
-                  {unreadCount > 99
-                    ? "99+"
-                    : unreadCount}
-
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
-
               )}
-
             </button>
-
           </div>
 
           {/* PROFILE */}
 
           <Link href="/profile">
-
             {avatarUrl ? (
-
               <img
                 src={avatarUrl}
                 alt="Profile"
@@ -249,9 +203,7 @@ text-white
         border-slate-200
       "
               />
-
             ) : (
-
               <div
                 className="
         flex
@@ -268,15 +220,10 @@ text-white
               >
                 {initials}
               </div>
-
             )}
-
           </Link>
-
         </div>
-
       </div>
-
     </header>
   );
 }

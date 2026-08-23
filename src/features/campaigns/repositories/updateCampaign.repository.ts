@@ -1,108 +1,76 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
 import type {
-    UpdateCampaignPayload,
-    NotificationCampaign,
+  UpdateCampaignPayload,
+  NotificationCampaign,
 } from "../types/campaign.types";
 
 export async function updateCampaignRepository(
-
-    payload: UpdateCampaignPayload,
-
+  payload: UpdateCampaignPayload,
 ): Promise<NotificationCampaign> {
+  const {
+    id,
 
-    const {
+    ...updates
+  } = payload;
 
-        id,
+  const dbPayload = {
+    ...(updates.title && {
+      title: updates.title,
+    }),
 
-        ...updates
+    ...(updates.message && {
+      message: updates.message,
+    }),
 
-    } = payload;
+    ...(updates.imageUrl !== undefined && {
+      image_url: updates.imageUrl,
+    }),
 
-    const dbPayload = {
+    ...(updates.redirectUrl !== undefined && {
+      redirect_url: updates.redirectUrl,
+    }),
 
-        ...(updates.title && {
+    ...(updates.status && {
+      status: updates.status,
+    }),
 
-            title: updates.title,
+    ...(updates.targetType && {
+      target_type: updates.targetType,
+    }),
 
-        }),
+    ...(updates.targetValue !== undefined && {
+      target_value: updates.targetValue,
+    }),
 
-        ...(updates.message && {
+    ...(updates.scheduledAt !== undefined && {
+      scheduled_at: updates.scheduledAt || null,
+    }),
 
-            message: updates.message,
+    ...(updates.expiresAt !== undefined && {
+      expires_at: updates.expiresAt || null,
+    }),
+  };
 
-        }),
+  const {
+    data,
 
-        ...(updates.imageUrl !== undefined && {
+    error,
+  } = await adminSupabase
 
-            image_url: updates.imageUrl,
+    .from("notification_campaigns")
 
-        }),
+    .update(dbPayload)
 
-        ...(updates.redirectUrl !== undefined && {
+    .eq("id", id)
 
-            redirect_url: updates.redirectUrl,
+    .select()
 
-        }),
+    .single();
 
-        ...(updates.status && {
+  if (error) {
+    throw error;
+  }
 
-            status: updates.status,
-
-        }),
-
-        ...(updates.targetType && {
-
-            target_type: updates.targetType,
-
-        }),
-
-        ...(updates.targetValue !== undefined && {
-
-            target_value: updates.targetValue,
-
-        }),
-
-        ...(updates.scheduledAt !== undefined && {
-
-            scheduled_at: updates.scheduledAt,
-
-        }),
-
-        ...(updates.expiresAt !== undefined && {
-
-            expires_at: updates.expiresAt,
-
-        }),
-
-    };
-
-    const {
-
-        data,
-
-        error,
-
-    } = await adminSupabase
-
-        .from("notification_campaigns")
-
-        .update(dbPayload)
-
-        .eq("id", id)
-
-        .select()
-
-        .single();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }

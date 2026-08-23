@@ -1,335 +1,204 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
 export interface PaymentLookupResult {
+  paymentType: "DONATION" | "URGENT_TASK";
 
-    paymentType:
-    | "DONATION"
-    | "URGENT_TASK";
-
-    payment: Record<string, unknown>;
-
+  payment: Record<string, unknown>;
 }
 
 export async function findPaymentByOrderId(
-    orderId: string
+  orderId: string,
 ): Promise<PaymentLookupResult | null> {
+  const donation = await findDonationByOrderId(orderId);
 
-    const donation =
-        await findDonationByOrderId(
-            orderId
-        );
+  if (donation) {
+    return {
+      paymentType: "DONATION",
 
-    if (donation) {
+      payment: donation,
+    };
+  }
 
-        return {
+  const taskPayment = await findTaskPaymentByOrderId(orderId);
 
-            paymentType:
-                "DONATION",
+  if (taskPayment) {
+    return {
+      paymentType: "URGENT_TASK",
 
-            payment:
-                donation,
+      payment: taskPayment,
+    };
+  }
 
-        };
-
-    }
-
-    const taskPayment =
-        await findTaskPaymentByOrderId(
-            orderId
-        );
-
-    if (taskPayment) {
-
-        return {
-
-            paymentType:
-                "URGENT_TASK",
-
-            payment:
-                taskPayment,
-
-        };
-
-    }
-
-    return null;
-
+  return null;
 }
 
-export async function findDonationByOrderId(
-    orderId: string
-) {
+export async function findDonationByOrderId(orderId: string) {
+  const {
+    data,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data,
+    .from("support_donations")
 
-        error,
+    .select("*")
 
-    } = await adminSupabase
+    .eq("midtrans_order_id", orderId)
 
-        .from(
-            "support_donations"
-        )
+    .maybeSingle();
 
-        .select("*")
+  if (error) {
+    throw error;
+  }
 
-        .eq(
-            "midtrans_order_id",
-            orderId
-        )
-
-        .maybeSingle();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
-export async function findTaskPaymentByOrderId(
-    orderId: string
-) {
+export async function findTaskPaymentByOrderId(orderId: string) {
+  const { data, error } = await adminSupabase
+    .from("task_payments")
+    .select("*")
+    .eq("midtrans_order_id", orderId)
 
-    const {
-        data,
-        error,
-    }
-        =
+    .maybeSingle();
 
-        await adminSupabase
-            .from("task_payments")
-            .select("*")
-            .eq(
-                "midtrans_order_id",
-                orderId
-            )
+  if (error) {
+    throw error;
+  }
 
-            .maybeSingle();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
 export async function attachTaskToPayment(
+  paymentId: string,
 
-    paymentId: string,
-
-    taskId: string
-
+  taskId: string,
 ) {
+  const { error } = await adminSupabase
+    .from("task_payments")
+    .update({
+      task_id: taskId,
+    })
+    .eq("id", paymentId);
 
-    const {
-        error,
-    }
-        =
-
-        await adminSupabase
-            .from("task_payments")
-            .update({
-                task_id:
-                    taskId,
-            })
-            .eq(
-                "id",
-                paymentId
-            );
-
-    if (error) {
-
-        throw error;
-
-    }
-
+  if (error) {
+    throw error;
+  }
 }
 
-export async function claimTaskPayment(
+export async function claimTaskPayment(paymentId: string) {
+  const { data, error } = await adminSupabase
 
-    paymentId: string
+    .from("task_payments")
 
-) {
+    .update({
+      is_processing: true,
+    })
 
-    const {
-        data,
-        error,
-    }
-        =
+    .eq(
+      "id",
 
-        await adminSupabase
+      paymentId,
+    )
 
-            .from("task_payments")
+    .eq(
+      "is_processing",
 
-            .update({
+      false,
+    )
 
-                is_processing: true,
+    .select()
 
-            })
+    .maybeSingle();
 
-            .eq(
+  if (error) {
+    throw error;
+  }
 
-                "id",
-
-                paymentId,
-
-            )
-
-            .eq(
-
-                "is_processing",
-
-                false,
-
-            )
-
-            .select()
-
-            .maybeSingle();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
-export async function releaseTaskPayment(
+export async function releaseTaskPayment(paymentId: string) {
+  const { error } = await adminSupabase
 
-    paymentId: string
+    .from("task_payments")
 
-) {
+    .update({
+      is_processing: false,
+    })
 
-    const {
+    .eq(
+      "id",
 
-        error,
+      paymentId,
+    );
 
-    }
-
-        =
-
-        await adminSupabase
-
-            .from("task_payments")
-
-            .update({
-
-                is_processing: false,
-
-            })
-
-            .eq(
-
-                "id",
-
-                paymentId,
-
-            );
-
-    if (error) {
-
-        throw error;
-
-    }
-
+  if (error) {
+    throw error;
+  }
 }
 
-export async function findPaymentsForSimulator(
-    paymentType?: string
-) {
+export async function findPaymentsForSimulator(paymentType?: string) {
+  switch (paymentType) {
+    case "DONATION":
+      return await findDonationPaymentsForSimulator();
 
-    switch (paymentType) {
+    case "URGENT_TASK":
+      return await findUrgentTaskPaymentsForSimulator();
 
-        case "DONATION":
-            return await findDonationPaymentsForSimulator();
-
-        case "URGENT_TASK":
-            return await findUrgentTaskPaymentsForSimulator();
-
-        default:
-
-            return [];
-
-    }
-
+    default:
+      return [];
+  }
 }
 
 async function findDonationPaymentsForSimulator() {
+  const {
+    data,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data,
+    .from("support_donations")
 
-        error,
-
-    } = await adminSupabase
-
-        .from("support_donations")
-
-        .select(`
+    .select(
+      `
             id,
             midtrans_order_id,
             amount,
             payment_status,
             payment_method,
             created_at
-        `)
+        `,
+    )
 
-        .order(
-            "created_at",
-            {
-                ascending: false,
-            }
-        )
+    .order("created_at", {
+      ascending: false,
+    })
 
-        .limit(50);
+    .limit(50);
 
-    if (error) {
+  if (error) {
+    throw error;
+  }
 
-        throw error;
+  return (data ?? []).map((payment) => ({
+    ...payment,
 
-    }
-
-    return (data ?? []).map(payment => ({
-
-        ...payment,
-
-        payment_type: "DONATION",
-
-    }));
-
+    payment_type: "DONATION",
+  }));
 }
 
 async function findUrgentTaskPaymentsForSimulator() {
+  const {
+    data,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data,
+    .from("task_payments")
 
-        error,
-
-    }
-
-        =
-
-        await adminSupabase
-
-            .from("task_payments")
-
-            .select(`
+    .select(
+      `
 
             id,
 
@@ -345,61 +214,45 @@ async function findUrgentTaskPaymentsForSimulator() {
 
             created_at
 
-        `)
+        `,
+    )
 
-            .order(
+    .order(
+      "created_at",
 
-                "created_at",
+      {
+        ascending: false,
+      },
+    )
 
-                {
+    .limit(50);
 
-                    ascending: false,
+  if (error) {
+    throw error;
+  }
 
-                }
-
-            )
-
-            .limit(50);
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
 export async function getPaymentTypesForSimulator() {
+  const { data, error } = await adminSupabase
+    .from("task_payments")
+    .select("payment_type");
 
-    const {
-        data,
-        error,
-    } =
-        await adminSupabase
-            .from("task_payments")
-            .select("payment_type");
+  if (error) {
+    throw error;
+  }
 
-    if (error) {
-        throw error;
+  const types = new Set<string>();
+
+  // DONATION selalu ada
+  types.add("DONATION");
+
+  (data ?? []).forEach((item) => {
+    if (item.payment_type) {
+      types.add(item.payment_type);
     }
+  });
 
-    const types = new Set<string>();
-
-    // DONATION selalu ada
-    types.add("DONATION");
-
-    (data ?? []).forEach(item => {
-
-        if (item.payment_type) {
-
-            types.add(item.payment_type);
-
-        }
-
-    });
-
-    return [...types];
-
+  return [...types];
 }

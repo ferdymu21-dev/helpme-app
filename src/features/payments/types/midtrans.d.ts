@@ -1,43 +1,21 @@
 declare global {
+  interface Window {
+    snap: {
+      pay: (
+        token: string,
 
-    interface Window {
+        options?: {
+          onSuccess?: (result: unknown) => void;
 
-        snap: {
+          onPending?: (result: unknown) => void;
 
-            pay: (
+          onError?: (result: unknown) => void;
 
-                token: string,
-
-                options?: {
-
-                    onSuccess?: (
-
-                        result: any
-
-                    ) => void;
-
-                    onPending?: (
-
-                        result: any
-
-                    ) => void;
-
-                    onError?: (
-
-                        result: any
-
-                    ) => void;
-
-                    onClose?: () => void;
-
-                }
-
-            ) => void;
-
-        };
-
-    }
-
+          onClose?: () => void;
+        },
+      ) => void;
+    };
+  }
 }
 
 export {};

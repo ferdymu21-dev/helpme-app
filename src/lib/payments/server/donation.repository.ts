@@ -15,8 +15,6 @@ import type {
      CreateDonationCommand,
 } from "../types/donation";
 
-console.log("adminSupabase =", adminSupabase);
-
 export async function saveDonation(
 
     payload: CreateDonationCommand,

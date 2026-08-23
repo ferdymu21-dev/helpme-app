@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 
 import MobileMyTasksView from "@/components/my-tasks/mobile/MobileMyTasksView";
-
 import DesktopMyTasksView from "@/components/my-tasks/desktop/DesktopMyTasksView";
 
-import { getMyTasks } from "@/features/tasks/services/client/task.service";
+import { getMyTasks } from "@/features/tasks/services/client/task.client";
 
 interface Task {
   id: string;
@@ -16,8 +15,6 @@ interface Task {
   address: string;
   status: string;
 }
-
-const filters = ["ALL", "OPEN", "ACCEPTED", "COMPLETED"];
 
 export default function MyTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -42,6 +39,10 @@ export default function MyTasksPage() {
     loadTasks();
   }, []);
 
+  /* =========================
+     FILTERED TASK LIST
+  ========================= */
+
   const filteredTasks = useMemo(() => {
     if (activeFilter === "ALL") {
       return tasks;
@@ -50,7 +51,13 @@ export default function MyTasksPage() {
     return tasks.filter((task) => task.status === activeFilter);
   }, [tasks, activeFilter]);
 
-  const openCount = tasks.filter((task) => task.status === "OPEN").length;
+  /* =========================
+     TASK STATISTICS
+  ========================= */
+
+  const openCount = tasks.filter(
+    (task) => task.status === "OPEN",
+  ).length;
 
   const acceptedCount = tasks.filter(
     (task) => task.status === "ACCEPTED",
@@ -61,26 +68,26 @@ export default function MyTasksPage() {
   ).length;
 
   return (
-  <>
-    <MobileMyTasksView
-      tasks={filteredTasks}
-      loading={loading}
-      activeFilter={activeFilter}
-      setActiveFilter={
-        setActiveFilter
-      }
-      filters={filters}
-    />
+    <>
+      <MobileMyTasksView
+        tasks={filteredTasks}
+        loading={loading}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+        openCount={openCount}
+        acceptedCount={acceptedCount}
+        completedCount={completedCount}
+      />
 
-    <DesktopMyTasksView
-      tasks={filteredTasks}
-      loading={loading}
-      activeFilter={activeFilter}
-      setActiveFilter={
-        setActiveFilter
-      }
-      filters={filters}
-    />
-  </>
-);
+      <DesktopMyTasksView
+        tasks={filteredTasks}
+        loading={loading}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+        openCount={openCount}
+        acceptedCount={acceptedCount}
+        completedCount={completedCount}
+      />
+    </>
+  );
 }

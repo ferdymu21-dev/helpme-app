@@ -17,3 +17,11 @@ export * from "./findScheduledCampaigns.repository";
 export * from "./findCampaignRecipients.repository";
 
 export * from "./incrementCampaignStatistic.repository";
+
+export * from "./createCampaignEvent.repository";
+
+export * from "./hasCampaignEvent.repository";
+
+export * from "./recordCampaignOpened.repository";
+
+export * from "./recordCampaignClick.repository";

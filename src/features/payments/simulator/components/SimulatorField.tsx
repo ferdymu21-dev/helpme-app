@@ -1,65 +1,41 @@
 interface Props {
+  label: string;
 
-    label: string;
+  placeholder?: string;
 
-    placeholder?: string;
+  value: string;
 
-    value: string;
+  disabled?: boolean;
 
-    disabled?: boolean;
-
-    onChange: (
-        value: string
-    ) => void;
-
+  onChange: (value: string) => void;
 }
 
 export default function SimulatorField({
-    label,
-    placeholder,
-    value,
-    onChange,
-    disabled,
+  label,
+  placeholder,
+  value,
+  onChange,
+  disabled,
 }: Props) {
-
-    return (
-
-        <div>
-
-            <label
-                className="
+  return (
+    <div>
+      <label
+        className="
                     mb-2
                     block
                     text-sm
                     font-semibold
                 "
-            >
+      >
+        {label}
+      </label>
 
-                {label}
-
-            </label>
-
-            <input
-
-                value={
-                    value
-                }
-
-                placeholder={
-                    placeholder
-                }
-
-                onChange={(event) =>
-
-                    onChange(
-
-                        event.target.value
-
-                    )
-
-                }
-
-                className="
+      <input
+        value={value}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className="
                     w-full
                     rounded-xl
                     border
@@ -72,11 +48,7 @@ export default function SimulatorField({
                     disabled:text-slate-500
                     disabled:cursor-not-allowed
                 "
-
-            />
-
-        </div>
-
-    );
-
+      />
+    </div>
+  );
 }

@@ -1,39 +1,27 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import type {
-    NotificationCampaign,
-} from "../types/campaign.types";
+import type { NotificationCampaign } from "../types/campaign.types";
 
 export async function getCampaignRepository(
-
-    id: string,
-
+  id: string,
 ): Promise<NotificationCampaign> {
+  const {
+    data,
 
-    const {
+    error,
+  } = await adminSupabase
 
-        data,
+    .from("notification_campaigns")
 
-        error,
+    .select("*")
 
-    } = await adminSupabase
+    .eq("id", id)
 
-        .from("notification_campaigns")
+    .single();
 
-        .select("*")
+  if (error) {
+    throw error;
+  }
 
-        .eq("id", id)
-
-        .single();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }

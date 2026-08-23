@@ -8,5 +8,4 @@ export type TransactionType = PaymentType;
 
 export type TransactionStatus = PaymentStatus;
 
-export interface TransactionHistoryItem
-    extends PaymentHistoryBase {}
+export type TransactionHistoryItem = PaymentHistoryBase;

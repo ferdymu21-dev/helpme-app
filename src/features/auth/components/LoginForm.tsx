@@ -5,18 +5,13 @@ import { useState } from "react";
 import { login } from "../services/auth.service";
 
 export default function LoginForm() {
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function handleLogin(
-    e: React.FormEvent
-  ) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
     if (loading) return;
@@ -29,20 +24,21 @@ export default function LoginForm() {
         password,
       });
 
-      window.location.href =
-        "/home";
-    } catch (error: any) {
-      alert(error.message);
+      window.location.href = "/home";
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat login.";
+
+      alert(message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form
-      onSubmit={handleLogin}
-      className="space-y-5"
-    >
+    <form onSubmit={handleLogin} className="space-y-5">
       {/* EMAIL */}
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -53,9 +49,7 @@ export default function LoginForm() {
           type="email"
           placeholder="Masukkan email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          onChange={(e) => setEmail(e.target.value)}
           className="
             w-full
             rounded-2xl
@@ -81,9 +75,7 @@ export default function LoginForm() {
           type="password"
           placeholder="Masukkan password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          onChange={(e) => setPassword(e.target.value)}
           className="
             w-full
             rounded-2xl
@@ -115,13 +107,10 @@ export default function LoginForm() {
           disabled:opacity-50
         "
       >
-        {loading
-          ? "Loading..."
-          : "Login"}
+        {loading ? "Loading..." : "Login"}
       </button>
 
       <div className="mt-4 text-center">
-
         <a
           href="/forgot-password"
           className="
@@ -132,9 +121,7 @@ export default function LoginForm() {
         >
           Lupa Kata Sandi?
         </a>
-
       </div>
-
     </form>
   );
 }

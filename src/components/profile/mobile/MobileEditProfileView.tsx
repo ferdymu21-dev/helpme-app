@@ -1,25 +1,27 @@
 "use client";
 
+import type { Dispatch, SetStateAction } from "react";
+
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
-interface Props {
-  profile: {
-    fullName: string;
-    username: string;
-    bio: string;
-    location: string;
-    avatarUrl?: string;
-  };
+interface ProfileData {
+  fullName: string;
+  username: string;
+  bio: string;
+  location: string;
+  avatarUrl?: string;
+}
 
-  setProfile: any;
+interface Props {
+  profile: ProfileData;
+
+  setProfile: Dispatch<SetStateAction<ProfileData>>;
 
   loading: boolean;
 
   avatarPreview: string;
 
-  onAvatarChange: (
-    file: File
-  ) => void;
+  onAvatarChange: (file: File) => void;
 
   onSave: () => void;
 }
@@ -27,22 +29,16 @@ interface Props {
 export default function MobileEditProfileView({
   profile,
   setProfile,
-  loading,
   avatarPreview,
-
   onAvatarChange,
-
   onSave,
 }: Props) {
-
+  
   return (
     <main className="min-h-screen bg-slate-50 pb-32 lg:hidden">
-
       <div className="px-6 py-7">
-
         {/* HEADER */}
         <div>
-
           <h1
             className="
               text-3xl
@@ -63,13 +59,11 @@ export default function MobileEditProfileView({
           >
             Lengkapi profile kamu.
           </p>
-
         </div>
 
         {/* AVATAR */}
 
         <div className="mt-8 flex flex-col items-center">
-
           <div
             className="
       flex
@@ -85,9 +79,7 @@ export default function MobileEditProfileView({
       text-indigo-700
     "
           >
-
             {avatarPreview ? (
-
               <img
                 src={avatarPreview}
                 alt="Avatar"
@@ -97,15 +89,9 @@ export default function MobileEditProfileView({
           object-cover
         "
               />
-
             ) : (
-
-              profile.fullName
-                ?.charAt(0)
-                ?.toUpperCase()
-
+              profile.fullName?.charAt(0)?.toUpperCase()
             )}
-
           </div>
 
           <label
@@ -124,32 +110,25 @@ export default function MobileEditProfileView({
     "
           >
             Pilih Foto
-
             <input
               type="file"
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-
-                const file =
-                  e.target.files?.[0];
+                const file = e.target.files?.[0];
 
                 if (!file) return;
 
                 onAvatarChange(file);
               }}
             />
-
           </label>
-
         </div>
 
         {/* FORM */}
         <div className="mt-8 space-y-5">
-
           {/* FULL NAME */}
           <div>
-
             <label
               className="
                 text-sm
@@ -165,8 +144,7 @@ export default function MobileEditProfileView({
               onChange={(e) =>
                 setProfile({
                   ...profile,
-                  fullName:
-                    e.target.value,
+                  fullName: e.target.value,
                 })
               }
               className="
@@ -181,12 +159,10 @@ export default function MobileEditProfileView({
                 outline-none
               "
             />
-
           </div>
 
           {/* USERNAME */}
           <div>
-
             <label
               className="
                 text-sm
@@ -202,8 +178,7 @@ export default function MobileEditProfileView({
               onChange={(e) =>
                 setProfile({
                   ...profile,
-                  username:
-                    e.target.value,
+                  username: e.target.value,
                 })
               }
               className="
@@ -218,12 +193,10 @@ export default function MobileEditProfileView({
                 outline-none
               "
             />
-
           </div>
 
           {/* BIO */}
           <div>
-
             <label
               className="
                 text-sm
@@ -254,12 +227,10 @@ export default function MobileEditProfileView({
                 outline-none
               "
             />
-
           </div>
 
           {/* LOCATION */}
           <div>
-
             <label
               className="
                 text-sm
@@ -275,8 +246,7 @@ export default function MobileEditProfileView({
               onChange={(e) =>
                 setProfile({
                   ...profile,
-                  location:
-                    e.target.value,
+                  location: e.target.value,
                 })
               }
               className="
@@ -291,7 +261,6 @@ export default function MobileEditProfileView({
                 outline-none
               "
             />
-
           </div>
 
           {/* BUTTON */}
@@ -313,13 +282,10 @@ export default function MobileEditProfileView({
           >
             Simpan Perubahan
           </button>
-
         </div>
-
       </div>
 
       <MobileBottomNavbar />
-
     </main>
   );
 }

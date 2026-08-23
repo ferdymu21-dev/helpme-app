@@ -1,15 +1,10 @@
 import type { FormEvent } from "react";
 
-import type {
-  PaymentResult,
-} from "@/features/payments/types/paymentResult";
+import type { PaymentResult } from "@/features/payments/types/paymentResult";
 
-export type LocationMethod =
-  | "SEARCH"
-  | "MANUAL";
+export type LocationMethod = "SEARCH" | "MANUAL";
 
 export interface NominatimLocation {
-
   place_id: number;
 
   display_name: string;
@@ -17,15 +12,12 @@ export interface NominatimLocation {
   lat: string;
 
   lon: string;
-
 }
 
 export interface TaskCategory {
-
   name: string;
 
   icon: string;
-
 }
 
 /*
@@ -34,19 +26,15 @@ export interface TaskCategory {
 |--------------------------------------------------------------------------
 */
 
-export type PremiumTaskServiceType =
-  | "URGENT_TASK";
+export type PremiumTaskServiceType = "URGENT_TASK";
 
 export interface PremiumTaskService {
-
   type: PremiumTaskServiceType;
 
   amount: number;
-
 }
 
 export interface HandleCreateTaskParams {
-
   title: string;
 
   description: string;
@@ -76,11 +64,9 @@ export interface HandleCreateTaskParams {
   selectedLocation: NominatimLocation | null;
 
   setLoading: (value: boolean) => void;
-
 }
 
 export interface CreateTaskPageUIProps {
-
   title: string;
 
   description: string;
@@ -141,46 +127,25 @@ export interface CreateTaskPageUIProps {
 
   searchingLocation: boolean;
 
-  onLocationMethodChange: (
-    value: LocationMethod
-  ) => void;
+  onLocationMethodChange: (value: LocationMethod) => void;
 
-  onLocationSearchChange: (
-    value: string
-  ) => void;
+  onLocationSearchChange: (value: string) => void;
 
-  onManualAddressChange: (
-    value: string
-  ) => void;
+  onManualAddressChange: (value: string) => void;
 
-  onSelectedLocationChange: (
-    value: NominatimLocation | null
-  ) => void;
+  onSelectedLocationChange: (value: NominatimLocation | null) => void;
 
-  onSearchResultsChange: (
-    value: NominatimLocation[]
-  ) => void;
+  onSearchResultsChange: (value: NominatimLocation[]) => void;
 
-  onLatitudeChange: (
-    value: number | null
-  ) => void;
+  onLatitudeChange: (value: number | null) => void;
 
-  onLongitudeChange: (
-    value: number | null
-  ) => void;
+  onLongitudeChange: (value: number | null) => void;
 
-  onLocationQueryChange: (
-    value: string
-  ) => void;
+  onLocationQueryChange: (value: string) => void;
 
-  onSubmit: (
-    e: FormEvent
-  ) => void;
+  onSubmit: (e: FormEvent) => void;
 
-  onSearchLocation: (
-    query: string
-  ) => void;
+  onSearchLocation: (query: string) => void;
 
   onBack: () => void;
-
 }

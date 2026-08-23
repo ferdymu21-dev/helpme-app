@@ -2,58 +2,32 @@
 
 import DonateButton from "../DonateButton";
 
-import {
-    useDonationFlow,
-} from "../../hooks/useDonationFlow";
+import { useDonationFlow } from "../../hooks/useDonationFlow";
 
 type DonationFlowState =
-
-    ReturnType<typeof useDonationFlow>;
+  ReturnType<typeof useDonationFlow>;
 
 interface Props {
-
-    donation: DonationFlowState;
-
+  donation: DonationFlowState;
 }
 
 export default function DonationFlow({
-
-    donation,
-
+  donation,
 }: Props) {
 
-    console.log("=== DonationFlow Mounted ===");
-
-    const {
-
+  const {
     handleDonate,
-
     loading,
-
     error,
+  } = donation;
 
-    result,
-
-    closeDialog,
-
-} = donation;
-
-    return (
-
-        <>
-
-            <DonateButton
-
-                onDonate={handleDonate}
-
-                loading={loading}
-
-                error={error}
-
-            />
-
-        </>
-
-    );
-
+  return (
+    <>
+      <DonateButton
+        onDonate={handleDonate}
+        loading={loading}
+        error={error}
+      />
+    </>
+  );
 }
