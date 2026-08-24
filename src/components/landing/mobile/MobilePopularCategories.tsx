@@ -1,138 +1,242 @@
+import Link from "next/link";
+
+import {
+  ArrowRight,
+  Binoculars,
+  FileText,
+  GraduationCap,
+  MapPinned,
+  PackageOpen,
+  ShoppingBag,
+  Sparkles,
+  UsersRound,
+} from "lucide-react";
+
 const categories = [
   {
-    emoji: "🛒",
+    icon: UsersRound,
     title: "Jasa Antri",
-    color: "bg-emerald-100",
+    iconClass:
+      "bg-rose-50 text-rose-600",
   },
-
   {
-    emoji: "📄",
+    icon: ShoppingBag,
+    title: "Titip Belanja",
+    iconClass:
+      "bg-emerald-50 text-emerald-600",
+  },
+  {
+    icon: FileText,
     title: "Ambil Dokumen",
-    color: "bg-indigo-100",
+    iconClass:
+      "bg-blue-50 text-blue-600",
   },
-
   {
-    emoji: "🚗",
-    title: "Antar Jemput",
-    color: "bg-pink-100",
-  },
-
-  {
-    emoji: "📦",
+    icon: PackageOpen,
     title: "Pindahan",
-    color: "bg-cyan-100",
+    iconClass:
+      "bg-amber-50 text-amber-600",
   },
-
   {
-    emoji: "🐶",
-    title: "Cari Hewan",
-    color: "bg-amber-100",
-  },
-
-  {
-    emoji: "🎓",
+    icon: GraduationCap,
     title: "Bantuan Kampus",
-    color: "bg-violet-100",
+    iconClass:
+      "bg-violet-50 text-violet-600",
   },
-
   {
-    emoji: "⏳",
+    icon: MapPinned,
+    title: "Survey Lokasi",
+    iconClass:
+      "bg-cyan-50 text-cyan-600",
+  },
+  {
+    icon: Binoculars,
+    title: "Cari Hewan",
+    iconClass:
+      "bg-orange-50 text-orange-600",
+  },
+  {
+    icon: Sparkles,
     title: "Lainnya",
-    color: "bg-orange-100",
+    iconClass:
+      "bg-indigo-50 text-indigo-600",
   },
 ];
 
 export default function MobilePopularCategories() {
   return (
-    <section className="px-2 pt-8">
-
-      {/* HEADER */}
+    <section
+      id="kategori-mobile"
+      className="
+        bg-white
+        px-5
+        py-12
+      "
+    >
+      {/* =========================
+          HEADER
+      ========================= */}
       <div>
-
-        <h2
+        <span
           className="
-            text-base
+            text-[11px]
             font-black
-            tracking-tight
-            text-slate-900
+            uppercase
+            tracking-[0.18em]
+            text-indigo-600
           "
         >
           Kategori Populer
+        </span>
+
+        <h2
+          className="
+            mt-2
+            max-w-xs
+            text-2xl
+            font-black
+            leading-tight
+            tracking-[-0.03em]
+            text-slate-950
+          "
+        >
+          Temukan bantuan sesuai{" "}
+          <span className="text-indigo-600">
+            kebutuhanmu
+          </span>
         </h2>
 
         <p
           className="
-            mt-2
+            mt-3
             text-sm
+            leading-6
             text-slate-500
           "
         >
-          Temukan bantuan sesuai kebutuhanmu
+          Pilih kebutuhan yang paling sesuai atau
+          buat task khusus untuk bantuan lainnya.
         </p>
-
       </div>
 
-      {/* CATEGORIES */}
+      {/* =========================
+          GRID
+      ========================= */}
       <div
         className="
-          mt-3
-          flex
-          gap-4
-          overflow-x-auto
-          pb-2
-          scrollbar-hide
+          mt-7
+          grid
+          grid-cols-2
+          gap-3
         "
       >
-
-        {categories.map((item) => (
-          <button
-            key={item.title}
-            className="
-              min-w-23
-              rounded-[28px]
-              border
-              border-slate-100
-              bg-white
-              p-2
-              text-left
-              shadow-[0_10px_30px_rgba(15,23,42,0.04)]
-            "
-          >
-
-            {/* ICON */}
-            <div
-              className={`
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-xl
-                text-2xl
-                ${item.color}
-              `}
-            >
-              {item.emoji}
-            </div>
-
-            {/* TITLE */}
-            <p
+        {categories.map(
+          ({
+            icon: Icon,
+            title,
+            iconClass,
+          }) => (
+            <Link
+              key={title}
+              href="/register"
               className="
-                mt-3
-                text-xs
-                font-bold
-                leading-5
-                text-slate-800
+                group
+                rounded-[22px]
+                border
+                border-slate-200
+                bg-white
+                p-4
+                shadow-[0_8px_24px_rgba(15,23,42,0.035)]
+                transition
+                active:scale-[0.98]
               "
             >
-              {item.title}
-            </p>
+              <div
+                className={`
+                  flex
+                  h-11
+                  w-11
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  ${iconClass}
+                `}
+              >
+                <Icon
+                  className="h-5 w-5"
+                  strokeWidth={2}
+                />
+              </div>
 
-          </button>
-        ))}
+              <div
+                className="
+                  mt-4
+                  flex
+                  items-end
+                  justify-between
+                  gap-2
+                "
+              >
+                <p
+                  className="
+                    min-w-0
+                    text-xs
+                    font-black
+                    leading-5
+                    text-slate-800
+                  "
+                >
+                  {title}
+                </p>
 
+                <ArrowRight
+                  className="
+                    h-3.5
+                    w-3.5
+                    shrink-0
+                    text-slate-300
+                    transition
+                    group-hover:text-indigo-600
+                  "
+                  strokeWidth={2}
+                />
+              </div>
+            </Link>
+          ),
+        )}
       </div>
 
+      {/* =========================
+          CTA
+      ========================= */}
+      <Link
+        href="/register"
+        className="
+          mt-5
+          flex
+          h-11
+          w-full
+          items-center
+          justify-center
+          gap-2
+          rounded-2xl
+          border
+          border-indigo-100
+          bg-indigo-50
+          text-xs
+          font-bold
+          text-indigo-700
+          transition
+          active:scale-[0.99]
+        "
+      >
+        Punya kebutuhan lainnya?
+
+        <ArrowRight
+          className="h-4 w-4"
+          strokeWidth={2}
+        />
+      </Link>
     </section>
   );
 }

@@ -10,4 +10,5 @@ export interface HistoryTask {
   budget: number | null;
   status: HistoryTaskStatus;
   created_at: string;
+  is_urgent?: boolean | null;
 }

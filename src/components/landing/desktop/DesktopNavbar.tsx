@@ -2,6 +2,8 @@ import Image from "next/image";
 
 import Link from "next/link";
 
+import { ArrowRight } from "lucide-react";
+
 export default function DesktopNavbar() {
   return (
     <header
@@ -10,65 +12,52 @@ export default function DesktopNavbar() {
         top-0
         z-50
         border-b
-        border-slate-200/80
-        bg-white/80
+        border-slate-200/70
+        bg-white/90
         backdrop-blur-xl
       "
     >
-
       <div
         className="
           mx-auto
           flex
-          h-22
+          h-20
           max-w-7xl
           items-center
           justify-between
           px-8
         "
       >
-
-        {/* LEFT */}
-        <Link href="/">
-
+        {/* LOGO */}
+        <Link
+          href="/"
+          aria-label="HelpMe"
+          className="shrink-0"
+        >
           <Image
             src="/logo_brand.svg"
-            alt="HelpMe Logo"
-            width={150}
-            height={150}
+            alt="HelpMe"
+            width={132}
+            height={48}
             priority
+            className="h-auto w-32"
           />
-
         </Link>
 
-        {/* CENTER */}
+        {/* NAVIGATION */}
         <nav
           className="
             flex
             items-center
-            gap-10
+            gap-8
           "
         >
-
-          <Link
-            href="/"
-            className="
-              text-sm
-              font-semibold
-              text-slate-700
-              transition
-              hover:text-indigo-600
-            "
-          >
-            Home
-          </Link>
-
           <Link
             href="#cara-kerja"
             className="
               text-sm
               font-semibold
-              text-slate-700
+              text-slate-600
               transition
               hover:text-indigo-600
             "
@@ -81,7 +70,7 @@ export default function DesktopNavbar() {
             className="
               text-sm
               font-semibold
-              text-slate-700
+              text-slate-600
               transition
               hover:text-indigo-600
             "
@@ -90,40 +79,48 @@ export default function DesktopNavbar() {
           </Link>
 
           <Link
-            href="#tentang"
+            href="#keamanan"
             className="
               text-sm
               font-semibold
-              text-slate-700
+              text-slate-600
               transition
               hover:text-indigo-600
             "
           >
-            Tentang
+            Keamanan
           </Link>
 
+          <Link
+            href="#faq"
+            className="
+              text-sm
+              font-semibold
+              text-slate-600
+              transition
+              hover:text-indigo-600
+            "
+          >
+            FAQ
+          </Link>
         </nav>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-4">
-
+        {/* ACTIONS */}
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
             className="
-            flex
-              h-12
+              inline-flex
+              h-11
               items-center
-              rounded-2xl
-              bg-linear-to-r
-              from-amber-500
-              to-amber-400
-              px-6
+              justify-center
+              rounded-xl
+              px-5
               text-sm
               font-bold
-              text-black
-              shadow-lg
-              shadow-amber-500/20
+              text-slate-700
               transition
+              hover:bg-slate-100
               hover:text-indigo-600
             "
           >
@@ -133,30 +130,32 @@ export default function DesktopNavbar() {
           <Link
             href="/register"
             className="
-              flex
-              h-12
+              inline-flex
+              h-11
               items-center
-              rounded-2xl
-              bg-linear-to-r
-              from-indigo-600
-              to-violet-600
-              px-6
+              justify-center
+              gap-2
+              rounded-xl
+              bg-indigo-600
+              px-5
               text-sm
               font-bold
               text-white
               shadow-lg
               shadow-indigo-600/20
               transition
-              hover:scale-[1.02]
+              hover:bg-indigo-700
             "
           >
             Mulai Sekarang
+
+            <ArrowRight
+              className="h-4 w-4"
+              strokeWidth={2}
+            />
           </Link>
-
         </div>
-
       </div>
-
     </header>
   );
 }

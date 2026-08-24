@@ -1,3 +1,13 @@
+import {
+  CalendarDays,
+  ChevronRight,
+} from "lucide-react";
+
+import {
+  getTaskStatusBadgeClass,
+  getTaskStatusLabel,
+} from "@/features/tasks/utils/task-status";
+
 import type { HistoryTask } from "@/features/tasks/types/history";
 
 interface Props {
@@ -133,106 +143,243 @@ export default function DesktopHistoryView({
           </div>
         )}
 
-        {/* LIST */}
-        <div className="mt-8 grid gap-4">
-          {!loading &&
-            tasks.map((task) => (
-              <button
-                key={task.id}
-                onClick={() => router.push(`/tasks/${task.id}`)}
+        {/* =========================
+    LIST
+========================= */}
+<div className="mt-8 grid gap-4">
+  {!loading &&
+    tasks.map((task) => (
+      <button
+        key={task.id}
+        type="button"
+        onClick={() =>
+          router.push(
+            `/tasks/${task.id}`,
+          )
+        }
+        className="
+          group
+          w-full
+          rounded-3xl
+          border
+          border-slate-200
+          bg-white
+          p-6
+          text-left
+          shadow-sm
+          transition-all
+          duration-200
+          hover:border-slate-300
+          hover:shadow-md
+        "
+      >
+        <div
+          className="
+            flex
+            min-w-0
+            items-center
+            justify-between
+            gap-8
+          "
+        >
+          {/* =========================
+              LEFT CONTENT
+          ========================= */}
+          <div className="min-w-0 flex-1">
+            {/* CATEGORY + URGENT + STATUS */}
+            <div
+              className="
+                flex
+                flex-wrap
+                items-center
+                gap-2
+              "
+            >
+              {/* CATEGORY */}
+              <span
                 className="
-                  flex
-                  items-center
-                  justify-between
-                  rounded-3xl
-                  border
-                  border-slate-200
-                  bg-white
-                  p-6
-                  text-left
-                  shadow-sm
-                  transition
-
-                  hover:border-indigo-300
-                  hover:shadow-md
+                  inline-flex
+                  max-w-60
+                  truncate
+                  rounded-full
+                  bg-indigo-50
+                  px-3
+                  py-1
+                  text-[11px]
+                  font-semibold
+                  text-indigo-600
                 "
               >
-                <div>
-                  <h2
-                    className="
-                      text-lg
-                      font-bold
-                      text-slate-900
-                    "
-                  >
-                    {task.title}
-                  </h2>
+                {task.category ||
+                  "Lainnya"}
+              </span>
 
-                  <p
-                    className="
-                      mt-1
-                      text-sm
-                      text-slate-500
-                    "
-                  >
-                    {task.category}
-                  </p>
-                </div>
-
-                <div
+              {/* URGENT */}
+              {task.is_urgent && (
+                <span
                   className="
-                    flex
-                    items-center
-                    gap-5
+                    shrink-0
+                    rounded-full
+                    bg-red-100
+                    px-3
+                    py-1
+                    text-[11px]
+                    font-bold
+                    text-red-600
                   "
                 >
-                  <p
-                    className="
-                      text-lg
-                      font-black
-                      text-indigo-600
-                    "
-                  >
-                    Rp
-                    {task.budget?.toLocaleString("id-ID")}
-                  </p>
+                  🔥 Mendesak
+                </span>
+              )}
 
-                  <div
-                    className={`
-                      rounded-full
-                      px-4
-                      py-2
-                      text-xs
-                      font-bold
+              {/* STATUS */}
+              <span
+                className={`
+                  shrink-0
+                  rounded-full
+                  px-3
+                  py-1
+                  text-[11px]
+                  font-semibold
+                  ${getTaskStatusBadgeClass(
+                    task.status,
+                  )}
+                `}
+              >
+                {getTaskStatusLabel(
+                  task.status,
+                )}
+              </span>
+            </div>
 
-                      ${
-                        task.status === "COMPLETED"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : task.status === "CANCELLED"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-amber-100 text-amber-700"
-                      }
-                    `}
-                  >
-                    {task.status === "COMPLETED"
-                      ? "Selesai"
-                      : task.status === "CANCELLED"
-                        ? "Dibatalkan"
-                        : "Kadaluarsa"}
-                  </div>
+            {/* TITLE */}
+            <h2
+              className="
+                mt-3
+                line-clamp-2
+                text-lg
+                font-black
+                leading-6
+                tracking-tight
+                text-slate-900
+              "
+            >
+              {task.title}
+            </h2>
 
-                  <span
-                    className="
-                      text-xl
-                      text-slate-400
-                    "
-                  >
-                    →
-                  </span>
-                </div>
-              </button>
-            ))}
+            {/* CREATED DATE */}
+            <div
+              className="
+                mt-3
+                flex
+                items-center
+                gap-2
+                text-xs
+                text-slate-500
+              "
+            >
+              <CalendarDays
+                className="
+                  h-4
+                  w-4
+                  shrink-0
+                  text-slate-400
+                "
+              />
+
+              <span>
+                Dibuat{" "}
+                {new Date(
+                  task.created_at,
+                ).toLocaleDateString(
+                  "id-ID",
+                  {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  },
+                )}
+              </span>
+            </div>
+          </div>
+
+          {/* =========================
+              RIGHT CONTENT
+          ========================= */}
+          <div
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-6
+            "
+          >
+            {/* PRICE */}
+            <div className="text-right">
+
+              {task.budget !== null ? (
+                <p
+                  className="
+                    mt-1
+                    whitespace-nowrap
+                    text-xl
+                    font-black
+                    tracking-tight
+                    text-amber-500
+                  "
+                >
+                  Rp
+                  {task.budget.toLocaleString(
+                    "id-ID",
+                  )}
+                </p>
+              ) : (
+                <p
+                  className="
+                    mt-1
+                    whitespace-nowrap
+                    text-sm
+                    font-medium
+                    text-slate-400
+                  "
+                >
+                  Tidak tersedia
+                </p>
+              )}
+            </div>
+
+            {/* DETAIL */}
+            <div
+              className="
+                flex
+                items-center
+                gap-1
+                text-sm
+                font-semibold
+                text-slate-400
+                transition
+                group-hover:text-indigo-600
+              "
+            >
+              <span>
+                Detail
+              </span>
+
+              <ChevronRight
+                className="
+                  h-5
+                  w-5
+                  transition-transform
+                  group-hover:translate-x-0.5
+                "
+                strokeWidth={2}
+              />
+            </div>
+          </div>
         </div>
+      </button>
+    ))}
+</div>
       </div>
     </main>
   );

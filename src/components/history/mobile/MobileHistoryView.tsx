@@ -1,24 +1,23 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronRight } from "lucide-react";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import type { HistoryTask } from "@/features/tasks/types/history";
 
+import {
+  getTaskStatusBadgeClass,
+  getTaskStatusLabel,
+} from "@/features/tasks/utils/task-status";
+
 interface Props {
   tasks: HistoryTask[];
   loading: boolean;
   activeTab: "OWNER" | "HELPER";
-  setActiveTab: (
-    value: "OWNER" | "HELPER",
-  ) => void;
+  setActiveTab: (value: "OWNER" | "HELPER") => void;
   router: {
     push: (href: string) => void;
   };
@@ -31,28 +30,21 @@ export default function MobileHistoryView({
   setActiveTab,
   router,
 }: Props) {
-  const [
-    showMobileNavbar,
-    setShowMobileNavbar,
-  ] = useState(true);
+  const [showMobileNavbar, setShowMobileNavbar] = useState(true);
 
-  const lastScrollYRef =
-    useRef(0);
+  const lastScrollYRef = useRef(0);
 
   /* =========================
       MOBILE NAVBAR SCROLL
   ========================= */
 
   useEffect(() => {
-    lastScrollYRef.current =
-      window.scrollY;
+    lastScrollYRef.current = window.scrollY;
 
     function handleScroll() {
-      const currentScrollY =
-        window.scrollY;
+      const currentScrollY = window.scrollY;
 
-      const previousScrollY =
-        lastScrollYRef.current;
+      const previousScrollY = lastScrollYRef.current;
 
       /*
        * Saat berada dekat bagian atas,
@@ -61,8 +53,7 @@ export default function MobileHistoryView({
       if (currentScrollY <= 16) {
         setShowMobileNavbar(true);
 
-        lastScrollYRef.current =
-          currentScrollY;
+        lastScrollYRef.current = currentScrollY;
 
         return;
       }
@@ -71,14 +62,10 @@ export default function MobileHistoryView({
        * Scroll ke bawah
        * -> sembunyikan navbar.
        */
-      if (
-        currentScrollY >
-        previousScrollY + 8
-      ) {
+      if (currentScrollY > previousScrollY + 8) {
         setShowMobileNavbar(false);
 
-        lastScrollYRef.current =
-          currentScrollY;
+        lastScrollYRef.current = currentScrollY;
 
         return;
       }
@@ -87,30 +74,19 @@ export default function MobileHistoryView({
        * Scroll ke atas
        * -> tampilkan navbar.
        */
-      if (
-        currentScrollY <
-        previousScrollY - 8
-      ) {
+      if (currentScrollY < previousScrollY - 8) {
         setShowMobileNavbar(true);
 
-        lastScrollYRef.current =
-          currentScrollY;
+        lastScrollYRef.current = currentScrollY;
       }
     }
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      },
-    );
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll,
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -131,9 +107,7 @@ export default function MobileHistoryView({
         {/* BACK */}
         <button
           type="button"
-          onClick={() =>
-            router.push("/profile")
-          }
+          onClick={() => router.push("/profile")}
           aria-label="Kembali ke profil"
           className="
             relative
@@ -154,10 +128,7 @@ export default function MobileHistoryView({
             active:scale-95
           "
         >
-          <ArrowLeft
-            className="h-5 w-5"
-            strokeWidth={2}
-          />
+          <ArrowLeft className="h-5 w-5" strokeWidth={2} />
         </button>
 
         {/* TITLE */}
@@ -184,9 +155,7 @@ export default function MobileHistoryView({
       <div className="mt-6 flex gap-3">
         <button
           type="button"
-          onClick={() =>
-            setActiveTab("OWNER")
-          }
+          onClick={() => setActiveTab("OWNER")}
           className={`
             rounded-full
             px-4
@@ -207,9 +176,7 @@ export default function MobileHistoryView({
 
         <button
           type="button"
-          onClick={() =>
-            setActiveTab("HELPER")
-          }
+          onClick={() => setActiveTab("HELPER")}
           className={`
             rounded-full
             px-4
@@ -233,14 +200,11 @@ export default function MobileHistoryView({
           LIST
       ========================= */}
       <div className="mt-6">
-        {loading && (
-          <p>Memuat...</p>
-        )}
+        {loading && <p>Memuat...</p>}
 
-        {!loading &&
-          tasks.length === 0 && (
-            <div
-              className="
+        {!loading && tasks.length === 0 && (
+          <div
+            className="
                 rounded-3xl
                 border
                 border-dashed
@@ -249,114 +213,211 @@ export default function MobileHistoryView({
                 p-8
                 text-center
               "
-            >
-              <p className="text-slate-500">
-                Belum ada riwayat
-              </p>
-            </div>
-          )}
+          >
+            <p className="text-slate-500">Belum ada riwayat</p>
+          </div>
+        )}
 
         {!loading &&
           tasks.map((task) => (
             <button
               key={task.id}
               type="button"
-              onClick={() =>
-                router.push(
-                  `/tasks/${task.id}`,
-                )
-              }
+              onClick={() => router.push(`/tasks/${task.id}`)}
               className="
-                mb-4
-                w-full
-                rounded-3xl
-                border
-                border-slate-200
-                bg-white
-                p-5
-                text-left
-                shadow-sm
-                transition
-                hover:border-indigo-300
-                hover:shadow-md
-              "
+        mb-3
+        block
+        w-full
+        rounded-3xl
+        border
+        border-slate-200
+        bg-white
+        p-4
+        text-left
+        shadow-sm
+        transition-all
+        duration-200
+        hover:border-slate-300
+        hover:shadow-md
+        active:scale-[0.99]
+      "
             >
-              <div className="flex items-start justify-between">
-                <div className="min-w-0">
-                  <h2
-                    className="
-                      text-base
-                      font-bold
-                      text-slate-900
-                    "
-                  >
-                    {task.title}
-                  </h2>
+              {/* CATEGORY + URGENT + STATUS */}
+              <div
+                className="
+    flex
+    items-center
+    justify-between
+    gap-3
+  "
+              >
+                {/* CATEGORY */}
+                <span
+                  className="
+      inline-flex
+      min-w-0
+      max-w-[45%]
+      truncate
+      rounded-full
+      bg-indigo-50
+      px-3
+      py-1
+      text-[10px]
+      font-semibold
+      text-indigo-600
+    "
+                >
+                  {task.category || "Lainnya"}
+                </span>
 
-                  <p
-                    className="
-                      mt-1
-                      text-sm
-                      text-slate-500
-                    "
-                  >
-                    {task.category}
-                  </p>
-                </div>
+                {/* URGENT + STATUS */}
+                <div
+                  className="
+      flex
+      shrink-0
+      items-center
+      gap-1.5
+    "
+                >
+                  {task.is_urgent && (
+                    <span
+                      className="
+          rounded-full
+          bg-red-100
+          px-2
+          py-1
+          text-[10px]
+          font-bold
+          text-red-600
+        "
+                    >
+                      🔥 Mendesak
+                    </span>
+                  )}
 
-                <div className="flex shrink-0 items-center gap-2">
                   <span
-                    className="
-                      text-lg
-                      text-slate-400
-                    "
-                  >
-                    →
-                  </span>
-
-                  <div
                     className={`
-                      rounded-full
-                      px-3
-                      py-1
-                      text-xs
-                      font-bold
-
-                      ${
-                        task.status ===
-                        "COMPLETED"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : task.status ===
-                              "CANCELLED"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-amber-100 text-amber-700"
-                      }
-                    `}
+        rounded-full
+        px-3
+        py-1
+        text-[10px]
+        font-semibold
+        ${getTaskStatusBadgeClass(task.status)}
+      `}
                   >
-                    {task.status ===
-                    "COMPLETED"
-                      ? "Selesai"
-                      : task.status ===
-                          "CANCELLED"
-                        ? "Dibatalkan"
-                        : "Kadaluarsa"}
-                  </div>
+                    {getTaskStatusLabel(task.status)}
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <p
+              {/* =========================
+          TITLE
+      ========================= */}
+              <h2
+                className="
+          mt-3
+          line-clamp-2
+          text-base
+          font-black
+          leading-5
+          tracking-tight
+          text-slate-900
+        "
+              >
+                {task.title}
+              </h2>
+
+              {/* =========================
+          CREATED DATE
+      ========================= */}
+              <div
+                className="
+          mt-3
+          flex
+          items-center
+          gap-1.5
+          text-[11px]
+          text-slate-500
+        "
+              >
+                <CalendarDays
                   className="
-                    text-lg
-                    font-black
-                    text-indigo-600
-                  "
-                >
-                  Rp
-                  {task.budget?.toLocaleString(
-                    "id-ID",
+            h-3.5
+            w-3.5
+            shrink-0
+            text-slate-400
+          "
+                />
+
+                <span>
+                  Dibuat{" "}
+                  {new Date(task.created_at).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+
+              {/* =========================
+          BOTTOM
+      ========================= */}
+              <div
+                className="
+          mt-4
+          flex
+          items-center
+          justify-between
+          gap-4
+          border-t
+          border-slate-100
+          pt-3
+        "
+              >
+                {/* PRICE */}
+                <div className="min-w-0">
+                  {task.budget !== null ? (
+                    <p
+                      className="
+                truncate
+                text-base
+                font-black
+                tracking-tight
+                text-amber-500
+              "
+                    >
+                      Rp
+                      {task.budget.toLocaleString("id-ID")}
+                    </p>
+                  ) : (
+                    <p
+                      className="
+                text-xs
+                font-medium
+                text-slate-400
+              "
+                    >
+                      Budget tidak tersedia
+                    </p>
                   )}
-                </p>
+                </div>
+
+                {/* DETAIL */}
+                <div
+                  className="
+            flex
+            shrink-0
+            items-center
+            gap-1
+            text-xs
+            font-semibold
+            text-slate-400
+          "
+                >
+                  <span>Detail</span>
+
+                  <ChevronRight className="h-4 w-4" strokeWidth={2} />
+                </div>
               </div>
             </button>
           ))}
@@ -365,9 +426,7 @@ export default function MobileHistoryView({
       {/* =========================
           MOBILE BOTTOM NAVBAR
       ========================= */}
-      {showMobileNavbar && (
-        <MobileBottomNavbar />
-      )}
+      {showMobileNavbar && <MobileBottomNavbar />}
     </main>
   );
 }
