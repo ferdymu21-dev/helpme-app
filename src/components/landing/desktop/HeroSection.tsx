@@ -356,7 +356,7 @@ export default function HeroSection() {
                       text-slate-400
                     "
                   >
-                    Contoh tampilan task
+                    Temukan task terdekat
                   </p>
                 </div>
 

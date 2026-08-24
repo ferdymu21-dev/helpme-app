@@ -291,7 +291,7 @@ export default function MobileHero() {
                 text-slate-400
               "
             >
-              Contoh tampilan HelpMe
+              Temukan task terdekat
             </p>
           </div>
 
