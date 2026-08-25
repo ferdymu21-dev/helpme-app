@@ -1,211 +1,647 @@
 "use client";
 
 import {
-    useState,
+  FormEvent,
+  useState,
 } from "react";
 
-import {
-    useRouter,
-} from "next/navigation";
+import Link from "next/link";
 
 import {
-    supabase,
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  LockKeyhole,
+} from "lucide-react";
+
+import AuthShell from "@/features/auth/components/AuthShell";
+
+import {
+  supabase,
 } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
+  const [
+    password,
+    setPassword,
+  ] = useState("");
 
-    const router =
-        useRouter();
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
 
-    const [
-        password,
-        setPassword,
-    ] = useState("");
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
 
-    const [
-        confirmPassword,
-        setConfirmPassword,
-    ] = useState("");
+  const [
+    showConfirmPassword,
+    setShowConfirmPassword,
+  ] = useState(false);
 
-    const [
-        loading,
-        setLoading,
-    ] = useState(false);
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
 
-    async function handleResetPassword() {
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
-        if (
-            password !==
-            confirmPassword
-        ) {
+  const [
+    passwordError,
+    setPasswordError,
+  ] = useState("");
 
-            alert(
-                "Konfirmasi password tidak cocok"
-            );
+  const [
+    confirmPasswordError,
+    setConfirmPasswordError,
+  ] = useState("");
 
-            return;
+  const [
+    success,
+    setSuccess,
+  ] = useState(false);
 
-        }
+  async function handleResetPassword(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
 
-        if (
-            password.length < 6
-        ) {
+    if (loading) return;
 
-            alert(
-                "Password minimal 6 karakter"
-            );
+    setErrorMessage("");
+    setPasswordError("");
+    setConfirmPasswordError("");
 
-            return;
+    let hasError = false;
 
-        }
+    if (password.length < 8) {
+      setPasswordError(
+        "Kata sandi minimal 8 karakter.",
+      );
 
-        try {
-
-            setLoading(true);
-
-            const {
-                error,
-            } = await supabase.auth.updateUser({
-
-                password,
-
-            });
-
-            if (error) {
-
-                alert(error.message);
-
-                return;
-
-            }
-
-            alert(
-                "Password berhasil diperbarui"
-            );
-
-            router.push("/login");
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Gagal reset password"
-            );
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+      hasError = true;
     }
 
-    return (
+    if (!confirmPassword) {
+      setConfirmPasswordError(
+        "Konfirmasi kata sandi wajib diisi.",
+      );
 
-        <main
+      hasError = true;
+    } else if (
+      password !==
+      confirmPassword
+    ) {
+      setConfirmPasswordError(
+        "Konfirmasi kata sandi tidak cocok.",
+      );
+
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const {
+        error,
+      } =
+        await supabase.auth.updateUser({
+          password,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setSuccess(true);
+    } catch (error: unknown) {
+      const rawMessage =
+        error instanceof Error
+          ? error.message
+          : "";
+
+      console.error(error);
+
+      const normalizedMessage =
+        rawMessage.toLowerCase();
+
+      if (
+        normalizedMessage.includes(
+          "auth session missing",
+        ) ||
+        normalizedMessage.includes(
+          "session",
+        )
+      ) {
+        setErrorMessage(
+          "Tautan reset kata sandi tidak valid atau sesi Anda telah berakhir. Silakan minta tautan reset baru.",
+        );
+
+        return;
+      }
+
+      setErrorMessage(
+        rawMessage ||
+          "Gagal memperbarui kata sandi. Silakan coba kembali.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <AuthShell
+        title="Kata sandi berhasil diperbarui"
+        description="Kata sandi baru Anda sudah tersimpan dan akun dapat digunakan kembali."
+      >
+        <div
+          className="
+            rounded-3xl
+            border
+            border-emerald-200
+            bg-emerald-50/70
+            p-6
+            text-center
+          "
+        >
+          <div
             className="
+              mx-auto
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              rounded-2xl
+              bg-emerald-100
+              text-emerald-600
+            "
+          >
+            <CheckCircle2
+              className="h-7 w-7"
+              aria-hidden="true"
+            />
+          </div>
+
+          <h3
+            className="
+              mt-5
+              text-xl
+              font-bold
+              text-slate-950
+            "
+          >
+            Kata sandi baru sudah aktif
+          </h3>
+
+          <p
+            className="
+              mt-3
+              text-sm
+              leading-6
+              text-slate-600
+            "
+          >
+            Anda sekarang dapat melanjutkan
+            menggunakan akun HelpMe dengan
+            kata sandi baru.
+          </p>
+        </div>
+
+        <Link
+          href="/home"
+          className="
+            mt-6
+            flex
+            w-full
+            items-center
+            justify-center
+            rounded-2xl
+            bg-primary-600
+            px-5
+            py-3.5
+            text-sm
+            font-bold
+            text-white
+            shadow-sm
+            transition
+            hover:bg-primary-500
+            focus:outline-none
+            focus:ring-4
+            focus:ring-primary-100
+            sm:text-base
+          "
+        >
+          Lanjut ke HelpMe
+        </Link>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Buat kata sandi baru"
+      description="Masukkan kata sandi baru untuk mengamankan dan memulihkan akses ke akun HelpMe Anda."
+    >
+      <form
+        onSubmit={
+          handleResetPassword
+        }
+        className="space-y-5"
+        noValidate
+      >
+        {errorMessage && (
+          <div
+            role="alert"
+            className="
+              flex
+              gap-3
+              rounded-2xl
+              border
+              border-red-200
+              bg-red-50
+              px-4
+              py-3
+              text-sm
+              leading-6
+              text-red-700
+            "
+          >
+            <AlertCircle
+              className="
+                mt-0.5
+                h-5
+                w-5
+                shrink-0
+              "
+              aria-hidden="true"
+            />
+
+            <span>
+              {errorMessage}
+            </span>
+          </div>
+        )}
+
+        {/* NEW PASSWORD */}
+        <div>
+          <label
+            htmlFor="reset-password"
+            className="
+              mb-2
+              block
+              text-sm
+              font-semibold
+              text-slate-700
+            "
+          >
+            Kata sandi baru
+          </label>
+
+          <div className="relative">
+            <LockKeyhole
+              className="
+                pointer-events-none
+                absolute
+                left-4
+                top-1/2
+                h-5
+                w-5
+                -translate-y-1/2
+                text-slate-400
+              "
+              aria-hidden="true"
+            />
+
+            <input
+              id="reset-password"
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              value={password}
+              onChange={(event) => {
+                setPassword(
+                  event.target.value,
+                );
+
+                if (passwordError) {
+                  setPasswordError("");
+                }
+              }}
+              placeholder="Minimal 8 karakter"
+              autoComplete="new-password"
+              required
+              disabled={loading}
+              aria-invalid={
+                Boolean(
+                  passwordError,
+                )
+              }
+              className="
+                w-full
+                rounded-2xl
+                border
+                border-slate-200
+                bg-slate-50
+                py-3.5
+                pl-12
+                pr-12
+                text-sm
+                text-slate-900
+                outline-none
+                transition
+                placeholder:text-slate-400
+                hover:border-slate-300
+                focus:border-primary-500
+                focus:bg-white
+                focus:ring-4
+                focus:ring-primary-100
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+                sm:text-base
+              "
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(
+                  (current) =>
+                    !current,
+                )
+              }
+              disabled={loading}
+              aria-label={
+                showPassword
+                  ? "Sembunyikan kata sandi"
+                  : "Tampilkan kata sandi"
+              }
+              className="
+                absolute
+                right-3
+                top-1/2
                 flex
-                min-h-screen
+                h-9
+                w-9
+                -translate-y-1/2
                 items-center
                 justify-center
-                bg-slate-100
-            "
-        >
-
-            <div
-                className="
-                    w-full
-                    max-w-md
-                    rounded-3xl
-                    bg-white
-                    p-8
-                    shadow-lg
-                "
+                rounded-xl
+                text-slate-400
+                transition
+                hover:bg-slate-100
+                hover:text-slate-700
+                focus:outline-none
+                focus:ring-2
+                focus:ring-primary-100
+                disabled:opacity-50
+              "
             >
-
-                <h1
-                    className="
-                        text-center
-                        text-3xl
-                        font-black
-                    "
-                >
-                    Reset Password
-                </h1>
-
-                <p
-                    className="
-                        mt-2
-                        text-center
-                        text-slate-500
-                    "
-                >
-                    Masukkan password baru
-                </p>
-
-                <input
-                    type="password"
-                    placeholder="Password Baru"
-                    value={password}
-                    onChange={(e) =>
-                        setPassword(
-                            e.target.value
-                        )
-                    }
-                    className="
-                        mt-6
-                        w-full
-                        rounded-xl
-                        border
-                        p-3
-                    "
+              {showPassword ? (
+                <EyeOff
+                  className="h-5 w-5"
+                  aria-hidden="true"
                 />
-
-                <input
-                    type="password"
-                    placeholder="Konfirmasi Password"
-                    value={confirmPassword}
-                    onChange={(e) =>
-                        setConfirmPassword(
-                            e.target.value
-                        )
-                    }
-                    className="
-                        mt-4
-                        w-full
-                        rounded-xl
-                        border
-                        p-3
-                    "
+              ) : (
+                <Eye
+                  className="h-5 w-5"
+                  aria-hidden="true"
                 />
+              )}
+            </button>
+          </div>
 
-                <button
-                    onClick={
-                        handleResetPassword
-                    }
-                    disabled={loading}
-                    className="
-                        mt-6
-                        w-full
-                        rounded-xl
-                        bg-slate-900
-                        py-3
-                        font-semibold
-                        text-white
-                    "
-                >
-                    {
-                        loading
-                            ? "Menyimpan..."
-                            : "Simpan Password Baru"
-                    }
-                </button>
+          {passwordError ? (
+            <p
+              className="
+                mt-2
+                text-sm
+                text-red-600
+              "
+            >
+              {passwordError}
+            </p>
+          ) : (
+            <p
+              className="
+                mt-2
+                text-xs
+                text-slate-400
+              "
+            >
+              Gunakan minimal 8 karakter.
+            </p>
+          )}
+        </div>
 
-            </div>
+        {/* CONFIRM PASSWORD */}
+        <div>
+          <label
+            htmlFor="reset-confirm-password"
+            className="
+              mb-2
+              block
+              text-sm
+              font-semibold
+              text-slate-700
+            "
+          >
+            Konfirmasi kata sandi
+          </label>
 
-        </main>
+          <div className="relative">
+            <LockKeyhole
+              className="
+                pointer-events-none
+                absolute
+                left-4
+                top-1/2
+                h-5
+                w-5
+                -translate-y-1/2
+                text-slate-400
+              "
+              aria-hidden="true"
+            />
 
-    );
+            <input
+              id="reset-confirm-password"
+              type={
+                showConfirmPassword
+                  ? "text"
+                  : "password"
+              }
+              value={
+                confirmPassword
+              }
+              onChange={(event) => {
+                setConfirmPassword(
+                  event.target.value,
+                );
 
+                if (
+                  confirmPasswordError
+                ) {
+                  setConfirmPasswordError(
+                    "",
+                  );
+                }
+              }}
+              placeholder="Ulangi kata sandi baru"
+              autoComplete="new-password"
+              required
+              disabled={loading}
+              aria-invalid={
+                Boolean(
+                  confirmPasswordError,
+                )
+              }
+              className="
+                w-full
+                rounded-2xl
+                border
+                border-slate-200
+                bg-slate-50
+                py-3.5
+                pl-12
+                pr-12
+                text-sm
+                text-slate-900
+                outline-none
+                transition
+                placeholder:text-slate-400
+                hover:border-slate-300
+                focus:border-primary-500
+                focus:bg-white
+                focus:ring-4
+                focus:ring-primary-100
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+                sm:text-base
+              "
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowConfirmPassword(
+                  (current) =>
+                    !current,
+                )
+              }
+              disabled={loading}
+              aria-label={
+                showConfirmPassword
+                  ? "Sembunyikan konfirmasi kata sandi"
+                  : "Tampilkan konfirmasi kata sandi"
+              }
+              className="
+                absolute
+                right-3
+                top-1/2
+                flex
+                h-9
+                w-9
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-xl
+                text-slate-400
+                transition
+                hover:bg-slate-100
+                hover:text-slate-700
+                focus:outline-none
+                focus:ring-2
+                focus:ring-primary-100
+                disabled:opacity-50
+              "
+            >
+              {showConfirmPassword ? (
+                <EyeOff
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Eye
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          {confirmPasswordError && (
+            <p
+              className="
+                mt-2
+                text-sm
+                text-red-600
+              "
+            >
+              {
+                confirmPasswordError
+              }
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="
+            flex
+            w-full
+            items-center
+            justify-center
+            gap-2
+            rounded-2xl
+            bg-primary-600
+            px-5
+            py-3.5
+            text-sm
+            font-bold
+            text-white
+            shadow-sm
+            transition
+            hover:bg-primary-500
+            focus:outline-none
+            focus:ring-4
+            focus:ring-primary-100
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+            sm:text-base
+          "
+        >
+          {loading && (
+            <LoaderCircle
+              className="
+                h-5
+                w-5
+                animate-spin
+              "
+              aria-hidden="true"
+            />
+          )}
+
+          {loading
+            ? "Menyimpan..."
+            : "Simpan kata sandi baru"}
+        </button>
+      </form>
+    </AuthShell>
+  );
 }

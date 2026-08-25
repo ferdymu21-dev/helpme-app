@@ -1,56 +1,70 @@
-import PublicLayout from "@/components/layout/PublicLayout";
+import Link from "next/link";
 
-import BrandLogo from "@/components/branding/BrandLogo";
+import AuthShell from "@/features/auth/components/AuthShell";
+
+import GoogleAuthButton from "@/features/auth/components/GoogleAuthButton";
 
 import RegisterForm from "@/features/auth/components/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <PublicLayout>
+    <AuthShell
+      title="Bergabung dengan HelpMe"
+      description="Buat akun untuk mencari bantuan atau mendapatkan penghasilan tambahan dengan menjadi Helper."
+    >
+      <RegisterForm />
+
       <div
         className="
-          w-full
-          rounded-3xl
-          bg-white
-          p-8
-          shadow-sm
+          my-7
+          flex
+          items-center
+          gap-4
         "
       >
-        {/* BRAND */}
-        <div className="mb-8 text-center">
-          <div className="flex justify-center">
-            <BrandLogo />
-          </div>
+        <div className="h-px flex-1 bg-slate-200" />
 
-        {/* TITLE */}
-        <div className="mb-8 text-center">
-          <h2 className="text-lg font-bold text-slate-900">
-            Bergabung dengan HelpMe
-          </h2>
-          <p className="mt-3 text-slate-500">
-            Mulai cari bantuan atau dapatkan penghasilan tambahan.
-          </p>
-        </div>
+        <span
+          className="
+            text-xs
+            font-medium
+            uppercase
+            tracking-[0.16em]
+            text-slate-400
+          "
+        >
+          atau
+        </span>
 
-        {/* FORM */}
-        <RegisterForm />
-
-        {/* FOOTER */}
-        <p className="mt-8 text-center text-sm text-slate-500">
-          Sudah punya akun?
-          <a
-            href="/login"
-            className="
-              ml-1
-              font-medium
-              text-indigo-600
-            "
-          >
-            Login
-          </a>
-        </p>
+        <div className="h-px flex-1 bg-slate-200" />
       </div>
-    </div>
-    </PublicLayout>
+
+      <GoogleAuthButton label="Daftar dengan Google" />
+
+      <p
+        className="
+          mt-7
+          text-center
+          text-sm
+          leading-6
+          text-slate-500
+        "
+      >
+        Sudah punya akun?
+
+        <Link
+          href="/login"
+          className="
+            ml-1
+            font-bold
+            text-primary-600
+            transition
+            hover:text-primary-500
+          "
+        >
+          Masuk sekarang
+        </Link>
+      </p>
+    </AuthShell>
   );
 }
