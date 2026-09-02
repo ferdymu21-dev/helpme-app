@@ -1,10 +1,20 @@
 "use client";
 
-import Link from "next/link";
+import {
+  CampaignStatus,
+} from "../constants/campaign-status";
 
-import { CampaignStatus } from "../constants/campaign-status";
+import {
+  CampaignStatusConfig,
+} from "../constants/campaign-status-config";
 
-import { CampaignTarget } from "../constants/campaign-target";
+import {
+  CampaignTarget,
+} from "../constants/campaign-target";
+
+import {
+  formatCampaignTarget,
+} from "../utils/campaign-display";
 
 interface Props {
   search: string;
@@ -13,122 +23,200 @@ interface Props {
 
   target: string;
 
-  onSearchChange(value: string): void;
+  totalCount: number;
 
-  onStatusChange(value: string): void;
+  filteredCount: number;
 
-  onTargetChange(value: string): void;
+  onSearchChange(
+    value: string,
+  ): void;
+
+  onStatusChange(
+    value: string,
+  ): void;
+
+  onTargetChange(
+    value: string,
+  ): void;
+
+  onReset(): void;
 }
 
 export default function CampaignToolbar({
   search,
-
   status,
-
   target,
-
+  totalCount,
+  filteredCount,
   onSearchChange,
-
   onStatusChange,
-
   onTargetChange,
+  onReset,
 }: Props) {
+  const hasFilter =
+    search.length > 0 ||
+    status.length > 0 ||
+    target.length > 0;
+
   return (
-    <div
-      className="
-                mb-8
-                flex
-                flex-col
-                gap-4
-                rounded-3xl
-                border
-                border-slate-200
-                bg-white
-                p-5
-                lg:flex-row
-                lg:items-center
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_190px_220px]">
+        <div>
+          <label
+            htmlFor="campaign-search"
+            className="sr-only"
+          >
+            Cari campaign
+          </label>
+
+          <input
+            id="campaign-search"
+            type="search"
+            value={search}
+            placeholder="Cari judul atau pesan campaign..."
+            onChange={(
+              event,
+            ) =>
+              onSearchChange(
+                event.target
+                  .value,
+              )
+            }
+            className="
+              h-12
+              w-full
+              rounded-xl
+              border
+              border-slate-200
+              bg-slate-50
+              px-4
+              text-sm
+              text-slate-900
+              outline-none
+              transition
+              placeholder:text-slate-400
+              focus:border-indigo-400
+              focus:bg-white
+              focus:ring-4
+              focus:ring-indigo-50
             "
-    >
-      <input
-        type="text"
-        value={search}
-        placeholder="Cari campaign..."
-        onChange={(event) => onSearchChange(event.target.value)}
-        className="
-                    h-11
-                    flex-1
-                    rounded-xl
-                    border
-                    border-slate-300
-                    px-4
-                    text-sm
-                    outline-none
-                    transition
-                    focus:border-indigo-500
-                "
-      />
+          />
+        </div>
 
-      <select
-        value={status}
-        onChange={(event) => onStatusChange(event.target.value)}
-        className="
-                    h-11
-                    rounded-xl
-                    border
-                    border-slate-300
-                    px-4
-                    text-sm
-                "
-      >
-        <option value="">Semua Status</option>
-
-        {Object.values(CampaignStatus).map((item) => (
-          <option key={item} value={item}>
-            {item}
+        <select
+          value={status}
+          onChange={(
+            event,
+          ) =>
+            onStatusChange(
+              event.target
+                .value,
+            )
+          }
+          className="
+            h-12
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
+            px-4
+            text-sm
+            font-medium
+            text-slate-700
+            outline-none
+            focus:border-indigo-400
+            focus:ring-4
+            focus:ring-indigo-50
+          "
+        >
+          <option value="">
+            Semua Status
           </option>
-        ))}
-      </select>
 
-      <select
-        value={target}
-        onChange={(event) => onTargetChange(event.target.value)}
-        className="
-                    h-11
-                    rounded-xl
-                    border
-                    border-slate-300
-                    px-4
-                    text-sm
-                "
-      >
-        <option value="">Semua Target</option>
+          {Object.values(
+            CampaignStatus,
+          ).map((item) => (
+            <option
+              key={item}
+              value={item}
+            >
+              {
+                CampaignStatusConfig[
+                  item
+                ].label
+              }
+            </option>
+          ))}
+        </select>
 
-        {Object.values(CampaignTarget).map((item) => (
-          <option key={item} value={item}>
-            {item}
+        <select
+          value={target}
+          onChange={(
+            event,
+          ) =>
+            onTargetChange(
+              event.target
+                .value,
+            )
+          }
+          className="
+            h-12
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
+            px-4
+            text-sm
+            font-medium
+            text-slate-700
+            outline-none
+            focus:border-indigo-400
+            focus:ring-4
+            focus:ring-indigo-50
+          "
+        >
+          <option value="">
+            Semua Target
           </option>
-        ))}
-      </select>
 
-      <Link
-        href="/admin/campaigns/new"
-        className="
-                    inline-flex
-                    h-11
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-indigo-600
-                    px-5
-                    text-sm
-                    font-semibold
-                    text-white
-                    transition
-                    hover:bg-indigo-700
-                "
-      >
-        + Create Campaign
-      </Link>
-    </div>
+          {Object.values(
+            CampaignTarget,
+          ).map((item) => (
+            <option
+              key={item}
+              value={item}
+            >
+              {formatCampaignTarget(
+                item,
+              )}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-500">
+          Menampilkan{" "}
+          <span className="font-bold text-slate-900">
+            {filteredCount}
+          </span>{" "}
+          dari{" "}
+          <span className="font-bold text-slate-900">
+            {totalCount}
+          </span>{" "}
+          campaign
+        </p>
+
+        {hasFilter && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="w-fit text-sm font-bold text-indigo-600 transition hover:text-indigo-700"
+          >
+            Reset filter
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

@@ -1,67 +1,55 @@
 import {
-    CampaignStatus,
+  CampaignStatus,
 } from "./campaign-status";
 
 export const CampaignStatusConfig = {
+  [CampaignStatus.DRAFT]: {
+    label: "Draft",
 
-    [CampaignStatus.DRAFT]: {
+    color:
+      "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
 
-        label: "Draft",
+    dot:
+      "bg-slate-500",
+  },
 
-        color:
-            "bg-slate-100 text-slate-700",
+  [CampaignStatus.SCHEDULED]: {
+    label: "Terjadwal",
 
-        dot:
-            "bg-slate-500",
+    color:
+      "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
 
-    },
+    dot:
+      "bg-blue-500",
+  },
 
-    [CampaignStatus.SCHEDULED]: {
+  [CampaignStatus.PUBLISHED]: {
+    label: "Dipublikasikan",
 
-        label: "Scheduled",
+    color:
+      "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
 
-        color:
-            "bg-blue-100 text-blue-700",
+    dot:
+      "bg-emerald-500",
+  },
 
-        dot:
-            "bg-blue-500",
+  [CampaignStatus.FINISHED]: {
+    label: "Selesai",
 
-    },
+    color:
+      "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200",
 
-    [CampaignStatus.PUBLISHED]: {
+    dot:
+      "bg-violet-500",
+  },
 
-        label: "Published",
+  [CampaignStatus.CANCELLED]: {
+    label: "Dibatalkan",
 
-        color:
-            "bg-green-100 text-green-700",
+    color:
+      "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
 
-        dot:
-            "bg-green-500",
-
-    },
-
-    [CampaignStatus.FINISHED]: {
-
-        label: "Finished",
-
-        color:
-            "bg-purple-100 text-purple-700",
-
-        dot:
-            "bg-purple-500",
-
-    },
-
-    [CampaignStatus.CANCELLED]: {
-
-        label: "Cancelled",
-
-        color:
-            "bg-red-100 text-red-700",
-
-        dot:
-            "bg-red-500",
-
-    },
-
+    dot:
+      "bg-rose-500",
+  },
 } as const;

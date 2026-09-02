@@ -25,3 +25,5 @@ export * from "./hasCampaignEvent.repository";
 export * from "./recordCampaignOpened.repository";
 
 export * from "./recordCampaignClick.repository";
+
+export * from "./recordCampaignEngagementEvent.repository";

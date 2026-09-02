@@ -1,5 +1,13 @@
-import { getCampaignsRepository } from "../repositories";
+import {
+  requireAdmin,
+} from "@/features/admin/services/admin-auth.service";
+
+import {
+  getCampaignsRepository,
+} from "../repositories";
 
 export async function getCampaignsService() {
-  return await getCampaignsRepository();
+  await requireAdmin();
+
+  return getCampaignsRepository();
 }

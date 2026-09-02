@@ -1,31 +1,49 @@
-import type { NotificationCampaign } from "../types/campaign.types";
+import type {
+  NotificationCampaign,
+} from "../types/campaign.types";
 
-import { resolveCampaignRecipients } from "../resolvers/resolveCampaignRecipients";
+import {
+  resolveCampaignRecipients,
+} from "../resolvers/resolveCampaignRecipients";
 
-import { dispatchCampaignNotification } from "../dispatchers";
+import {
+  dispatchCampaignNotification,
+} from "../dispatchers";
 
-import { incrementCampaignStatistic } from "../repositories";
+import {
+  syncCampaignSentStatisticRepository,
+} from "../repositories/syncCampaignSentStatistic.repository";
 
-export async function broadcastCampaignService(campaign: NotificationCampaign) {
-  const recipients = await resolveCampaignRecipients(campaign);
+export async function broadcastCampaignService(
+  campaign: NotificationCampaign,
+) {
+  const recipients =
+    await resolveCampaignRecipients(
+      campaign,
+    );
 
-  if (recipients.length === 0) {
-    return;
-  }
-
-  for (const recipient of recipients) {
+  for (
+    const recipient
+    of recipients
+  ) {
     await dispatchCampaignNotification({
       campaign,
 
-      userId: recipient.id,
+      userId:
+        recipient.id,
     });
   }
 
-  await incrementCampaignStatistic(
+  /*
+   * Jangan increment berdasarkan
+   * recipients.length karena retry
+   * dapat mempunyai campuran
+   * notification existing + baru.
+   *
+   * Reconcile dengan canonical
+   * notification rows.
+   */
+  await syncCampaignSentStatisticRepository(
     campaign.id,
-
-    {
-      totalSent: recipients.length,
-    },
   );
 }

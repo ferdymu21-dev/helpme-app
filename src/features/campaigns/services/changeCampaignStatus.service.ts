@@ -16,6 +16,14 @@ export async function changeCampaignStatusService({
 }: ChangeCampaignStatusPayload) {
   const campaign = await getCampaignByIdRepository(campaignId);
 
+  /*
+   * Same-target retry merupakan
+   * idempotent success.
+   */
+  if (campaign.status === status) {
+    return;
+  }
+
   validateCampaignTransition(
     campaign.status,
 
@@ -28,11 +36,32 @@ export async function changeCampaignStatusService({
     values.published_at = new Date().toISOString();
   }
 
-  await updateCampaignStatusRepository(
+  const updated = await updateCampaignStatusRepository(
     campaignId,
 
     status,
 
     values,
+
+    campaign.status,
   );
+
+  if (updated) {
+    return;
+  }
+
+  /*
+   * Status berubah setelah SELECT.
+   *
+   * Jika request lain sudah mencapai
+   * target yang sama, operasi tetap
+   * dianggap sukses.
+   */
+  const latestCampaign = await getCampaignByIdRepository(campaignId);
+
+  if (latestCampaign.status === status) {
+    return;
+  }
+
+  throw new Error("Status campaign telah berubah. Silakan coba lagi.");
 }

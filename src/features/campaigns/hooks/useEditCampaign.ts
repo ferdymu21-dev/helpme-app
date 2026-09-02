@@ -8,6 +8,8 @@ import { updateCampaignAction } from "../actions";
 
 import { mapCampaignToAction } from "../mappers/mapCampaignToAction";
 
+import { isoToLocalDateTime, localDateTimeToIso } from "../utils/campaign-date";
+
 import type {
   NotificationCampaign,
   CreateCampaignPayload,
@@ -51,9 +53,9 @@ export function useEditCampaign(
 
     targetValue: campaign.target_value ?? "",
 
-    scheduledAt: campaign.scheduled_at ?? "",
+    scheduledAt: isoToLocalDateTime(campaign.scheduled_at),
 
-    expiresAt: campaign.expires_at ?? "",
+    expiresAt: isoToLocalDateTime(campaign.expires_at),
   });
 
   function setField<K extends keyof CreateCampaignPayload>(
@@ -88,9 +90,9 @@ export function useEditCampaign(
 
       targetValue: campaign.target_value ?? "",
 
-      scheduledAt: campaign.scheduled_at ?? "",
+      scheduledAt: isoToLocalDateTime(campaign.scheduled_at),
 
-      expiresAt: campaign.expires_at ?? "",
+      expiresAt: isoToLocalDateTime(campaign.expires_at),
     });
 
     setErrors({});
@@ -137,9 +139,13 @@ export function useEditCampaign(
 
         targetValue: form.targetValue,
 
-        scheduledAt: form.scheduledAt || undefined,
+        scheduledAt: form.scheduledAt
+          ? localDateTimeToIso(form.scheduledAt)
+          : undefined,
 
-        expiresAt: form.expiresAt || undefined,
+        expiresAt: form.expiresAt
+          ? localDateTimeToIso(form.expiresAt)
+          : undefined,
       });
 
       router.push(`/admin/campaigns/${campaign.id}`);

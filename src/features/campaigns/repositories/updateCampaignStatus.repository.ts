@@ -7,12 +7,12 @@ export async function updateCampaignStatusRepository(
 
   status: CampaignStatusValue,
 
-  values: Record<string, unknown> = {},
-) {
-  const { error } = await adminSupabase
+  values: Record<string, unknown>,
 
+  expectedStatus: CampaignStatusValue,
+): Promise<boolean> {
+  const { data, error } = await adminSupabase
     .from("notification_campaigns")
-
     .update({
       status,
 
@@ -20,10 +20,14 @@ export async function updateCampaignStatusRepository(
 
       ...values,
     })
-
-    .eq("id", campaignId);
+    .eq("id", campaignId)
+    .eq("status", expectedStatus)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
+
+  return Boolean(data);
 }

@@ -1,5 +1,7 @@
 import { adminSupabase } from "@/lib/supabase/admin";
 
+import { CampaignEvent } from "../constants/campaign-event";
+
 import type { CreateCampaignEventPayload } from "../types/campaign-event.types";
 
 export async function createCampaignEventRepository(
@@ -16,6 +18,18 @@ export async function createCampaignEventRepository(
 
       event_type: payload.eventType,
     });
+
+  /*
+   * SENT merupakan delivery marker.
+   *
+   * Retry scheduler terhadap
+   * notification yang sama harus
+   * dianggap sukses, bukan membuat
+   * SENT kedua.
+   */
+  if (error?.code === "23505" && payload.eventType === CampaignEvent.SENT) {
+    return;
+  }
 
   if (error) {
     throw error;

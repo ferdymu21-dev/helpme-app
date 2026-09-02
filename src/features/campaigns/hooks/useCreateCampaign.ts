@@ -18,6 +18,8 @@ import type { CreateCampaignPayload } from "../types/campaign.types";
 
 import { validateCampaignForm } from "../forms/campaign-form.validator";
 
+import { localDateTimeToIso } from "../utils/campaign-date";
+
 import type { CampaignFormErrors } from "../forms/campaign-form.types";
 
 export function useCreateCampaign() {
@@ -163,9 +165,56 @@ Kosong → undefined
         payload.expiresAt = undefined;
       }
 
+      /*
+---------------------------------------
+Schedule hanya boleh mengirim scheduledAt
+---------------------------------------
+*/
+
+      if (payload.action !== CampaignAction.SCHEDULE) {
+        payload.scheduledAt = undefined;
+      }
+
+      /*
+---------------------------------------
+datetime-local browser
+→ UTC ISO
+---------------------------------------
+*/
+
+      if (payload.scheduledAt) {
+        payload.scheduledAt = localDateTimeToIso(payload.scheduledAt);
+      }
+
+      if (payload.expiresAt) {
+        payload.expiresAt = localDateTimeToIso(payload.expiresAt);
+      }
+
+      /*
+---------------------------------------
+Kosong → undefined
+---------------------------------------
+*/
+
+      if (!payload.targetValue) {
+        payload.targetValue = undefined;
+      }
+
+      if (!payload.imageUrl) {
+        payload.imageUrl = undefined;
+      }
+
+      if (!payload.redirectUrl) {
+        payload.redirectUrl = undefined;
+      }
+
+      if (!payload.expiresAt) {
+        payload.expiresAt = undefined;
+      }
+
       await createCampaignAction(payload);
 
-setSuccess(true);
+      setSuccess(true);
 
       setSuccessMessage("Campaign berhasil dibuat.");
     } catch (error) {
