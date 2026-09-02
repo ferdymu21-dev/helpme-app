@@ -1,88 +1,69 @@
 import { adminSupabase } from "@/lib/supabase/admin";
 
 export async function getDonationTransactions(
+  userId: string,
 
-    userId: string,
+  cursor?: string,
 
-    cursor?: string,
-
-    limit: number = 10,
-
+  limit: number = 10,
 ) {
+  let query = adminSupabase
 
-    let query =
+    .from("support_donations")
 
-        adminSupabase
-
-            .from("support_donations")
-
-            .select(`
+    .select(
+      `
             id,
             amount,
             payment_status,
             payment_method,
             midtrans_order_id,
             created_at
-        `)
+        `,
+    )
 
-            .eq("user_id", userId)
+    .eq("user_id", userId)
 
-            .order(
-                "created_at",
-                {
-                    ascending: false,
-                },
-            )
+    .order("created_at", {
+      ascending: false,
+    })
 
-            .limit(limit);
+    .limit(limit);
 
-    if (cursor) {
+  if (cursor) {
+    query = query.lt(
+      "created_at",
 
-        query = query.lt(
+      cursor,
+    );
+  }
 
-            "created_at",
+  const {
+    data,
 
-            cursor,
+    error,
+  } = await query;
 
-        );
+  if (error) {
+    throw error;
+  }
 
-    }
-
-    const {
-
-        data,
-
-        error,
-
-    } = await query;
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
 export async function getTaskTransactions(
+  userId: string,
 
-    userId: string,
+  cursor?: string,
 
-    cursor?: string,
-
-    limit: number = 10,
-
+  limit: number = 10,
 ) {
+  let query = adminSupabase
 
-    let query =
+    .from("task_payments")
 
-        adminSupabase
-
-            .from("task_payments")
-
-            .select(`
+    .select(
+      `
                 id,
                 task_id,
                 payment_type,
@@ -94,163 +75,103 @@ export async function getTaskTransactions(
                 tasks (
                     title
                 )
-            `)
+            `,
+    )
 
-            .eq(
+    .eq(
+      "user_id",
 
-                "user_id",
+      userId,
+    )
 
-                userId,
+    .order(
+      "created_at",
 
-            )
+      {
+        ascending: false,
+      },
+    )
 
-            .order(
+    .limit(limit);
 
-                "created_at",
+  if (cursor) {
+    query = query.lt(
+      "created_at",
 
-                {
+      cursor,
+    );
+  }
 
-                    ascending: false,
+  const {
+    data,
 
-                },
+    error,
+  } = await query;
 
-            )
+  if (error) {
+    throw error;
+  }
 
-            .limit(
-
-                limit,
-
-            );
-
-    if (cursor) {
-
-        query =
-
-            query.lt(
-
-                "created_at",
-
-                cursor,
-
-            );
-
-    }
-
-    const {
-
-        data,
-
-        error,
-
-    }
-
-        =
-
-        await query;
-
-    if (
-
-        error
-
-    ) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
 export async function getDonationTransactionById(
+  userId: string,
 
-    id: string,
-
+  id: string,
 ) {
+  const { data, error } = await adminSupabase
+    .from("support_donations")
+    .select(
+      `
+      id,
+      amount,
+      payment_status,
+      payment_method,
+      midtrans_order_id,
+      created_at
+    `,
+    )
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
 
-    const {
+  if (error) {
+    throw error;
+  }
 
-        data,
-
-        error,
-
-    } = await adminSupabase
-
-        .from("support_donations")
-
-        .select(`
-            id,
-            amount,
-            payment_status,
-            payment_method,
-            midtrans_order_id,
-            created_at
-        `)
-
-        .eq("id", id)
-
-        .single();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }
 
 export async function getTaskTransactionById(
+  userId: string,
 
-    id: string,
-
+  id: string,
 ) {
+  const { data, error } = await adminSupabase
+    .from("task_payments")
+    .select(
+      `
+      id,
+      task_id,
+      payment_type,
+      amount,
+      payment_status,
+      payment_method,
+      midtrans_order_id,
+      created_at,
+      tasks (
+        title
+      )
+    `,
+    )
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
 
-    const {
+  if (error) {
+    throw error;
+  }
 
-        data,
-
-        error,
-
-    }
-
-        =
-
-        await adminSupabase
-
-            .from("task_payments")
-
-            .select(`
-                id,
-                task_id,
-                payment_type,
-                amount,
-                payment_status,
-                payment_method,
-                midtrans_order_id,
-                created_at,
-                tasks (
-                  title
-                )
-            `)
-
-            .eq(
-
-                "id",
-
-                id,
-
-            )
-
-            .maybeSingle();
-
-    if (error) {
-
-        throw error;
-
-    }
-
-    return data;
-
+  return data;
 }

@@ -15,114 +15,110 @@ const menus = [
     href: "/home",
     label: "Home",
     icon: (
-      <Image
-        src="/icons/home-icon.svg"
-        alt="Home"
-        width={25}
-        height={25}
-      />
+      <Image src="/icons/home-icon.svg" alt="Home" width={25} height={25} />
     ),
   },
 
   {
-  href: "/my-tasks",
-  label: "Task",
-  icon: (
-    <Image
-      src="/icons/tasks-icon.svg"
-      alt="Task"
-      width={25}
-      height={25}
-    />
-  ),
-},
+    href: "/my-tasks",
+    label: "Task",
+    icon: (
+      <Image src="/icons/tasks-icon.svg" alt="Task" width={25} height={25} />
+    ),
+  },
 
   {
-  href: "/tasks/create",
-  label: "Create",
-  icon: (
-    <Image
-      src="/icons/create-icon.svg"
-      alt="Create"
-      width={28}
-      height={28}
-    />
-  ),
-  primary: true,
-},
+    href: "/tasks/create",
+    label: "Create",
+    icon: (
+      <Image src="/icons/create-icon.svg" alt="Create" width={28} height={28} />
+    ),
+    primary: true,
+  },
 
   {
-  href: "/helper-tasks",
-  label: "Helper",
-  icon: (
-    <Image
-      src="/icons/helper-icon.svg"
-      alt="Helper"
-      width={25}
-      height={25}
-    />
-  ),
-},
+    href: "/helper-tasks",
+    label: "Helper",
+    icon: (
+      <Image src="/icons/helper-icon.svg" alt="Helper" width={25} height={25} />
+    ),
+  },
 
- {
-  href: "/messages",
-  label: "Chat",
-  icon: (
-    <Image
-      src="/icons/messages-icon.svg"
-      alt="Chat"
-      width={25}
-      height={25}
-    />
-  ),
-},
-
+  {
+    href: "/messages",
+    label: "Chat",
+    icon: (
+      <Image src="/icons/messages-icon.svg" alt="Chat" width={25} height={25} />
+    ),
+  },
 ];
 
 export default function MobileBottomNavbar() {
-
-  const [hasUnread, setHasUnread] =
-    useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
 
   const pathname = usePathname();
 
   useEffect(() => {
-
     async function loadUnread() {
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) return;
 
-      const { data } =
-        await supabase
-          .from("conversations")
-          .select(`
-          owner_id,
-          helper_id,
-          owner_unread_count,
-          helper_unread_count
-        `);
+      const { data } = await supabase.from("conversations").select(`
+      id,
+      owner_id,
+      helper_id,
+      owner_unread_count,
+      helper_unread_count,
+      last_message_at,
+      created_at
+    `);
 
       if (!data) return;
 
-      const hasUnreadMessage =
-        data.some((conversation) => {
+      const latestByOtherUser = new Map<string, (typeof data)[number]>();
 
-          const isOwner =
-            conversation.owner_id ===
-            user.id;
+      for (const conversation of data) {
+        const isOwner = conversation.owner_id === user.id;
+
+        const otherUserId = isOwner
+          ? conversation.helper_id
+          : conversation.owner_id;
+
+        const existing = latestByOtherUser.get(otherUserId);
+
+        if (!existing) {
+          latestByOtherUser.set(otherUserId, conversation);
+
+          continue;
+        }
+
+        const currentTimestamp = new Date(
+          conversation.last_message_at || conversation.created_at,
+        ).getTime();
+
+        const existingTimestamp = new Date(
+          existing.last_message_at || existing.created_at,
+        ).getTime();
+
+        if (currentTimestamp > existingTimestamp) {
+          latestByOtherUser.set(otherUserId, conversation);
+        }
+      }
+
+      const hasUnreadMessage = Array.from(latestByOtherUser.values()).some(
+        (conversation) => {
+          const isOwner = conversation.owner_id === user.id;
 
           return isOwner
-            ? conversation.owner_unread_count > 0
-            : conversation.helper_unread_count > 0;
-        });
-
-      setHasUnread(
-        hasUnreadMessage
+            ? (conversation.owner_unread_count || 0) > 0
+            : (conversation.helper_unread_count || 0) > 0;
+        },
       );
+
+      setHasUnread(hasUnreadMessage);
     }
 
     loadUnread();
@@ -131,10 +127,7 @@ export default function MobileBottomNavbar() {
        REALTIME
     ========================= */
 
-    const channel =
-      supabase.channel(
-        "mobile-navbar-unread"
-      );
+    const channel = supabase.channel("mobile-navbar-unread");
 
     channel.on(
       "postgres_changes",
@@ -145,17 +138,14 @@ export default function MobileBottomNavbar() {
       },
       () => {
         loadUnread();
-      }
+      },
     );
 
     channel.subscribe();
 
     return () => {
-      supabase.removeChannel(
-        channel
-      );
+      supabase.removeChannel(channel);
     };
-
   }, []);
 
   return (
@@ -178,12 +168,9 @@ export default function MobileBottomNavbar() {
         md:hidden
       "
     >
-
       <div className="grid grid-cols-5 gap-2">
-
         {menus.map((menu) => {
-          const active =
-            pathname === menu.href;
+          const active = pathname === menu.href;
 
           return (
             <Link
@@ -198,26 +185,21 @@ export default function MobileBottomNavbar() {
                 py-2
                 transition
 
-                ${menu.primary
-                  ? "bg-slate-100 text-indigo-600 shadow-lg shadow-indigo-600/20"
-                  : active
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-500 hover:bg-slate-50"
+                ${
+                  menu.primary
+                    ? "bg-slate-100 text-indigo-600 shadow-lg shadow-indigo-600/20"
+                    : active
+                      ? "bg-indigo-50 text-indigo-600"
+                      : "text-slate-500 hover:bg-slate-50"
                 }
               `}
             >
-
               <div className="relative">
+                <span className="text-base">{menu.icon}</span>
 
-                <span className="text-base">
-                  {menu.icon}
-                </span>
-
-                {menu.href === "/messages" &&
-                  hasUnread && (
-
-                    <div
-                      className="
+                {menu.href === "/messages" && hasUnread && (
+                  <div
+                    className="
                         absolute
                         -right-1
                         -top-1
@@ -226,10 +208,8 @@ export default function MobileBottomNavbar() {
                         rounded-full
                       bg-red-500
                       "
-                    />
-
-                  )}
-
+                  />
+                )}
               </div>
 
               <span
@@ -241,13 +221,10 @@ export default function MobileBottomNavbar() {
               >
                 {menu.label}
               </span>
-
             </Link>
           );
         })}
-
       </div>
-
     </div>
   );
 }

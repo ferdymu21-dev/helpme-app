@@ -1,29 +1,45 @@
 "use client";
 
-
-import { useEffect, useState } from "react";
-
-import { supabase } from "@/lib/supabase/client";
+import {
+  Bell,
+  Search,
+} from "lucide-react";
 
 import {
   useNotificationBadge,
 } from "@/features/notifications/hooks/useNotificationBadge";
 
-import NotificationDropdown
-  from "@/features/notifications/components/NotificationDropdown";
+import NotificationDropdown from "@/features/notifications/components/NotificationDropdown";
 
 import {
   useNotificationDropdown,
 } from "@/features/notifications/hooks/useNotificationDropdown";
 
-import DesktopGreetingSection
-  from "@/components/home/desktop/DesktopGreetingSection";
+import DesktopGreetingSection from "@/components/home/desktop/DesktopGreetingSection";
 
-export default function DesktopHomeHeader() {
+import DesktopPendingPaymentCard from "@/components/home/desktop/DesktopPendingPaymentCard";
 
-  const [name, setName] =
-    useState("User");
+import type {
+  PendingPaymentSummary,
+} from "@/features/payments/types/pendingPayment";
 
+interface Props {
+  pendingPayment:
+    PendingPaymentSummary | null;
+
+  pendingPaymentLoading: boolean;
+
+  resumePaymentLoading: boolean;
+
+  onResumePayment: () => void;
+}
+
+export default function DesktopHomeHeader({
+  pendingPayment,
+  pendingPaymentLoading,
+  resumePaymentLoading,
+  onResumePayment,
+}: Props) {
   const {
     hasUnread,
     unreadCount,
@@ -35,30 +51,6 @@ export default function DesktopHomeHeader() {
     ref: containerRef,
   } = useNotificationDropdown();
 
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) return;
-
-        const fullName =
-          user.user_metadata?.full_name;
-
-        if (fullName) {
-          setName(fullName);
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadUser();
-  }, []);
-
   return (
     <header
       className="
@@ -66,62 +58,117 @@ export default function DesktopHomeHeader() {
         top-0
         z-30
         border-b
-        border-slate-200
-        bg-white/80
+        border-slate-200/80
+        bg-white/85
         backdrop-blur-xl
       "
     >
-
       <div
         className="
+          mx-auto
           flex
-          h-20
+          h-22
+          max-w-360
           items-center
           justify-between
-          px-10
+          gap-8
+          px-8
+          xl:px-10
         "
       >
         {/* LEFT */}
-        <div>
-          <DesktopGreetingSection />
+        <div
+          className="
+            min-w-0
+            flex-1
+          "
+        >
+          {pendingPaymentLoading ? (
+            <div
+              className="
+                h-14
+                w-full
+                max-w-md
+                animate-pulse
+                rounded-2xl
+                border
+                border-slate-200
+                bg-slate-50
+              "
+            />
+          ) : pendingPayment ? (
+            <DesktopPendingPaymentCard
+              payment={pendingPayment}
+              loading={
+                resumePaymentLoading
+              }
+              onResume={
+                onResumePayment
+              }
+            />
+          ) : (
+            <DesktopGreetingSection />
+          )}
         </div>
 
         {/* RIGHT */}
-        <div className="flex items-center gap-4">
-
-          {/* SEARCH */}
+        <div
+          className="
+            flex
+            shrink-0
+            items-center
+            gap-3
+          "
+        >
+          {/*
+           * Search existing belum terhubung
+           * ke query/filter task.
+           * Kita pertahankan tampilannya
+           * tanpa mengubah behavior.
+           */}
           <div
             className="
-              flex
+              hidden
               h-12
-              w-80
+              w-72
               items-center
+              gap-3
               rounded-2xl
               border
               border-slate-200
-              bg-white
+              bg-slate-50
               px-4
+              transition
+              focus-within:border-indigo-300
+              focus-within:bg-white
+              focus-within:ring-4
+              focus-within:ring-indigo-50
+              xl:flex
             "
           >
-
-            <span className="text-slate-400">
-              🔍
-
-            </span>
+            <Search
+              className="
+                h-4
+                w-4
+                shrink-0
+                text-slate-400
+              "
+              strokeWidth={2}
+            />
 
             <input
               type="text"
               placeholder="Cari task..."
+              aria-label="Cari task"
               className="
-                ml-3
                 w-full
                 bg-transparent
                 text-sm
+                text-slate-800
                 outline-none
                 placeholder:text-slate-400
               "
             />
-
           </div>
 
           {/* NOTIFICATION */}
@@ -129,75 +176,71 @@ export default function DesktopHomeHeader() {
             ref={containerRef}
             className="relative"
           >
-
             <button
-
+              type="button"
               onClick={toggle}
-
+              aria-label="Notifikasi"
+              title="Notifikasi"
               className="
-      relative
-      flex
-      h-12
-      w-12
-      items-center
-      justify-center
-      rounded-2xl
-      border
-      border-slate-200
-      bg-white
-      text-xl
-      transition
-      hover:bg-slate-50
-    "
-
+                relative
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                text-slate-600
+                shadow-sm
+                transition
+                hover:border-slate-300
+                hover:bg-slate-50
+                hover:text-indigo-600
+                active:scale-95
+              "
             >
-
-              🔔
+              <Bell
+                className="h-5 w-5"
+                strokeWidth={2}
+              />
 
               {hasUnread && (
-
                 <span
                   className="
-          absolute
-          -right-1
-          -top-1
-          flex
-          min-h-5
-          min-w-5
-          items-center
-          justify-center
-          rounded-full
-          bg-rose-500
-          px-1
-          text-[10px]
-          font-bold
-          leading-none
-          text-white
-        "
+                    absolute
+                    -top-1
+                    -right-1
+                    flex
+                    min-h-5
+                    min-w-5
+                    items-center
+                    justify-center
+                    rounded-full
+                    border-2
+                    border-white
+                    bg-red-500
+                    px-1
+                    text-[9px]
+                    font-black
+                    leading-none
+                    text-white
+                  "
                 >
-
                   {unreadCount > 99
                     ? "99+"
                     : unreadCount}
-
                 </span>
-
               )}
-
             </button>
 
             {open && (
-
               <NotificationDropdown />
-
             )}
-
           </div>
-
         </div>
-
       </div>
-
     </header>
   );
 }

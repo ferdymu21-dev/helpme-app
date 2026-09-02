@@ -1,65 +1,41 @@
-import type {
-    MidtransNotification,
-} from "./midtrans.types";
+import type { MidtransNotification } from "./midtrans.types";
 
 export interface PaymentNotification {
+  orderId: string;
 
-    orderId: string;
+  transactionId: string;
 
-    transactionId: string;
+  status: string;
 
-    status: string;
+  fraudStatus?: string;
 
-    paymentMethod: string;
+  paymentMethod: string;
 
-    amount: number;
+  amount: number;
 
-    settlementTime?: string;
+  settlementTime?: string;
 
-    expiryTime?: string;
-
+  expiryTime?: string;
 }
 
 export function parseNotification(
-
-    notification: MidtransNotification
-
+  notification: MidtransNotification,
 ): PaymentNotification {
+  return {
+    orderId: notification.order_id,
 
-    return {
+    transactionId: notification.transaction_id,
 
-        orderId:
+    status: notification.transaction_status,
 
-            notification.order_id,
+    fraudStatus: notification.fraud_status,
 
-        transactionId:
+    paymentMethod: notification.payment_type,
 
-            notification.transaction_id,
+    amount: Number(notification.gross_amount),
 
-        status:
+    settlementTime: notification.settlement_time,
 
-            notification.transaction_status,
-
-        paymentMethod:
-
-            notification.payment_type,
-
-        amount:
-
-            Number(
-
-                notification.gross_amount
-
-            ),
-
-        settlementTime:
-
-            notification.settlement_time,
-
-        expiryTime:
-
-            notification.expiry_time,
-
-    };
-
+    expiryTime: notification.expiry_time,
+  };
 }

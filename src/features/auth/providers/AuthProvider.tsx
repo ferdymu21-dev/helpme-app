@@ -8,6 +8,15 @@ import { supabase } from "@/lib/supabase/client";
 
 import { useAuthStore } from "@/store/auth.store";
 
+interface CurrentUserAccessState {
+  role: string | null;
+  is_admin: boolean | null;
+  is_banned: boolean | null;
+  is_suspended: boolean | null;
+  suspended_until: string | null;
+  suspension_reason: string | null;
+}
+
 export default function AuthProvider({
   children,
 }: {
@@ -17,17 +26,10 @@ export default function AuthProvider({
 
   const router = useRouter();
 
-  async function getUserData(userId: string) {
+  async function getUserData() {
     const { data, error } = await supabase
-      .from("users")
-      .select(
-        `
-          role,
-          is_banned
-        `,
-      )
-      .eq("id", userId)
-      .single();
+      .rpc("get_current_user_access_state")
+      .maybeSingle<CurrentUserAccessState>();
 
     if (error) {
       console.error(error);
@@ -49,7 +51,7 @@ export default function AuthProvider({
       if (!isMounted) return;
 
       if (user) {
-        const userData = await getUserData(user.id);
+        const userData = await getUserData();
 
         if (!isMounted) return;
 
@@ -86,7 +88,7 @@ export default function AuthProvider({
         if (!isMounted) return;
 
         if (session?.user) {
-          const userData = await getUserData(session.user.id);
+          const userData = await getUserData();
 
           if (!isMounted) return;
 

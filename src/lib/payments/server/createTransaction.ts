@@ -1,43 +1,38 @@
 import {
-    createSnapTransaction,
+  createSnapTransaction,
 } from "./midtrans.server";
 
+import type {
+  MidtransExpiry,
+} from "../types/midtrans";
+
 interface CreateTransactionPayload {
+  orderId: string;
 
-    orderId: string;
+  amount: number;
 
-    amount: number;
+  options?: {
+    enabled_payments?: string[];
 
-    options?: {
-
-        enabled_payments?: string[];
-
-    };
-
+    expiry?: MidtransExpiry;
+  };
 }
 
 export async function createTransaction(
-
-    payload: CreateTransactionPayload
-
+  payload: CreateTransactionPayload,
 ) {
+  const transaction =
+    await createSnapTransaction({
+      transaction_details: {
+        order_id:
+          payload.orderId,
 
-    const transaction =
+        gross_amount:
+          payload.amount,
+      },
 
-        await createSnapTransaction({
+      ...(payload.options ?? {}),
+    });
 
-            transaction_details: {
-
-                order_id: payload.orderId,
-
-                gross_amount: payload.amount,
-
-            },
-
-            ...(payload.options ?? {}),
-
-        });
-
-    return transaction;
-
+  return transaction;
 }

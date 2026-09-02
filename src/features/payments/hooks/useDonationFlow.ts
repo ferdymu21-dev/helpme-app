@@ -19,7 +19,7 @@ export function useDonationFlow() {
     error,
   } = useSupportDonation();
 
-  const { openPayment } = useMidtrans();
+  const { openPayment, hidePayment } = useMidtrans();
 
   const {
     result,
@@ -60,6 +60,14 @@ export function useDonationFlow() {
 
     handledResultRef.current = true;
 
+    /*
+     * Backend HelpMe adalah source of truth.
+     *
+     * Jika status sudah terminal, Snap tidak
+     * perlu tetap menutupi result dialog.
+     */
+    hidePayment();
+
     switch (status) {
       case "PAID":
         openResult("SUCCESS", orderId, amount);
@@ -86,7 +94,7 @@ export function useDonationFlow() {
 
         break;
     }
-  }, [status, orderId, amount, openResult]);
+  }, [status, orderId, amount, openResult, hidePayment]);
 
   // ======================================================
   // Donate Action
@@ -120,9 +128,16 @@ export function useDonationFlow() {
       },
 
       onClose() {
-        // Sengaja kosong.
-        // Polling usePaymentStatus akan menjadi fallback
-        // apabila callback Midtrans tidak pernah diterima.
+        /*
+         * User menutup Snap bukan berarti
+         * transaksi dibatalkan.
+         *
+         * Lepaskan lifecycle lokal agar
+         * transaksi PENDING dapat diambil alih
+         * oleh Pending Payment di Home tanpa
+         * membuat dua polling untuk order yang sama.
+         */
+        setOrderId("");
       },
     });
   }

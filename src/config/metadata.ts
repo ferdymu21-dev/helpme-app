@@ -1,17 +1,6 @@
-// src/config/metadata.ts
-
 import type { Metadata } from "next";
 
 import { AppConfig } from "./app";
-
-/**
- * =====================================================
- * HelpMe Website Metadata
- * =====================================================
- *
- * Single Source of Truth
- * untuk metadata website.
- */
 
 export const AppMetadata: Metadata = {
   title: {
@@ -20,22 +9,28 @@ export const AppMetadata: Metadata = {
   },
 
   description:
-    "Marketplace bantuan harian untuk menghubungkan pengguna dengan helper terpercaya.",
+    "Platform bantuan harian untuk menemukan helper terpercaya saat Anda membutuhkan bantuan antri, antar dan ambil, dokumen, belanja, pindahan, pengecekan lokasi, dan kebutuhan lainnya.",
 
   applicationName: AppConfig.name,
 
   metadataBase: new URL(AppConfig.appUrl),
 
   keywords: [
-    "HelpMe",
-    "Marketplace",
-    "Jasa",
-    "Helper",
-    "Kurir",
-    "Antri",
-    "Belanja",
-    "Teman",
-  ],
+  "HelpMe",
+  "bantuan harian",
+  "helper",
+  "jasa bantuan",
+  "jasa antri",
+  "antar dan ambil",
+  "ambil dokumen",
+  "bantuan administrasi",
+  "titip belanja",
+  "bantuan pindahan",
+  "cek lokasi",
+  "survei lokasi",
+  "teman acara",
+  "bantuan sehari-hari",
+],
 
   authors: [
     {

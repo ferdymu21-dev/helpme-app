@@ -41,6 +41,8 @@ export interface GetNearbyTasksParams {
   page?: number;
   pageSize?: number;
   category?: string;
+  search?: string;
+  urgentOnly?: boolean;
 }
 
 export interface GetNearbyTasksResult {

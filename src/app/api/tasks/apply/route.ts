@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth/server/getCurrentUser";
 
-import { applyTaskServer } from "@/features/tasks/server";
+import {
+  applyTaskServer,
+  TaskAlreadyAppliedError,
+} from "@/features/tasks/server/apply-task.server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,8 +35,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("========== APPLY TASK ERROR ==========");
-
     console.error(error);
+
+    if (error instanceof TaskAlreadyAppliedError) {
+      return NextResponse.json(
+        {
+          message: error.message,
+        },
+        {
+          status: 409,
+        },
+      );
+    }
 
     if (error instanceof Error) {
       console.error("MESSAGE :", error.message);

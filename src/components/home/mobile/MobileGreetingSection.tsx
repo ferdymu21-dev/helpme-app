@@ -3,45 +3,46 @@
 import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 
 export default function MobileGreetingSection() {
-
   const {
     user,
     loading,
-
   } = useCurrentUser();
 
+  const firstName =
+    user?.fullName
+      ?.trim()
+      .split(/\s+/)[0] ||
+    "User";
+
   return (
+    <section
+      className="px-5 pt-2">
+      <h1
+        className="
+          mt-1
+          text-[11px]
+          font-semibold
+          tracking-tight
+          text-slate-950
+        "
+      >
+        Halo,{" "}
+        {loading
+          ? "..."
+          : firstName} 👋
+      </h1>
 
-    <section className="px-6 pt-4">
-
-      <div>
-
-        <h1
-          className="
-            text-[14px]
-            font-bold
-            tracking-tight
-            text-slate-900
-          "
-        >
-
-          Halo, {loading ? "..." : user?.fullName || "User"}! 👋
-
-        </h1>
-
-        <p
-          className="
-            mt-1
-            text-xs
-            text-slate-500
-          "
-        >
-          Ada yang perlu dibantu hari ini?
-        </p>
-
-      </div>
-
+      <p
+        className="
+          mt-0.5
+          text-[10px]
+          leading-5
+          text-slate-500
+        "
+      >
+        Ada yang bisa HelpMe bantu
+        hari ini?
+      </p>
     </section>
-
   );
 }

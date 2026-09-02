@@ -27,6 +27,11 @@ import { useState } from "react";
 
 import ReportTaskModal from "@/features/reports/components/ReportTaskModal";
 
+import {
+  getTaskCategoryDefinition,
+  getTaskCategoryHeroImage,
+} from "@/features/tasks/constants/task-categories";
+
 import { getTaskCompletionProofUrl } from "@/lib/supabase/storage/publicUrl";
 
 interface TaskDetail {
@@ -104,24 +109,6 @@ interface Props {
   handleConfirmCompletion: () => void;
 
   handleCancelTask: () => void;
-}
-
-function getTaskHeroImage(category?: string) {
-  const normalizedCategory = category?.trim().toLowerCase();
-
-  const categoryImages: Record<string, string> = {
-    antri: "/images/task-categories/antri.jpg",
-    dokumen: "/images/task-categories/dokumen.jpg",
-    kondangan: "/images/task-categories/kondangan.jpg",
-    kurir: "/images/task-categories/kurir.jpg",
-    belanja: "/images/task-categories/belanja.jpg",
-    lainnya: "/images/task-categories/lainnya.jpg",
-  };
-
-  return (
-    categoryImages[normalizedCategory || ""] ||
-    "/images/task-categories/default.jpg"
-  );
 }
 
 export default function MobileTaskDetailView({
@@ -240,8 +227,12 @@ export default function MobileTaskDetailView({
   }
 
   const isOwner = task.user_id === currentUserId;
+
   const isSelectedHelper = task.selected_helper_id === currentUserId;
-  const heroImage = getTaskHeroImage(task.category);
+
+  const category = getTaskCategoryDefinition(task.category);
+
+  const heroImage = getTaskCategoryHeroImage(task.category);
 
   const completionProofUrl = getTaskCompletionProofUrl(
     task.completion_proof_photo,
@@ -340,7 +331,7 @@ export default function MobileTaskDetailView({
           >
             <Image
               src={heroImage}
-              alt={`Kategori ${task.category}`}
+              alt={`Kategori ${category.label}`}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 448px"
@@ -389,7 +380,7 @@ export default function MobileTaskDetailView({
           shadow-sm
         "
                 >
-                  {task.category}
+                  {category.label}
                 </span>
 
                 {task.is_urgent && (
@@ -839,8 +830,7 @@ export default function MobileTaskDetailView({
                               className="h-12 w-12 rounded-full object-cover"
                             />
                           ) : (
-                            <div
-                              className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-sm font-extrabold  text-slate-700">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-sm font-extrabold  text-slate-700">
                               {app.helper?.full_name?.charAt(0)?.toUpperCase()}
                             </div>
                           )}
@@ -897,7 +887,9 @@ export default function MobileTaskDetailView({
                               disabled:opacity-50
                             "
                           >
-                            {acceptingHelperId === app.helper_id ? "Memilih..." : "Pilih"}
+                            {acceptingHelperId === app.helper_id
+                              ? "Memilih..."
+                              : "Pilih"}
                           </button>
                         )}
                       </div>
@@ -1060,8 +1052,7 @@ export default function MobileTaskDetailView({
                     Bukti berhasil dikirim
                   </h3>
 
-                  <p
-                    className="mt-1.5 text-xs leading-5 text-amber-800">
+                  <p className="mt-1.5 text-xs leading-5 text-amber-800">
                     Bukti penyelesaian telah dikirim kepada pemilik task. Tunggu
                     konfirmasi dari pemilik.
                   </p>

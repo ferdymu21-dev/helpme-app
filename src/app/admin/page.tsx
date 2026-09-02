@@ -1,10 +1,5 @@
-import AdminDashboardPage
-    from "@/features/admin/pages/AdminDashboardPage";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-
-    return (
-        <AdminDashboardPage />
-    );
-
+  redirect("/admin/analytics");
 }

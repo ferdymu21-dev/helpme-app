@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import { supabase } from "@/lib/supabase/client";
 
 import { getTasks } from "@/features/tasks/services/client/task.client";
@@ -11,6 +13,14 @@ import type { NearbyTask } from "@/features/tasks/types/nearby-task";
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
 import DesktopHomeView from "@/components/home/desktop/DesktopHomeView";
+
+import PaymentRoot from "@/features/payments/components/PaymentRoot";
+
+import PaymentResultDialog from "@/features/payments/components/dialog/PaymentResultDialog";
+
+import { usePendingPayment } from "@/features/payments/hooks/usePendingPayment";
+
+import { useResumePaymentFlow } from "@/features/payments/hooks/useResumePaymentFlow";
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +46,16 @@ function getLocationErrorMessage(error: GeolocationPositionError) {
 }
 
 export default function HomePage() {
+  const router = useRouter();
+
+  const [openSupport, setOpenSupport] = useState(false);
+
+  const pendingPayment = usePendingPayment();
+
+  const resumePayment = useResumePaymentFlow({
+    onPaymentSettled: pendingPayment.refresh,
+  });
+
   const [tasks, setTasks] = useState<NearbyTask[]>([]);
 
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
@@ -48,16 +68,21 @@ export default function HomePage() {
 
   const [activeCategory, setActiveCategory] = useState("Semua");
 
+  const [searchInput, setSearchInput] = useState("");
+
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const [totalPages, setTotalPages] = useState(1);
 
   const requestIdRef = useRef(0);
 
+  const searchDebounceRef = useRef<number | null>(null);
+
   /* =========================
    GET HELPER LOCATION
-========================= */
-
+  ========================= */
   useEffect(() => {
     if (!navigator.geolocation) {
       /*
@@ -105,9 +130,20 @@ export default function HomePage() {
     );
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current !== null) {
+        window.clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
+
   /* =========================
    LOAD TASKS
-========================= */
+  ========================= */
+  const urgentOnly = activeCategory === "Mendesak";
+
+  const queryCategory = urgentOnly ? "Semua" : activeCategory;
 
   useEffect(() => {
     if (!coordinates) {
@@ -127,7 +163,11 @@ export default function HomePage() {
 
       pageSize: PAGE_SIZE,
 
-      category: activeCategory,
+      category: queryCategory,
+
+      search: searchQuery,
+
+      urgentOnly,
     })
       .then((result) => {
         if (cancelled || requestId !== requestIdRef.current) {
@@ -164,12 +204,11 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, coordinates, currentPage]);
+  }, [coordinates, currentPage, queryCategory, searchQuery, urgentOnly]);
 
   /* =========================
    REALTIME TASKS
-========================= */
-
+  ========================= */
   useEffect(() => {
     if (!coordinates) {
       return;
@@ -185,12 +224,6 @@ export default function HomePage() {
         table: "tasks",
       },
       () => {
-        /*
-         * Callback ini dijalankan oleh
-         * Supabase Realtime ketika tabel
-         * tasks berubah.
-         */
-
         const requestId = ++requestIdRef.current;
 
         void getTasks({
@@ -202,7 +235,11 @@ export default function HomePage() {
 
           pageSize: PAGE_SIZE,
 
-          category: activeCategory,
+          category: queryCategory,
+
+          search: searchQuery,
+
+          urgentOnly,
         })
           .then((result) => {
             if (requestId !== requestIdRef.current) {
@@ -224,20 +261,14 @@ export default function HomePage() {
 
             setTotalPages(result.totalPages);
           })
-                  .catch((error) => {
-          console.error(
-            "Gagal refresh nearby tasks dari Realtime:",
-            error,
-          );
-        })
-        .finally(() => {
-          if (
-            requestId ===
-            requestIdRef.current
-          ) {
-            setLoadingTasks(false);
-          }
-        });
+          .catch((error) => {
+            console.error("Gagal refresh nearby tasks dari Realtime:", error);
+          })
+          .finally(() => {
+            if (requestId === requestIdRef.current) {
+              setLoadingTasks(false);
+            }
+          });
       },
     );
 
@@ -246,7 +277,7 @@ export default function HomePage() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [activeCategory, coordinates, currentPage]);
+  }, [coordinates, currentPage, queryCategory, searchQuery, urgentOnly]);
 
   /* =========================
      CATEGORY
@@ -262,6 +293,60 @@ export default function HomePage() {
     setCurrentPage(1);
 
     setActiveCategory(category);
+  }
+
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
+
+    if (searchDebounceRef.current !== null) {
+      window.clearTimeout(searchDebounceRef.current);
+    }
+
+    searchDebounceRef.current = window.setTimeout(() => {
+      const nextSearch = value.trim();
+
+      if (nextSearch === searchQuery) {
+        return;
+      }
+
+      setCurrentPage(1);
+
+      setLoadingTasks(true);
+
+      setSearchQuery(nextSearch);
+    }, 350);
+  }
+
+  /* =========================
+     PAYMENT RESUME
+  ========================= */
+
+  function handleResumePayment() {
+    const payment = pendingPayment.payment;
+
+    if (!payment) {
+      return;
+    }
+
+    void resumePayment.resumePayment(payment.orderId).catch((error) => {
+      console.error("Gagal melanjutkan pembayaran:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Gagal melanjutkan pembayaran.",
+      );
+
+      /*
+       * Bisa saja transaksi berubah
+       * menjadi PAID / EXPIRED tepat
+       * sebelum user menekan card.
+       *
+       * Refresh agar card Home mengikuti
+       * status server terbaru.
+       */
+      void pendingPayment.refresh();
+    });
   }
 
   /* =========================
@@ -302,14 +387,36 @@ export default function HomePage() {
 
   const feedProps = {
     tasks,
+
     loadingTasks,
+
     locationError,
+
     activeCategory,
+
+    searchValue: searchInput,
+
     currentPage,
+
     totalPages,
+
     onCategoryChange: handleCategoryChange,
+
+    onSearchChange: handleSearchChange,
+
     onPreviousPage: handlePreviousPage,
+
     onNextPage: handleNextPage,
+
+    pendingPayment: pendingPayment.payment,
+
+    pendingPaymentLoading: pendingPayment.loading,
+
+    resumePaymentLoading: resumePayment.opening,
+
+    onOpenSupport: () => setOpenSupport(true),
+
+    onResumePayment: handleResumePayment,
   };
 
   return (
@@ -317,6 +424,53 @@ export default function HomePage() {
       <MobileHomeView {...feedProps} />
 
       <DesktopHomeView {...feedProps} />
+
+      {/*
+       * Hanya SATU PaymentRoot untuk
+       * Mobile + Desktop.
+       *
+       * View responsive hanya menangani
+       * presentation dan callback.
+       */}
+      <PaymentRoot
+        supportOpen={openSupport}
+        onCloseSupport={() => setOpenSupport(false)}
+      />
+
+      {/*
+       * Result untuk pembayaran yang
+       * dibuka kembali dari Pending Card.
+       */}
+      {resumePayment.paymentType && (
+        <PaymentResultDialog
+          open={resumePayment.result.status !== "IDLE"}
+          status={resumePayment.result.status}
+          amount={resumePayment.result.amount}
+          orderId={resumePayment.result.orderId}
+          paymentType={resumePayment.paymentType}
+          onClose={() => {
+            resumePayment.closeDialog();
+
+            void pendingPayment.refresh();
+          }}
+          onHistory={() => {
+            resumePayment.closeDialog();
+
+            router.push("/payments/history");
+          }}
+          onViewTask={
+            resumePayment.taskId
+              ? () => {
+                  const taskId = resumePayment.taskId;
+
+                  resumePayment.closeDialog();
+
+                  router.push(`/tasks/${taskId}`);
+                }
+              : undefined
+          }
+        />
+      )}
     </>
   );
 }

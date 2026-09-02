@@ -1,99 +1,111 @@
 import {
-    updateDonationPayment,
+  updateDonationPayment,
 } from "../webhook.repository";
 
 import {
-    findDonationByOrderId,
-} from "../payment.repository";
-
-import {
-    createNotificationServer,
+  createNotificationServer,
 } from "@/features/notifications/server";
 
 import {
-    NotificationFactory,
+  NotificationFactory,
 } from "@/features/notifications/factories";
 
+import {
+  PAYMENT_STATUS,
+} from "../../constants/payment";
+
+import type {
+  PaymentStatusValue,
+} from "../../constants/payment";
+
 interface DonationHandlerPayload {
+  orderId: string;
 
-    orderId: string;
+  paymentStatus:
+    PaymentStatusValue;
 
-    paymentStatus: string;
+  transactionId?: string;
 
-    transactionId: string;
+  paymentMethod?: string;
 
-    paymentMethod: string;
+  paidAt?: string;
 
-    paidAt?: string;
-
-    expiredAt?: string;
-
+  expiredAt?: string;
 }
 
 export async function handleDonationPayment(
-
-    payload: DonationHandlerPayload
-
+  payload: DonationHandlerPayload,
 ) {
-
+  const transition =
     await updateDonationPayment(
-
-        payload
-
+      payload,
     );
 
-    const donation =
+  /*
+   * Tidak ada row yang berubah berarti:
+   *
+   * - duplicate webhook
+   * - duplicate reconciliation
+   * - terminal status mencoba menimpa
+   *   terminal status lain
+   *
+   * Maka notification juga tidak
+   * boleh dibuat ulang.
+   */
+  if (!transition) {
+    return;
+  }
 
-        await findDonationByOrderId(
+  switch (
+    payload.paymentStatus
+  ) {
+    case PAYMENT_STATUS.PAID:
+      await createNotificationServer(
+        NotificationFactory
+          .donationPaid(
+            transition.user_id,
+          ),
+      );
 
-            payload.orderId
+      break;
 
-        );
+    case PAYMENT_STATUS.EXPIRED:
+      await createNotificationServer(
+        NotificationFactory
+          .donationExpired(
+            transition.user_id,
 
-    if (!donation) {
+            transition.id,
+          ),
+      );
 
-        throw new Error(
+      break;
 
-            "Donation tidak ditemukan."
+    case PAYMENT_STATUS.FAILED:
+      await createNotificationServer(
+        NotificationFactory
+          .donationFailed(
+            transition.user_id,
 
-        );
+            transition.id,
+          ),
+      );
 
-    }
+      break;
 
-    switch (
+    case PAYMENT_STATUS.CANCELLED:
+      await createNotificationServer(
+        NotificationFactory
+          .donationCancelled(
+            transition.user_id,
 
-        payload.paymentStatus
+            transition.id,
+          ),
+      );
 
-    ) {
+      break;
 
-        case "PAID":
-
-            await createNotificationServer(
-
-                NotificationFactory.donationPaid(
-
-                    donation.user_id
-
-                )
-
-            );
-
-            break;
-
-        case "EXPIRED":
-
-            await createNotificationServer(
-
-                NotificationFactory.donationExpired(
-
-                    donation.user_id
-
-                )
-
-            );
-
-            break;
-
-    }
-
+    default:
+      break;
+  }
 }

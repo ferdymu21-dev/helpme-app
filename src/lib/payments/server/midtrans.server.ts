@@ -1,45 +1,29 @@
 import "server-only";
 
-import midtransClient
-from "midtrans-client";
+import midtransClient from "midtrans-client";
 
-import type {
-    MidtransTransaction,
-} from "../types/midtrans";
+import type { MidtransTransaction } from "../types/midtrans";
 
-export const snap =
+export const snap = new midtransClient.Snap({
+  isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
 
-new midtransClient.Snap({
+  serverKey: process.env.MIDTRANS_SERVER_KEY!,
 
-    isProduction:
-
-        process.env
-            .MIDTRANS_IS_PRODUCTION === "true",
-
-    serverKey:
-
-        process.env
-            .MIDTRANS_SERVER_KEY!,
-
-    clientKey:
-
-        process.env
-            .NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
-
+  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
 });
 
-export async function createSnapTransaction(
+export async function createSnapTransaction(params: MidtransTransaction) {
+  return await snap.createTransaction(params);
+}
 
-    params: MidtransTransaction
+export async function getMidtransTransactionStatus(
+  orderId: string,
+): Promise<unknown> {
+  return await snap.transaction.status(orderId);
+}
 
-)
-
-{
-
-    return await snap.createTransaction(
-
-        params
-
-    );
-
+export async function expireMidtransTransaction(
+  orderId: string,
+): Promise<unknown> {
+  return await snap.transaction.expire(orderId);
 }

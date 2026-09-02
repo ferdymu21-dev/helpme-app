@@ -13,6 +13,7 @@ export default function AdminSidebar() {
     <aside
       className="
                 hidden
+                h-screen
                 w-72
                 shrink-0
                 border-r

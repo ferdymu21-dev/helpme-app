@@ -10,6 +10,8 @@ import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import { calculateDistance } from "@/lib/location/distance";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 import {
   getTaskStatusBadgeClass,
   getTaskStatusLabel,
@@ -170,13 +172,13 @@ export default function MobileHelperTasksView({
                     src="/icons/tasks/helper-dilamar.svg"
                     alt="Dilamar"
                     className={`
-                      h-8
-                      w-8
+                      h-6
+                      w-6
                       ${activeFilter === "OPEN" ? "brightness-0 invert" : ""}
                     `}
                   />
 
-                  <h2 className="text-2xl font-black">{appliedCount}</h2>
+                  <h2 className="text-lg font-black">{appliedCount}</h2>
                 </div>
               </div>
             </div>
@@ -223,14 +225,14 @@ export default function MobileHelperTasksView({
                     src="/icons/tasks/helper-dikerjakan.svg"
                     alt="Dikerjakan"
                     className={`
-        h-8
-        w-8
+        h-6
+        w-6
 
         ${activeFilter === "ACCEPTED" ? "brightness-0 invert" : ""}
       `}
                   />
 
-                  <h2 className="text-2xl font-black">{acceptedCount}</h2>
+                  <h2 className="text-lg font-black">{acceptedCount}</h2>
                 </div>
               </div>
             </div>
@@ -274,12 +276,12 @@ export default function MobileHelperTasksView({
                     src="/icons/tasks/helper-konfirmasi.svg"
                     alt="konfirmasi"
                     className={`
-                       h-8
-                       w-8
+                       h-6
+                       w-6
                        ${activeFilter === "WAITING_CONFIRMATION" ? "brightness-0 invert" : ""}
                     `}
                   />
-                  <h2 className="text-2xl font-black">
+                  <h2 className="text-lg font-black">
                     {waitingConfirmationCount}
                   </h2>
                 </div>
@@ -325,14 +327,14 @@ export default function MobileHelperTasksView({
                     src="/icons/tasks/helper-selesai.svg"
                     alt="Selesai"
                     className={`
-        h-8
-        w-8
+        h-6
+        w-6
 
         ${activeFilter === "COMPLETED" ? "brightness-0 invert" : ""}
       `}
                   />
 
-                  <h2 className="text-2xl font-black">{completedCount}</h2>
+                  <h2 className="text-lg font-black">{completedCount}</h2>
                 </div>
               </div>
             </div>
@@ -398,7 +400,7 @@ export default function MobileHelperTasksView({
                       text-emerald-600
                     "
                   >
-                    {task.category}
+                    {getTaskCategoryLabel(task.category)}
                   </div>
 
                   <div className="flex items-center gap-2">

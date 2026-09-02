@@ -4,67 +4,47 @@ import { notifyTaskCompleted } from "@/features/notifications/actions/server";
 
 export async function confirmTaskCompletionServer(
   taskId: string,
+
   ownerId: string,
 ) {
-  /* =========================
-     GET TASK
-  ========================= */
-
-  const { data: task, error: taskError } = await adminSupabase
-    .from("tasks")
-    .select("*")
-    .eq("id", taskId)
-    .single();
-
-  if (taskError) {
-    throw taskError;
-  }
-
-  /* =========================
-     ONLY OWNER
-  ========================= */
-
-  if (task.user_id !== ownerId) {
-    throw new Error("Bukan pemilik task");
-  }
-
-  /* =========================
-     TASK HARUS COMPLETED
-  ========================= */
-
-  if (task.status !== "WAITING_CONFIRMATION") {
-    throw new Error("Task belum menunggu konfirmasi");
-  }
-
-  /* =========================
-     HARUS ADA BUKTI
-  ========================= */
-
-  if (!task.completion_proof_photo) {
-    throw new Error("Bukti penyelesaian belum diupload");
-  }
-
-  /* =========================
-     UPDATE STATUS
-  ========================= */
-
-  const { error } = await adminSupabase
+  /*
+   * Authorization + lifecycle dijadikan
+   * bagian dari satu atomic UPDATE.
+   *
+   * Hanya owner dari task yang masih
+   * WAITING_CONFIRMATION dan sudah
+   * memiliki completion proof yang
+   * dapat mengubah status ke COMPLETED.
+   */
+  const { data: task, error } = await adminSupabase
     .from("tasks")
     .update({
       status: "COMPLETED",
+
       updated_at: new Date().toISOString(),
     })
-    .eq("id", taskId);
+    .eq("id", taskId)
+    .eq("user_id", ownerId)
+    .eq("status", "WAITING_CONFIRMATION")
+    .not("completion_proof_photo", "is", null)
+    .select(
+      `
+        id
+      `,
+    )
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  /* =========================
-     NOTIFY HELPER
-  ========================= */
+  if (!task) {
+    throw new Error(
+      "Task tidak ditemukan, belum memiliki bukti penyelesaian, atau tidak dapat dikonfirmasi oleh akun ini.",
+    );
+  }
 
-  await notifyTaskCompleted(taskId);
+  await notifyTaskCompleted(task.id);
 
   return true;
 }

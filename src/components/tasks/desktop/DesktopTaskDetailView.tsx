@@ -16,6 +16,11 @@ import ReportTaskModal from "@/features/reports/components/ReportTaskModal";
 
 import FinishTaskDialog from "@/features/tasks/components/dialog/FinishTaskDialog";
 
+import {
+  getTaskCategoryDefinition,
+  getTaskCategoryHeroImage,
+} from "@/features/tasks/constants/task-categories";
+
 interface TaskUser {
   id: string;
   full_name?: string | null;
@@ -83,24 +88,6 @@ interface Props {
   handleConfirmCompletion: () => Promise<void>;
 }
 
-const CATEGORY_HERO_IMAGES: Record<string, string> = {
-  Antri: "/images/task-categories/antri.jpg",
-
-  Dokumen: "/images/task-categories/dokumen.jpg",
-
-  Kondangan: "/images/task-categories/kondangan.jpg",
-
-  Kurir: "/images/task-categories/kurir.jpg",
-
-  Belanja: "/images/task-categories/belanja.jpg",
-
-  Lainnya: "/images/task-categories/lainnya.jpg",
-};
-
-function getCategoryHeroImage(category: string): string {
-  return CATEGORY_HERO_IMAGES[category] || CATEGORY_HERO_IMAGES["Lainnya"];
-}
-
 export default function DesktopTaskDetailView({
   task,
   applications,
@@ -135,7 +122,9 @@ export default function DesktopTaskDetailView({
   const canAccessChat =
     task.selected_helper_id === currentUserId || task.user_id === currentUserId;
 
-  const categoryHeroImage = getCategoryHeroImage(task.category);
+  const category = getTaskCategoryDefinition(task.category);
+
+  const categoryHeroImage = getTaskCategoryHeroImage(task.category);
 
   async function getConversationByTask(taskId: string) {
     const { data, error } = await supabase
@@ -248,14 +237,14 @@ export default function DesktopTaskDetailView({
           >
             <img
               src={categoryHeroImage}
-              alt={`Kategori task ${task.category}`}
+              alt={`Kategori task ${category.label}`}
               className="
                 h-full
                 w-full
                 object-cover
               "
               onError={(event) => {
-                event.currentTarget.src = CATEGORY_HERO_IMAGES["Lainnya"];
+                event.currentTarget.src = getTaskCategoryHeroImage("Lainnya");
               }}
             />
 
@@ -299,7 +288,7 @@ export default function DesktopTaskDetailView({
                   backdrop-blur
                 "
               >
-                {task.category}
+                {category.label}
               </div>
 
               {task.is_urgent && (
@@ -452,12 +441,10 @@ export default function DesktopTaskDetailView({
             </div>
 
             {/* BUDGET */}
-            <div
-              className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm text-slate-500">Budget</p>
 
-              <h3
-                className="mt-2 text-2xl font-extrabold text-emerald-500">
+              <h3 className="mt-2 text-2xl font-extrabold text-emerald-500">
                 Rp {task.budget.toLocaleString("id-ID")}
               </h3>
             </div>
@@ -509,7 +496,8 @@ export default function DesktopTaskDetailView({
             <button
               type="button"
               onClick={() => setDescriptionExpanded((previous) => !previous)}
-              className="mt-4 text-sm font-bold text-indigo-600 transition hover:text-indigo-700">
+              className="mt-4 text-sm font-bold text-indigo-600 transition hover:text-indigo-700"
+            >
               {descriptionExpanded ? "Tutup" : "Lihat selengkapnya"}
             </button>
           )}
@@ -994,9 +982,7 @@ export default function DesktopTaskDetailView({
             "
         >
           <div className="mx-auto max-w-3xl">
-            <div
-              className="rounded-3xl border border-emerald-200 bg-emerald-50 p-3">
-
+            <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-3">
               <div className="text-xl font-bold text-emerald-700">
                 ✓ Bukti berhasil dikirim
               </div>

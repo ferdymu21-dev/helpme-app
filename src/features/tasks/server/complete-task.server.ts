@@ -4,44 +4,48 @@ import { notifyTaskCompletionProofSubmitted } from "@/features/notifications/act
 
 export async function completeTaskServer(
   taskId: string,
+
   proofUrl: string,
+
   helperId: string,
 ) {
-  // ambil task
+  /*
+   * Authorization dan lifecycle
+   * dijadikan satu atomic UPDATE.
+   *
+   * Hanya selected helper dari task
+   * ACCEPTED yang dapat mengirim bukti.
+   */
   const { data: task, error } = await adminSupabase
-    .from("tasks")
-    .select("*")
-    .eq("id", taskId)
-    .single();
-
-  if (error) throw error;
-
-  if (task.selected_helper_id !== helperId) {
-    throw new Error("Bukan helper yang dipilih");
-  }
-
-  if (task.status !== "ACCEPTED") {
-    throw new Error("Task tidak dapat diselesaikan");
-  }
-
-  const { error: updateError } = await adminSupabase
     .from("tasks")
     .update({
       status: "WAITING_CONFIRMATION",
+
       completion_proof_photo: proofUrl,
+
       updated_at: new Date().toISOString(),
     })
-    .eq("id", taskId);
+    .eq("id", taskId)
+    .eq("selected_helper_id", helperId)
+    .eq("status", "ACCEPTED")
+    .select(
+      `
+        id
+      `,
+    )
+    .maybeSingle();
 
-  if (updateError) {
-    throw updateError;
+  if (error) {
+    throw error;
   }
 
-  /* =========================
-   NOTIFY OWNER
-========================= */
+  if (!task) {
+    throw new Error(
+      "Task tidak ditemukan atau tidak dapat diselesaikan oleh akun ini.",
+    );
+  }
 
-  await notifyTaskCompletionProofSubmitted(taskId);
+  await notifyTaskCompletionProofSubmitted(task.id);
 
   return true;
 }

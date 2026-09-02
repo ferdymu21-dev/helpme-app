@@ -1,67 +1,33 @@
 import Link from "next/link";
 
-import {
-  ArrowRight,
-  Binoculars,
-  FileText,
-  GraduationCap,
-  MapPinned,
-  PackageOpen,
-  ShoppingBag,
-  Sparkles,
-  UsersRound,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-const categories = [
-  {
-    icon: UsersRound,
-    title: "Jasa Antri",
-    iconClass:
-      "bg-rose-50 text-rose-600",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Titip Belanja",
-    iconClass:
-      "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: FileText,
-    title: "Ambil Dokumen",
-    iconClass:
-      "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: PackageOpen,
-    title: "Pindahan",
-    iconClass:
-      "bg-amber-50 text-amber-600",
-  },
-  {
-    icon: GraduationCap,
-    title: "Bantuan Kampus",
-    iconClass:
-      "bg-violet-50 text-violet-600",
-  },
-  {
-    icon: MapPinned,
-    title: "Survey Lokasi",
-    iconClass:
-      "bg-cyan-50 text-cyan-600",
-  },
-  {
-    icon: Binoculars,
-    title: "Cari Hewan",
-    iconClass:
-      "bg-orange-50 text-orange-600",
-  },
-  {
-    icon: Sparkles,
-    title: "Lainnya",
-    iconClass:
-      "bg-indigo-50 text-indigo-600",
-  },
-];
+import { TASK_CATEGORIES } from "@/features/tasks/constants/task-categories";
+
+const CATEGORY_ICON_CLASSES: Record<string, string> = {
+  Antri: "bg-rose-50 text-rose-600",
+
+  Kurir: "bg-sky-50 text-sky-600",
+
+  Dokumen: "bg-blue-50 text-blue-600",
+
+  Belanja: "bg-emerald-50 text-emerald-600",
+
+  "Rumah & Pindahan": "bg-amber-50 text-amber-600",
+
+  "Cari & Cek": "bg-cyan-50 text-cyan-600",
+
+  Kondangan: "bg-violet-50 text-violet-600",
+
+  Lainnya: "bg-indigo-50 text-indigo-600",
+};
+
+const categories = TASK_CATEGORIES.map((category) => ({
+  ...category,
+
+  iconClass:
+    CATEGORY_ICON_CLASSES[category.value] ?? "bg-indigo-50 text-indigo-600",
+}));
 
 export default function MobilePopularCategories() {
   return (
@@ -101,9 +67,7 @@ export default function MobilePopularCategories() {
           "
         >
           Temukan bantuan sesuai{" "}
-          <span className="text-indigo-600">
-            kebutuhanmu
-          </span>
+          <span className="text-indigo-600">kebutuhanmu</span>
         </h2>
 
         <p
@@ -114,8 +78,8 @@ export default function MobilePopularCategories() {
             text-slate-500
           "
         >
-          Pilih kebutuhan yang paling sesuai atau
-          buat task khusus untuk bantuan lainnya.
+          Pilih kebutuhan yang paling sesuai atau buat task khusus untuk bantuan
+          lainnya.
         </p>
       </div>
 
@@ -130,16 +94,11 @@ export default function MobilePopularCategories() {
           gap-3
         "
       >
-        {categories.map(
-          ({
-            icon: Icon,
-            title,
-            iconClass,
-          }) => (
-            <Link
-              key={title}
-              href="/register"
-              className="
+        {categories.map(({ icon: Icon, value, label, iconClass }) => (
+          <Link
+            key={value}
+            href="/register"
+            className="
                 group
                 rounded-[22px]
                 border
@@ -150,9 +109,9 @@ export default function MobilePopularCategories() {
                 transition
                 active:scale-[0.98]
               "
-            >
-              <div
-                className={`
+          >
+            <div
+              className={`
                   flex
                   h-11
                   w-11
@@ -161,36 +120,33 @@ export default function MobilePopularCategories() {
                   rounded-2xl
                   ${iconClass}
                 `}
-              >
-                <Icon
-                  className="h-5 w-5"
-                  strokeWidth={2}
-                />
-              </div>
+            >
+              <Icon className="h-5 w-5" strokeWidth={2} />
+            </div>
 
-              <div
-                className="
+            <div
+              className="
                   mt-4
                   flex
                   items-end
                   justify-between
                   gap-2
                 "
-              >
-                <p
-                  className="
+            >
+              <p
+                className="
                     min-w-0
                     text-xs
                     font-black
                     leading-5
                     text-slate-800
                   "
-                >
-                  {title}
-                </p>
+              >
+                {label}
+              </p>
 
-                <ArrowRight
-                  className="
+              <ArrowRight
+                className="
                     h-3.5
                     w-3.5
                     shrink-0
@@ -198,12 +154,11 @@ export default function MobilePopularCategories() {
                     transition
                     group-hover:text-indigo-600
                   "
-                  strokeWidth={2}
-                />
-              </div>
-            </Link>
-          ),
-        )}
+                strokeWidth={2}
+              />
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* =========================
@@ -231,11 +186,7 @@ export default function MobilePopularCategories() {
         "
       >
         Punya kebutuhan lainnya?
-
-        <ArrowRight
-          className="h-4 w-4"
-          strokeWidth={2}
-        />
+        <ArrowRight className="h-4 w-4" strokeWidth={2} />
       </Link>
     </section>
   );

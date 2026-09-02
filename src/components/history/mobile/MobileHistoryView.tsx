@@ -8,6 +8,8 @@ import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import type { HistoryTask } from "@/features/tasks/types/history";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 import {
   getTaskStatusBadgeClass,
   getTaskStatusLabel,
@@ -201,7 +203,6 @@ export default function MobileHistoryView({
       ========================= */}
       <div className="mt-6">
         {loading && <p>Memuat...</p>}
-
         {!loading && tasks.length === 0 && (
           <div
             className="
@@ -254,31 +255,25 @@ export default function MobileHistoryView({
                 {/* CATEGORY */}
                 <span
                   className="
-      inline-flex
-      min-w-0
-      max-w-[45%]
-      truncate
-      rounded-full
-      bg-indigo-50
-      px-3
-      py-1
-      text-[10px]
-      font-semibold
-      text-indigo-600
-    "
+                    inline-flex
+                    min-w-0
+                    max-w-[45%]
+                    truncate
+                    rounded-full
+                  bg-indigo-50
+                    px-3
+                    py-1
+                    text-[10px]
+                    font-semibold
+                  text-indigo-600
+                  "
                 >
-                  {task.category || "Lainnya"}
+                  {getTaskCategoryLabel(task.category)}
                 </span>
 
                 {/* URGENT + STATUS */}
                 <div
-                  className="
-      flex
-      shrink-0
-      items-center
-      gap-1.5
-    "
-                >
+                  className="flex shrink-0 items-center gap-1.5">
                   {task.is_urgent && (
                     <span
                       className="

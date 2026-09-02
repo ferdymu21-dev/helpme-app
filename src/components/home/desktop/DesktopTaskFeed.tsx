@@ -2,6 +2,25 @@
 
 import Link from "next/link";
 
+import { getTaskCategoryDefinition } from "@/features/tasks/constants/task-categories";
+
+import { TASK_FEED_FILTERS } from "@/features/tasks/constants/task-feed-filters";
+
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  Clock3,
+  Flame,
+  Inbox,
+  LoaderCircle,
+  MapPin,
+  Navigation,
+  Search,
+  Sparkles,
+} from "lucide-react";
+
 import type { NearbyTask } from "@/features/tasks/types/nearby-task";
 
 interface Props {
@@ -13,471 +32,818 @@ interface Props {
 
   activeCategory: string;
 
+  searchValue: string;
+
   currentPage: number;
 
   totalPages: number;
 
-  onCategoryChange: (
-    category: string,
-  ) => void;
+  onCategoryChange: (category: string) => void;
+
+  onSearchChange: (value: string) => void;
 
   onPreviousPage: () => void;
 
   onNextPage: () => void;
 }
 
-function getCategoryIcon(
-  category: string,
-) {
-  switch (category) {
-    case "Antri":
-      return "/icons/antri.svg";
+function getTaskLocation(task: NearbyTask) {
+  if (task.location_type === "SEARCH") {
+    return task.location_name || "Lokasi tidak tersedia";
+  }
 
-    case "Dokumen":
-      return "/icons/dokumen.svg";
+  return task.manual_address || "Alamat manual";
+}
 
-    case "Kondangan":
-      return "/icons/kondangan.svg";
+function getStatusLabel(status: string) {
+  switch (status) {
+    case "OPEN":
+      return "Terbuka";
 
-    case "Kurir":
-      return "/icons/kurir.svg";
+    case "COMPLETED":
+      return "Selesai";
 
-    case "Belanja":
-      return "/icons/belanja.svg";
+    case "CANCELLED":
+      return "Dibatalkan";
+
+    case "EXPIRED":
+      return "Kedaluwarsa";
 
     default:
-      return "/icons/lainnya.svg";
+      return status;
   }
 }
 
-export default function TaskFeed({
+export default function DesktopTaskFeed({
   tasks,
   loadingTasks,
   locationError,
   activeCategory,
+  searchValue,
   currentPage,
   totalPages,
   onCategoryChange,
+  onSearchChange,
   onPreviousPage,
   onNextPage,
 }: Props) {
   return (
-    <section className="px-8 pt-8 pb-20">
-      <div className="mx-auto max-w-300">
+    <section className="px-8 pt-9 pb-20 xl:px-10">
+      <div className="mx-auto max-w-360">
         {/* HEADER */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-end justify-between gap-8">
           <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-indigo-600" strokeWidth={2} />
+
+              <p
+                className="
+                  text-xs
+                  font-black
+                  tracking-wide
+                  text-slate-500
+                  uppercase
+                "
+              >
+                Jelajahi Task
+              </p>
+            </div>
+
             <h2
               className="
+                mt-2
                 text-2xl
-                font-bold
+                font-black
                 tracking-tight
-                text-slate-900
+                text-slate-950
               "
             >
-              Task Terbaru
+              Task di Sekitarmu
             </h2>
 
-            <p className="mt-2 text-slate-500">
-              Temukan task di sekitar kamu
+            <p className="mt-1.5 text-sm text-slate-500">
+              Temukan kesempatan untuk membantu pengguna di dekat lokasi Anda.
             </p>
+          </div>
+
+          <div className="w-full max-w-sm shrink-0">
+            <label htmlFor="desktop-task-search" className="sr-only">
+              Cari task
+            </label>
+
+            <div className="relative">
+              <Search
+                className="
+        pointer-events-none
+        absolute
+        left-4
+        top-1/2
+        h-4
+        w-4
+        -translate-y-1/2
+        text-slate-400
+      "
+                strokeWidth={2}
+              />
+
+              <input
+                id="desktop-task-search"
+                type="search"
+                value={searchValue}
+                onChange={(event) => onSearchChange(event.target.value)}
+                placeholder="Cari task, kebutuhan, atau lokasi..."
+                className="
+        h-11
+        w-full
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        pl-11
+        pr-4
+        text-sm
+        font-medium
+        text-slate-800
+        outline-none
+        transition
+        placeholder:text-slate-400
+        focus:border-indigo-300
+        focus:ring-4
+        focus:ring-indigo-100/70
+      "
+              />
+            </div>
+
+            <div
+              className="
+      mt-2
+      flex
+      items-center
+      justify-end
+      gap-1.5
+      text-[10px]
+      font-semibold
+      text-slate-400
+    "
+            >
+              <Navigation className="h-3 w-3 text-indigo-500" strokeWidth={2} />
+              Berdasarkan lokasi Anda
+            </div>
           </div>
         </div>
 
-        {/* FILTERS */}
-        <div className="mt-6 flex flex-wrap gap-3 pb-0 scrollbar-hide">
-          {[
-            {
-              label: "Semua",
-              icon: "/icons/semua.svg",
-            },
-            {
-              label: "Antri",
-              icon: "/icons/antri.svg",
-            },
-            {
-              label: "Dokumen",
-              icon: "/icons/dokumen.svg",
-            },
-            {
-              label: "Kondangan",
-              icon: "/icons/kondangan.svg",
-            },
-            {
-              label: "Kurir",
-              icon: "/icons/kurir.svg",
-            },
-            {
-              label: "Belanja",
-              icon: "/icons/belanja.svg",
-            },
-            {
-              label: "Lainnya",
-              icon: "/icons/lainnya.svg",
-            },
-          ].map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              onClick={() =>
-                onCategoryChange(
-                  item.label,
-                )
-              }
-              className={`
-                flex
-                items-center
-                gap-2
-                whitespace-nowrap
-                rounded-full
-                px-4
-                py-1
-                text-sm
-                font-semibold
-                transition
-                hover:-translate-y-0.5
+        {/* CATEGORY FILTER */}
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          {TASK_FEED_FILTERS.map((item) => {
+            const active = activeCategory === item.value;
 
-                ${
-                  activeCategory ===
-                  item.label
-                    ? "bg-indigo-500 text-white"
-                    : "border border-slate-200 bg-white text-slate-600"
-                }
-              `}
-            >
-              <img
-                src={item.icon}
-                alt={item.label}
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => onCategoryChange(item.value)}
                 className={`
-                  h-3
-                  w-3
+                  inline-flex
+                  min-h-10
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  px-4
+                  text-xs
+                  font-bold
+                  transition
+                  duration-200
+                  active:scale-[0.98]
 
                   ${
-                    activeCategory ===
-                    item.label
-                      ? "brightness-0 invert"
-                      : ""
+                    active
+                      ? item.value === "Mendesak"
+                        ? `
+        border-rose-600
+        bg-rose-600
+        text-white
+        shadow-[0_6px_16px_rgba(225,29,72,0.18)]
+      `
+                        : `
+        border-indigo-600
+        bg-indigo-600
+        text-white
+        shadow-[0_6px_16px_rgba(79,70,229,0.18)]
+      `
+                      : item.value === "Mendesak"
+                        ? `
+        border-rose-200
+        bg-rose-50/60
+        text-rose-600
+        hover:border-rose-300
+        hover:bg-rose-50
+      `
+                        : `
+        border-slate-200
+        bg-white
+        text-slate-600
+        hover:border-indigo-200
+        hover:bg-indigo-50/50
+        hover:text-indigo-700
+      `
                   }
                 `}
-              />
-
-              {item.label}
-            </button>
-          ))}
+              >
+                <Icon
+                  className="
+                        h-3.5
+                        w-3.5
+                        "
+                  strokeWidth={2}
+                />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* =========================
-            TASK FEED STATE
-        ========================= */}
-
+        {/* LOCATION ERROR */}
         {locationError ? (
-          /*
-           * KONDISI 1:
-           * Browser tidak memberikan lokasi.
-           */
           <div
             className="
-              mt-8
-              rounded-2xl
+              mt-7
+              flex
+              items-start
+              gap-4
+              rounded-3xl
               border
               border-amber-200
               bg-amber-50
-              p-6
-              text-sm
-              text-amber-700
+              p-5
             "
           >
-            {locationError}
+            <div
+              className="
+                flex
+                h-10
+                w-10
+                shrink-0
+                items-center
+                justify-center
+                rounded-2xl
+                bg-amber-100
+                text-amber-700
+              "
+            >
+              <CircleAlert className="h-5 w-5" strokeWidth={2} />
+            </div>
+
+            <div>
+              <p
+                className="
+                  text-sm
+                  font-black
+                  text-amber-900
+                "
+              >
+                Lokasi belum tersedia
+              </p>
+
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  leading-6
+                  text-amber-700
+                "
+              >
+                {locationError}
+              </p>
+            </div>
           </div>
         ) : loadingTasks ? (
-          /*
-           * KONDISI 2:
-           * Lokasi tersedia tetapi RPC
-           * sedang mengambil task.
-           */
+          /* LOADING */
           <div
             className="
-              mt-8
-              rounded-2xl
-              border
-              border-slate-200
-              bg-white
-              p-6
-              text-sm
-              text-slate-500
+              mt-7
+              grid
+              grid-cols-2
+              gap-5
+              xl:grid-cols-3
+              2xl:grid-cols-4
             "
           >
-            Memuat task di sekitar kamu...
-          </div>
-        ) : tasks.length === 0 ? (
-          /*
-           * KONDISI 3:
-           * RPC berhasil tetapi tidak ada
-           * task yang memenuhi filter/radius.
-           */
-          <div
-            className="
-              mt-8
-              rounded-2xl
-              border
-              border-slate-200
-              bg-white
-              p-6
-              text-sm
-              text-slate-500
-            "
-          >
-            Belum ada task yang tersedia di
-            sekitar kamu.
-          </div>
-        ) : (
-          /*
-           * KONDISI 4:
-           * Task tersedia.
-           */
-          <>
-            {/* TASK GRID */}
-            <div className="mt-8 grid grid-cols-4 gap-6">
-              {tasks.map((task) => (
-                <Link
-                  key={task.id}
-                  href={`/tasks/${task.id}`}
+            {Array.from({
+              length: 4,
+            }).map((_, index) => (
+              <div
+                key={index}
+                className="
+                  min-h-80
+                  animate-pulse
+                  rounded-[26px]
+                  border
+                  border-slate-200
+                  bg-white
+                  p-5
+                "
+              >
+                <div
                   className="
-                    group
-                    rounded-[28px]
-                    border
-                    border-slate-200
-                    bg-white
-                    p-5
-                    transition-all
-                    duration-300
-                    hover:-translate-y-1
-                    hover:border-indigo-200
-                    hover:shadow-xl
+                    flex
+                    items-center
+                    justify-between
                   "
                 >
-                  {/* TOP */}
-                  <div className="flex items-start justify-between">
-                    <div>
-                      {/* CATEGORY */}
+                  <div className="h-7 w-20 rounded-full bg-slate-100" />
+
+                  <div className="h-7 w-16 rounded-full bg-slate-100" />
+                </div>
+
+                <div className="mt-6 h-5 w-4/5 rounded bg-slate-100" />
+
+                <div className="mt-2 h-5 w-2/3 rounded bg-slate-100" />
+
+                <div className="mt-5 h-3 w-full rounded bg-slate-100" />
+
+                <div className="mt-2 h-3 w-4/5 rounded bg-slate-100" />
+
+                <div className="mt-7 space-y-3">
+                  <div className="h-3 w-3/4 rounded bg-slate-100" />
+                  <div className="h-3 w-2/3 rounded bg-slate-100" />
+                  <div className="h-3 w-1/2 rounded bg-slate-100" />
+                </div>
+
+                <div className="mt-8 h-7 w-28 rounded bg-slate-100" />
+              </div>
+            ))}
+
+            <div
+              className="
+                col-span-full
+                flex
+                items-center
+                justify-center
+                gap-2
+                py-2
+                text-xs
+                font-medium
+                text-slate-400
+              "
+            >
+              <LoaderCircle
+                className="
+                  h-4
+                  w-4
+                  animate-spin
+                "
+              />
+              Memuat task di sekitar Anda...
+            </div>
+          </div>
+        ) : tasks.length === 0 ? (
+          /* EMPTY */
+          <div
+            className="
+              mt-7
+              flex
+              min-h-56
+              flex-col
+              items-center
+              justify-center
+              rounded-[28px]
+              border
+              border-dashed
+              border-slate-300
+              bg-white
+              px-8
+              text-center
+            "
+          >
+            <div
+              className="
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-2xl
+                bg-slate-100
+                text-slate-500
+              "
+            >
+              <Inbox className="h-5 w-5" strokeWidth={2} />
+            </div>
+
+            <h3
+              className="
+                mt-4
+                text-base
+                font-black
+                text-slate-900
+              "
+            >
+              Belum ada task tersedia
+            </h3>
+
+            <p
+              className="
+                mt-2
+                max-w-md
+                text-sm
+                leading-6
+                text-slate-500
+              "
+            >
+              Belum ada task yang sesuai dengan kategori dan area Anda saat ini.
+              Coba kategori lainnya.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* TASK GRID */}
+            <div
+              className="
+                mt-7
+                grid
+                grid-cols-2
+                gap-5
+                xl:grid-cols-3
+                2xl:grid-cols-4
+              "
+            >
+              {tasks.map((task) => {
+                const location = getTaskLocation(task);
+
+                const category = getTaskCategoryDefinition(task.category);
+
+                const CategoryIcon = category.icon;
+
+                return (
+                  <Link
+                    key={task.id}
+                    href={`/tasks/${task.id}`}
+                    className={`
+    group
+    relative
+    flex
+    min-h-80
+    flex-col
+    overflow-hidden
+    rounded-[26px]
+    border
+    p-5
+    transition
+    duration-300
+    hover:-translate-y-1
+
+    ${
+      task.is_urgent
+        ? `
+          border-rose-200
+          bg-linear-to-br
+          from-rose-50/80
+          via-white
+          to-white
+          shadow-[0_10px_28px_rgba(225,29,72,0.07)]
+          hover:border-rose-300
+          hover:shadow-[0_18px_40px_rgba(225,29,72,0.12)]
+        `
+        : `
+          border-slate-200
+          bg-white
+          shadow-[0_8px_24px_rgba(15,23,42,0.035)]
+          hover:border-indigo-200
+          hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]
+        `
+    }
+  `}
+                  >
+                    {/* TOP */}
+                    <div
+                      className="
+                        flex
+                        items-start
+                        justify-between
+                        gap-3
+                      "
+                    >
                       <div
                         className="
                           inline-flex
+                          h-7
                           items-center
                           gap-1.5
                           rounded-full
-                          bg-indigo-100
-                          px-3
-                          py-1
-                          text-[10px]
-                          font-semibold
-                          text-indigo-600
+                          bg-indigo-50
+                          px-2.5
+                          text-[9px]
+                          font-bold
+                          text-indigo-700
                         "
                       >
-                        <img
-                          src={getCategoryIcon(
-                            task.category,
-                          )}
-                          alt={
-                            task.category
-                          }
-                          className="h-3 w-3"
-                        />
+                        <CategoryIcon className="h-3 w-3" strokeWidth={2} />
 
-                        {task.category}
+                        {category.label}
                       </div>
 
-                      {task.is_urgent && (
-                        <div
+                      <div
+                        className="
+                          flex
+                          flex-wrap
+                          items-center
+                          justify-end
+                          gap-1.5
+                        "
+                      >
+                        {task.is_urgent && (
+                          <span
+                            className="
+                              inline-flex
+                              h-7
+                              items-center
+                              gap-1.5
+                              rounded-full
+                              bg-red-100
+                              px-2.5
+                              text-[9px]
+                              font-black
+                              text-red-700
+                            "
+                          >
+                            <Flame className="h-3 w-3" strokeWidth={2.2} />
+                            Mendesak
+                          </span>
+                        )}
+
+                        <span
                           className="
-                            mt-2
                             inline-flex
+                            h-7
+                            items-center
                             rounded-full
-                            bg-red-100
-                            px-2
-                            py-1
-                            text-[10px]
+                            bg-emerald-50
+                            px-2.5
+                            text-[9px]
                             font-bold
-                            text-red-600
+                            text-emerald-700
                           "
                         >
-                          🔥 Mendesak
+                          {getStatusLabel(task.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* TITLE */}
+                    <h3
+                      className="
+                        mt-5
+                        line-clamp-2
+                        text-lg
+                        font-black
+                        leading-7
+                        tracking-tight
+                        text-slate-950
+                        transition
+                        group-hover:text-indigo-600
+                      "
+                    >
+                      {task.title}
+                    </h3>
+
+                    {/* META */}
+                    <div
+                      className="
+    mt-5
+    space-y-2.5
+    border-t
+    border-slate-100
+    pt-4
+  "
+                    >
+                      {/* LOCATION */}
+                      <div
+                        className="
+      flex
+      min-w-0
+      items-center
+      gap-2
+      text-xs
+      text-slate-500
+    "
+                      >
+                        <MapPin
+                          className="
+        h-3.5
+        w-3.5
+        shrink-0
+        text-slate-400
+      "
+                          strokeWidth={2}
+                        />
+
+                        <span className="truncate">{location}</span>
+                      </div>
+
+                      {/* SCHEDULE */}
+                      {task.scheduled_at && (
+                        <div
+                          className="
+        flex
+        items-center
+        gap-3
+        text-[11px]
+        text-slate-500
+      "
+                        >
+                          <span
+                            className="
+          inline-flex
+          items-center
+          gap-1.5
+        "
+                          >
+                            <CalendarDays
+                              className="
+            h-3.5
+            w-3.5
+            text-slate-400
+          "
+                              strokeWidth={2}
+                            />
+
+                            {new Date(task.scheduled_at).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                              },
+                            )}
+                          </span>
+
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock3
+                              className="h-3.5 w-3.5 text-slate-400"
+                              strokeWidth={2}
+                            />
+
+                            {new Date(task.scheduled_at).toLocaleTimeString(
+                              "id-ID",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </span>
                         </div>
                       )}
 
-                      {/* TITLE */}
-                      <h3
-                        className="
-                          mt-4
-                          text-lg
-                          leading-8
-                          font-bold
-                          tracking-tight
-                          text-slate-900
-                          transition
-                          hover:-translate-y-0.5
-                          group-hover:text-indigo-600
-                        "
-                      >
-                        {task.title}
-                      </h3>
-                    </div>
-
-                    {/* STATUS */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="
-                          rounded-full
-                          bg-emerald-50
-                          px-2
-                          py-1
-                          text-[10px]
-                          font-semibold
-                          text-emerald-500
-                        "
-                      >
-                        {task.status}
+                      {/* DISTANCE */}
+                      <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                        <Navigation
+                          className="h-3.5 w-3.5 shrink-0"
+                          strokeWidth={2}
+                        />
+                        {task.distance_km.toFixed(1)} km dari kamu
                       </div>
                     </div>
-                  </div>
-
-                  {/* BOTTOM */}
-                  <div className="mt-7 space-y-4">
-                    {/* LOCATION */}
-                    <p className="text-xs text-slate-500">
-                      📍{" "}
-                      {(() => {
-                        const location =
-                          task.location_type ===
-                          "SEARCH"
-                            ? task.location_name ||
-                              "Lokasi tidak tersedia"
-                            : task.manual_address ||
-                              "Alamat manual";
-
-                        return location.length >
-                          20
-                          ? `${location.slice(
-                              0,
-                              20,
-                            )}...`
-                          : location;
-                      })()}
-                    </p>
-
-                    {/* SCHEDULE */}
-                    {task.scheduled_at && (
-                      <p className="text-xs text-slate-500">
-                        📅{" "}
-                        {new Date(
-                          task.scheduled_at,
-                        ).toLocaleDateString(
-                          "id-ID",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}
-
-                        {" • "}
-
-                        🕒{" "}
-                        {new Date(
-                          task.scheduled_at,
-                        ).toLocaleTimeString(
-                          "id-ID",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </p>
-                    )}
-
-                    {/* DISTANCE */}
-                    <p className="text-xs text-slate-400">
-                      🛵{" "}
-                      {task.distance_km.toFixed(
-                        1,
-                      )}{" "}
-                      km dari kamu
-                    </p>
 
                     {/* PRICE */}
                     <div
                       className="
-                        text-xl
-                        font-black
-                        tracking-tight
-                        text-amber-500
+                        mt-auto
+                        flex
+                        items-end
+                        justify-between
+                        gap-4
+                        pt-6
                       "
                     >
-                      Rp
-                      {task.budget.toLocaleString(
-                        "id-ID",
-                      )}
+                      <div>
+                        <p
+                          className="
+                            text-[10px]
+                            font-bold
+                            text-slate-400
+                          "
+                        >
+                          Budget
+                        </p>
+
+                        <p
+                          className="
+                            mt-0.5
+                            text-xl
+                            font-black
+                            tracking-tight
+                            text-emerald-600
+                          "
+                        >
+                          Rp
+                          {task.budget.toLocaleString("id-ID")}
+                        </p>
+                      </div>
+
+                      <div
+                        className="
+                          flex
+                          h-9
+                          w-9
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-slate-50
+                          text-slate-400
+                          transition
+                          group-hover:bg-indigo-50
+                          group-hover:text-indigo-600
+                        "
+                      >
+                        <ChevronRight className="h-4 w-4" strokeWidth={2} />
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* PAGINATION */}
             {totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-4">
+              <div
+                className="
+                  mt-9
+                  flex
+                  items-center
+                  justify-center
+                  gap-4
+                "
+              >
                 <button
                   type="button"
-                  disabled={
-                    currentPage <= 1
-                  }
-                  onClick={
-                    onPreviousPage
-                  }
+                  disabled={currentPage <= 1}
+                  onClick={onPreviousPage}
                   className="
+                    inline-flex
+                    h-10
+                    items-center
+                    gap-2
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
                     px-4
-                    py-2
-                    text-sm
-                    font-semibold
+                    text-xs
+                    font-bold
                     text-slate-600
+                    transition
+                    hover:border-slate-300
+                    hover:bg-slate-50
                     disabled:cursor-not-allowed
                     disabled:opacity-40
                   "
                 >
+                  <ChevronLeft className="h-4 w-4" />
                   Sebelumnya
                 </button>
 
-                <span className="text-sm text-slate-500">
-                  Halaman {currentPage} dari{" "}
-                  {totalPages}
-                </span>
+                <div
+                  className="
+                    rounded-xl
+                    bg-slate-100
+                    px-4
+                    py-2.5
+                    text-xs
+                    font-bold
+                    text-slate-500
+                  "
+                >
+                  Halaman {currentPage} dari {totalPages}
+                </div>
 
                 <button
                   type="button"
-                  disabled={
-                    currentPage >=
-                    totalPages
-                  }
+                  disabled={currentPage >= totalPages}
                   onClick={onNextPage}
                   className="
+                    inline-flex
+                    h-10
+                    items-center
+                    gap-2
                     rounded-xl
                     border
                     border-slate-200
                     bg-white
                     px-4
-                    py-2
-                    text-sm
-                    font-semibold
+                    text-xs
+                    font-bold
                     text-slate-600
+                    transition
+                    hover:border-slate-300
+                    hover:bg-slate-50
                     disabled:cursor-not-allowed
                     disabled:opacity-40
                   "
                 >
                   Berikutnya
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             )}

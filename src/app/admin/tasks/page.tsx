@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+
 import { supabase } from "@/lib/supabase/client";
+
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
 
 interface Task {
   id: string;
@@ -442,13 +446,8 @@ export default function TasksPage() {
                 </h2>
 
                 <p
-                  className="
-                    mt-1
-                    text-sm
-                    text-slate-500
-                  "
-                >
-                  {task.category}
+                  className="mt-1 text-sm text-slate-500">
+                  {getTaskCategoryLabel(task.category)}
                 </p>
               </div>
 
@@ -492,19 +491,22 @@ export default function TasksPage() {
                 gap-3
               "
             >
-              <button
-                className="
-                  rounded-xl
-                  bg-blue-600
-                  px-4
-                  py-2
-                  text-sm
-                  font-semibold
-                  text-white
-                "
-              >
-                Detail
-              </button>
+              <Link
+  href={`/tasks/${task.id}`}
+  className="
+    rounded-xl
+    bg-blue-600
+    px-4
+    py-2
+    text-sm
+    font-semibold
+    text-white
+    transition
+    hover:bg-blue-700
+  "
+>
+  Detail
+</Link>
 
               <button
                 onClick={() =>

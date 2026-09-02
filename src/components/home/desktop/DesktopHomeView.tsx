@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
 import type { NearbyTask } from "@/features/tasks/types/nearby-task";
+
+import type { PendingPaymentSummary } from "@/features/payments/types/pendingPayment";
 
 import DesktopHomeHeader from "@/components/layout/desktop/DesktopHomeHeader";
 
@@ -14,8 +14,6 @@ import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
-import PaymentRoot from "@/features/payments/components/PaymentRoot";
-
 interface Props {
   tasks: NearbyTask[];
 
@@ -25,15 +23,29 @@ interface Props {
 
   activeCategory: string;
 
+  searchValue: string;
+
   currentPage: number;
 
   totalPages: number;
 
   onCategoryChange: (category: string) => void;
 
+  onSearchChange: (value: string) => void;
+
   onPreviousPage: () => void;
 
   onNextPage: () => void;
+
+  pendingPayment: PendingPaymentSummary | null;
+
+  pendingPaymentLoading: boolean;
+
+  resumePaymentLoading: boolean;
+
+  onOpenSupport: () => void;
+
+  onResumePayment: () => void;
 }
 
 export default function DesktopHomeView({
@@ -41,20 +53,32 @@ export default function DesktopHomeView({
   loadingTasks,
   locationError,
   activeCategory,
+  searchValue,
   currentPage,
   totalPages,
   onCategoryChange,
+  onSearchChange,
   onPreviousPage,
   onNextPage,
+  pendingPayment,
+  pendingPaymentLoading,
+  resumePaymentLoading,
+  onOpenSupport,
+  onResumePayment,
 }: Props) {
-  const [openSupport, setOpenSupport] = useState(false);
-
   return (
     <div className="hidden lg:block">
-      <DesktopSidebar onOpenSupport={() => setOpenSupport(true)} />
+      <DesktopSidebar
+        onOpenSupport={onOpenSupport}
+      />
 
       <main className="min-h-screen bg-slate-50 pl-70">
-        <DesktopHomeHeader />
+        <DesktopHomeHeader
+          pendingPayment={pendingPayment}
+          pendingPaymentLoading={pendingPaymentLoading}
+          resumePaymentLoading={resumePaymentLoading}
+          onResumePayment={onResumePayment}
+        />
 
         <DesktopQuickActions />
 
@@ -65,18 +89,15 @@ export default function DesktopHomeView({
           loadingTasks={loadingTasks}
           locationError={locationError}
           activeCategory={activeCategory}
+          searchValue={searchValue}
           currentPage={currentPage}
           totalPages={totalPages}
           onCategoryChange={onCategoryChange}
+          onSearchChange={onSearchChange}
           onPreviousPage={onPreviousPage}
           onNextPage={onNextPage}
         />
       </main>
-
-      <PaymentRoot
-        supportOpen={openSupport}
-        onCloseSupport={() => setOpenSupport(false)}
-      />
     </div>
   );
 }

@@ -8,6 +8,8 @@ import {
   getTaskStatusLabel,
 } from "@/features/tasks/utils/task-status";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 import type { HistoryTask } from "@/features/tasks/types/history";
 
 interface Props {
@@ -210,8 +212,7 @@ export default function DesktopHistoryView({
                   text-indigo-600
                 "
               >
-                {task.category ||
-                  "Lainnya"}
+                {getTaskCategoryLabel(task.category)}
               </span>
 
               {/* URGENT */}

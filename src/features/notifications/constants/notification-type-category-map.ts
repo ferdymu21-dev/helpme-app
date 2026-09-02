@@ -35,10 +35,18 @@ export const NotificationTypeCategoryMap = {
 
   [NotificationType.DONATION_EXPIRED]: NotificationCategory.PAYMENT,
 
+  [NotificationType.DONATION_FAILED]: NotificationCategory.PAYMENT,
+
+  [NotificationType.DONATION_CANCELLED]: NotificationCategory.PAYMENT,
+
   /* =========================
        URGENT PAYMENT
     ========================= */
   [NotificationType.URGENT_TASK_PAID]: NotificationCategory.PAYMENT,
 
   [NotificationType.URGENT_TASK_EXPIRED]: NotificationCategory.PAYMENT,
+
+  [NotificationType.URGENT_TASK_FAILED]: NotificationCategory.PAYMENT,
+
+  [NotificationType.URGENT_TASK_CANCELLED]: NotificationCategory.PAYMENT,
 } as const;

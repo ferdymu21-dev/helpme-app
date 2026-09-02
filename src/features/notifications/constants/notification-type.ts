@@ -25,18 +25,26 @@ export const NotificationType = {
   INFO_BROADCAST: "INFO_BROADCAST",
 
   /* =========================
-      DONATION
-   ========================= */
+    DONATION
+ ========================= */
   DONATION_PAID: "DONATION_PAID",
 
   DONATION_EXPIRED: "DONATION_EXPIRED",
 
+  DONATION_FAILED: "DONATION_FAILED",
+
+  DONATION_CANCELLED: "DONATION_CANCELLED",
+
   /* =========================
-      URGENT TASK PAYMENT
-   ========================= */
+    URGENT TASK PAYMENT
+ ========================= */
   URGENT_TASK_PAID: "URGENT_TASK_PAID",
 
   URGENT_TASK_EXPIRED: "URGENT_TASK_EXPIRED",
+
+  URGENT_TASK_FAILED: "URGENT_TASK_FAILED",
+
+  URGENT_TASK_CANCELLED: "URGENT_TASK_CANCELLED",
 } as const;
 
 export type NotificationTypeValue =

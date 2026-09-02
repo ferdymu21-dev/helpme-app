@@ -73,11 +73,14 @@ export function useCurrentUser() {
   }, []);
 
   useEffect(() => {
-    // Initial profile fetch is intentionally triggered from an effect.
-    // The refresh function updates local React state with data from Supabase.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const timer = window.setTimeout(() => {
     void refresh();
-  }, [refresh]);
+  }, 0);
+
+  return () => {
+    window.clearTimeout(timer);
+  };
+}, [refresh]);
 
   return {
     user,

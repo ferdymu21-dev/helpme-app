@@ -1,17 +1,13 @@
 import {
-    fetchPaymentStatus,
+  fetchPaymentStatus,
 } from "@/lib/payments/server/paymentStatus.service";
 
 export async function paymentStatusController(
-
-    orderId: string,
-
+  userId: string,
+  orderId: string,
 ) {
-
-    return await fetchPaymentStatus(
-
-        orderId,
-
-    );
-
+  return await fetchPaymentStatus(
+    userId,
+    orderId,
+  );
 }

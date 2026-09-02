@@ -1,87 +1,81 @@
-import DonationAmountCard
-
-    from "./DonationAmountCard";
+import DonationAmountCard from "./DonationAmountCard";
 
 const amounts = [
-
-    5000,
-
-    10000,
-
-    20000,
-
-    50000,
-
+  5000,
+  10000,
+  20000,
+  50000,
 ];
 
 interface Props {
+  selectedAmount: number;
 
-    selectedAmount: number;
-
-    onSelect: (
-
-        amount: number
-
-    ) => void;
-
+  onSelect: (
+    amount: number,
+  ) => void;
 }
 
 export default function DonationAmountGrid({
-
-    selectedAmount,
-
-    onSelect,
-
+  selectedAmount,
+  onSelect,
 }: Props) {
+  return (
+    <section
+      className="
+        px-5
+        pb-4
+        pt-5
+        sm:px-6
+        sm:pt-6
+      "
+    >
+      <div>
+        <h3
+          className="
+            text-sm
+            font-black
+            text-slate-900
+          "
+        >
+          Pilih nominal dukungan
+        </h3>
 
-    return (
+        <p
+          className="
+            mt-1
+            text-[10px]
+            leading-4
+            text-slate-500
+          "
+        >
+          Anda dapat memilih nominal cepat
+          atau memasukkan nominal sendiri.
+        </p>
+      </div>
 
-        <div className="p-6">
-
-            <h3 className="mb-4 font-bold">
-
-                Pilih Nominal
-
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-
-                {amounts.map(
-
-                    amount => (
-
-                        <DonationAmountCard
-
-                            key={amount}
-
-                            amount={amount}
-
-                            selected={
-
-                                selectedAmount
-
-                                ===
-
-                                amount
-
-                            }
-
-                            onSelect={
-
-                                onSelect
-
-                            }
-
-                        />
-
-                    )
-
-                )}
-
-            </div>
-
-        </div>
-
-    );
-
+      <div
+        className="
+          mt-3
+          grid
+          grid-cols-2
+          gap-2.5
+          sm:grid-cols-4
+        "
+      >
+        {amounts.map(
+          (amount) => (
+            <DonationAmountCard
+              key={amount}
+              amount={amount}
+              selected={
+                selectedAmount ===
+                amount
+              }
+              onSelect={onSelect}
+            />
+          ),
+        )}
+      </div>
+    </section>
+  );
 }

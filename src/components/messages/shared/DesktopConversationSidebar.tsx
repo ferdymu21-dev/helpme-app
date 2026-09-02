@@ -76,17 +76,16 @@ export default function DesktopConversationSidebar({
 
     existingGroup.conversations.push(conversation);
 
-    existingGroup.unreadCount += unreadCount;
+const currentTimestamp = getConversationTimestamp(conversation);
 
-    const currentTimestamp = getConversationTimestamp(conversation);
+const latestTimestamp = getConversationTimestamp(
+  existingGroup.latestConversation,
+);
 
-    const latestTimestamp = getConversationTimestamp(
-      existingGroup.latestConversation,
-    );
-
-    if (currentTimestamp > latestTimestamp) {
-      existingGroup.latestConversation = conversation;
-    }
+if (currentTimestamp > latestTimestamp) {
+  existingGroup.latestConversation = conversation;
+  existingGroup.unreadCount = unreadCount;
+}
   }
 
   const groupedConversations = Array.from(groupedMap.values()).sort(

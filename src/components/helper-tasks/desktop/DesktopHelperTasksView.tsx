@@ -13,6 +13,8 @@ import {
   getTaskStatusLabel,
 } from "@/features/tasks/utils/task-status";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 interface Task {
   id: string;
   title: string;
@@ -571,17 +573,17 @@ export default function DesktopHelperTasksView({
                     {/* CATEGORY */}
                     <div
                       className="
-                      inline-flex
-                      rounded-full
+                        inline-flex
+                        rounded-full
                       bg-emerald-50
-                      px-3
-                      py-1
-                      text-xs
-                      font-semibold
+                        px-3
+                        py-1
+                        text-xs
+                        font-semibold
                       text-emerald-600
-                    "
+                      "
                     >
-                      {task.category}
+                      {getTaskCategoryLabel(task.category)}
                     </div>
 
                     <div className="flex items-center gap-2">

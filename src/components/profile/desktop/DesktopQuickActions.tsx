@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 
-import Image from "next/image";
-
 import {
   ChevronRight,
+  ClipboardList,
+  CreditCard,
   LayoutDashboard,
+  MessageSquareText,
+  Settings,
 } from "lucide-react";
 
 interface Props {
@@ -14,12 +16,29 @@ interface Props {
   role?: string | null;
 }
 
-interface QuickAction {
-  title: string;
-  subtitle: string;
-  href: string;
-  icon: string;
-}
+const ACTIVITY_ACTIONS = [
+  {
+    title: "Riwayat Task",
+    subtitle:
+      "Lihat seluruh task yang pernah dijalankan.",
+    href: "/history",
+    icon: ClipboardList,
+  },
+  {
+    title: "Riwayat Pembayaran",
+    subtitle:
+      "Pantau transaksi dan aktivitas pembayaran.",
+    href: "/payments/history",
+    icon: CreditCard,
+  },
+  {
+    title: "Semua Review",
+    subtitle:
+      "Lihat seluruh ulasan yang diterima.",
+    href: "/profile/reviews",
+    icon: MessageSquareText,
+  },
+];
 
 export default function DesktopQuickActions({
   isPublicProfile = false,
@@ -29,180 +48,248 @@ export default function DesktopQuickActions({
     return null;
   }
 
-  const actions: QuickAction[] = [
-    {
-      title: "Riwayat Task",
-      subtitle:
-        "Lihat seluruh aktivitas task",
-      href: "/history",
-      icon: "/icons/profile/riwayat-task.svg",
-    },
-    {
-      title: "Verifikasi",
-      subtitle:
-        "Upgrade akun menjadi Verified",
-      href: "/profile/verification",
-      icon: "/icons/profile/verifikasi-akun.svg",
-    },
-    {
-      title: "Pembayaran",
-      subtitle:
-        "Kelola history pembayaran",
-      href: "/payments/history",
-      icon: "/icons/profile/payment.svg",
-    },
-    {
-      title: "Pengaturan",
-      subtitle:
-        "Privasi dan preferensi akun",
-      href: "/settings",
-      icon: "/icons/profile/pengaturan.svg",
-    },
-    {
-      title: "Semua Review",
-      subtitle:
-        "Lihat seluruh review pengguna",
-      href: "/profile/reviews",
-      icon: "/icons/profile/review.svg",
-    },
-  ];
-
   return (
-    <section
-      className="
-        rounded-3xl
-        bg-white
-        p-6
-        shadow-[0_10px_30px_rgba(15,23,42,.05)]
-      "
-    >
-      {/* HEADER */}
+    <section className="space-y-5">
+      {/* ACTIVITY */}
       <div>
-        <h2
-          className="
-            text-xl
-            font-black
-            tracking-tight
-            text-slate-900
-          "
-        >
-          Akses Cepat
-        </h2>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Kelola akun dan aktivitasmu.
-        </p>
-      </div>
-
-      {/* ACTION GRID */}
-      <div
-        className="
-          mt-5
-          grid
-          grid-cols-5
-          gap-4
-        "
-      >
-        {actions.map((item) => (
-          <Link
-            key={item.title}
-            href={item.href}
+        <div>
+          <h2
             className="
-              group
-              flex
-              min-h-48
-              flex-col
-              rounded-3xl
-              border
-              border-indigo-100
-              bg-indigo-50/70
-              p-5
-              transition-all
-              duration-300
-              hover:-translate-y-1
-              hover:border-indigo-200
-              hover:bg-indigo-50
-              hover:shadow-lg
+              text-lg
+              font-black
+              tracking-tight
+              text-slate-900
             "
           >
-            {/* ICON */}
+            Aktivitas
+          </h2>
+
+          <p
+            className="
+              mt-1
+              text-sm
+              text-slate-500
+            "
+          >
+            Pantau task, transaksi, dan reputasi akun Anda.
+          </p>
+        </div>
+
+        <div
+          className="
+            mt-4
+            grid
+            grid-cols-3
+            gap-4
+          "
+        >
+          {ACTIVITY_ACTIONS.map(
+            (item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="
+                    group
+                    flex
+                    min-h-44
+                    flex-col
+                    rounded-[26px]
+                    border
+                    border-slate-200
+                    bg-white
+                    p-5
+                    shadow-[0_8px_24px_rgba(15,23,42,0.035)]
+                    transition
+                    duration-300
+                    hover:-translate-y-0.5
+                    hover:border-indigo-200
+                    hover:shadow-[0_14px_34px_rgba(15,23,42,0.07)]
+                  "
+                >
+                  <div
+                    className="
+                      flex
+                      h-11
+                      w-11
+                      items-center
+                      justify-center
+                      rounded-2xl
+                      bg-indigo-50
+                      text-indigo-600
+                      transition
+                      group-hover:bg-indigo-100
+                    "
+                  >
+                    <Icon
+                      className="h-5 w-5"
+                      strokeWidth={2}
+                    />
+                  </div>
+
+                  <h3
+                    className="
+                      mt-4
+                      text-sm
+                      font-black
+                      text-slate-900
+                    "
+                  >
+                    {item.title}
+                  </h3>
+
+                  <p
+                    className="
+                      mt-1.5
+                      text-[11px]
+                      leading-5
+                      text-slate-500
+                    "
+                  >
+                    {item.subtitle}
+                  </p>
+
+                  <ChevronRight
+                    className="
+                      mt-auto
+                      ml-auto
+                      h-4
+                      w-4
+                      text-slate-300
+                      transition
+                      group-hover:translate-x-0.5
+                      group-hover:text-indigo-600
+                    "
+                  />
+                </Link>
+              );
+            },
+          )}
+        </div>
+      </div>
+
+      {/* ACCOUNT */}
+      <div
+        className="
+          rounded-[28px]
+          border
+          border-slate-200
+          bg-white
+          p-5
+          shadow-[0_8px_24px_rgba(15,23,42,0.035)]
+        "
+      >
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            gap-6
+          "
+        >
+          <div
+            className="
+              flex
+              min-w-0
+              items-center
+              gap-4
+            "
+          >
             <div
               className="
                 flex
                 h-12
                 w-12
+                shrink-0
                 items-center
                 justify-center
                 rounded-2xl
-                bg-white
-                shadow-sm
+                bg-slate-100
+                text-slate-600
               "
             >
-              <Image
-                src={item.icon}
-                alt={item.title}
-                width={24}
-                height={24}
+              <Settings
+                className="h-5 w-5"
+                strokeWidth={2}
               />
             </div>
 
-            {/* TEXT */}
-            <h3
-              className="
-                mt-5
-                text-base
-                font-bold
-                text-slate-900
-              "
-            >
-              {item.title}
-            </h3>
-
-            <p
-              className="
-                mt-2
-                text-sm
-                leading-6
-                text-slate-500
-              "
-            >
-              {item.subtitle}
-            </p>
-
-            {/* ARROW */}
-            <div className="mt-auto flex justify-end pt-4">
-              <ChevronRight
+            <div>
+              <h3
                 className="
-                  h-5
-                  w-5
-                  text-slate-400
-                  transition
-                  group-hover:translate-x-1
-                  group-hover:text-indigo-600
+                  text-sm
+                  font-black
+                  text-slate-900
                 "
-              />
-            </div>
-          </Link>
-        ))}
+              >
+                Pengaturan Akun
+              </h3>
 
-        {/* ADMIN */}
-        {role === "ADMIN" && (
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  leading-5
+                  text-slate-500
+                "
+              >
+                Kelola profil, verifikasi identitas, kata sandi, dan
+                keamanan akun.
+              </p>
+            </div>
+          </div>
+
           <Link
-            href="/admin"
+            href="/settings"
             className="
-              group
-              flex
-              min-h-48
-              flex-col
-              rounded-3xl
+              inline-flex
+              h-10
+              shrink-0
+              items-center
+              gap-2
+              rounded-xl
               bg-slate-900
-              p-5
+              px-4
+              text-xs
+              font-bold
               text-white
-              transition-all
-              duration-300
-              hover:-translate-y-1
+              transition
               hover:bg-slate-800
-              hover:shadow-lg
+            "
+          >
+            Buka Pengaturan
+
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ADMIN */}
+      {role === "ADMIN" && (
+        <Link
+          href="/admin"
+          className="
+            group
+            flex
+            items-center
+            justify-between
+            gap-5
+            rounded-[28px]
+            bg-slate-950
+            p-5
+            text-white
+            shadow-[0_12px_30px_rgba(15,23,42,0.16)]
+            transition
+            hover:bg-slate-900
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              gap-4
             "
           >
             <div
@@ -217,40 +304,45 @@ export default function DesktopQuickActions({
               "
             >
               <LayoutDashboard
-                className="h-6 w-6"
+                className="h-5 w-5"
+                strokeWidth={2}
               />
             </div>
 
-            <h3 className="mt-5 text-base font-bold">
-              Admin Dashboard
-            </h3>
-
-            <p
-              className="
-                mt-2
-                text-sm
-                leading-6
-                text-slate-300
-              "
-            >
-              Kelola seluruh sistem aplikasi.
-            </p>
-
-            <div className="mt-auto flex justify-end pt-4">
-              <ChevronRight
+            <div>
+              <h3
                 className="
-                  h-5
-                  w-5
-                  text-slate-400
-                  transition
-                  group-hover:translate-x-1
-                  group-hover:text-white
+                  text-sm
+                  font-black
                 "
-              />
+              >
+                Admin Dashboard
+              </h3>
+
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  text-slate-400
+                "
+              >
+                Kelola moderasi dan sistem HelpMe.
+              </p>
             </div>
-          </Link>
-        )}
-      </div>
+          </div>
+
+          <ChevronRight
+            className="
+              h-5
+              w-5
+              text-slate-500
+              transition
+              group-hover:translate-x-1
+              group-hover:text-white
+            "
+          />
+        </Link>
+      )}
     </section>
   );
 }

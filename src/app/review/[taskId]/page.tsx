@@ -35,21 +35,14 @@ export default function ReviewPage() {
         return;
       }
 
-      /* CURRENT USER */
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
       /* INSERT REVIEW */
       await submitReviewAction({
-    taskId: task.id,
-    reviewerId: user.id,
-    revieweeId: task.selected_helper_id,
-    rating,
-    comment,
-});
+        taskId: task.id,
+
+        rating,
+
+        comment,
+      });
 
       alert("Terima kasih atas ulasannya");
 
@@ -144,8 +137,7 @@ export default function ReviewPage() {
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="
-               Bagaimana pengalamanmu?"
+              placeholder="Bagaimana pengalamanmu?"
               className="
                 mt-3
                 h-36

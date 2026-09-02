@@ -1,110 +1,61 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import {
-    paymentLog,
-} from "@/lib/monitoring/payment.logger";
+import { paymentLog } from "@/lib/monitoring/payment.logger";
 
-import {
-    PAYMENT_METHOD,
-    PAYMENT_STATUS,
-} from "../constants/payment";
+import { PAYMENT_METHOD, PAYMENT_STATUS } from "../constants/payment";
 
-import type {
-     CreateDonationCommand,
-} from "../types/donation";
+import type { CreateDonationCommand } from "../types/donation";
 
 export async function saveDonation(
+  payload: CreateDonationCommand,
 
-    payload: CreateDonationCommand,
+  orderId: string,
 
-    orderId: string,
+  transaction: {
+    token: string;
 
-    transaction: {
+    redirect_url: string;
+  },
 
-        token: string;
-
-        redirect_url: string;
-
-    }
-
+  paymentExpiresAt: string,
 ) {
+  const { error } = await adminSupabase
 
-    const {
+    .from("support_donations")
 
-        error,
+    .insert({
+      user_id: payload.userId,
 
-    }
+      amount: payload.amount,
 
-    =
+      payment_status: PAYMENT_STATUS.PENDING,
 
-    await adminSupabase
+      payment_method: PAYMENT_METHOD.QRIS,
 
-        .from(
+      midtrans_order_id: orderId,
 
-            "support_donations"
+      snap_token: transaction.token,
 
-        )
+      payment_url: transaction.redirect_url,
 
-        .insert({
+      payment_expires_at: paymentExpiresAt,
+    });
 
-            user_id:
+  if (error) {
+    paymentLog(
+      "DATABASE_INSERT_FAILED",
 
-                payload.userId,
+      error,
 
-            amount:
+      {
+        orderId,
 
-                payload.amount,
+        amount: payload.amount,
 
-            payment_status:
+        userId: payload.userId,
+      },
+    );
 
-                PAYMENT_STATUS.PENDING,
-
-            payment_method:
-
-                PAYMENT_METHOD.QRIS,
-
-            midtrans_order_id:
-
-                orderId,
-
-            snap_token:
-
-                transaction.token,
-
-            payment_url:
-
-                transaction.redirect_url,
-
-        });
-
-    if (error) {
-
-        paymentLog(
-
-            "DATABASE_INSERT_FAILED",
-
-            error,
-
-            {
-
-                orderId,
-
-                amount:
-
-                    payload.amount,
-
-                userId:
-
-                    payload.userId,
-
-            }
-
-        );
-
-        throw error;
-
-    }
-
+    throw error;
+  }
 }

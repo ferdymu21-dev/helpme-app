@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   ClipboardList,
   Flag,
   Home,
@@ -19,9 +18,9 @@ export const AdminNavigation: AdminNavigationItem[] = [
 
     label: "Dashboard",
 
-    description: "Ringkasan sistem",
+    description: "Ringkasan dan analitik platform",
 
-    href: "/admin",
+    href: "/admin/analytics",
 
     icon: Home,
 
@@ -120,22 +119,6 @@ export const AdminNavigation: AdminNavigationItem[] = [
     href: "/admin/campaigns",
 
     icon: Megaphone,
-
-    enabled: true,
-
-    showOnDashboard: true,
-  },
-
-  {
-    id: "analytics",
-
-    label: "Analytics",
-
-    description: "Statistik platform",
-
-    href: "/admin/analytics",
-
-    icon: BarChart3,
 
     enabled: true,
 

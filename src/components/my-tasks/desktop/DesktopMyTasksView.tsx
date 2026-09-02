@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { CalendarDays, Clock3, MapPin } from "lucide-react";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 import {
   getTaskStatusBadgeClass,
   getTaskStatusLabel,
@@ -321,7 +323,7 @@ export default function DesktopMyTasksView({
                       text-indigo-600
                     "
                   >
-                    {task.category}
+                    {getTaskCategoryLabel(task.category)}
                   </div>
 
                   {/* URGENT + STATUS */}

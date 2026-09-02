@@ -1,27 +1,35 @@
+export interface MidtransExpiry {
+  start_time: string;
+
+  duration: number;
+
+  unit:
+    | "minute"
+    | "minutes"
+    | "hour"
+    | "hours"
+    | "day"
+    | "days";
+}
+
 export interface MidtransTransaction {
+  transaction_details: {
+    order_id: string;
 
-    transaction_details: {
+    gross_amount: number;
+  };
 
-        order_id: string;
+  enabled_payments?: string[];
 
-        gross_amount: number;
+  expiry?: MidtransExpiry;
 
-    };
+  qris?: {
+    acquirer?: string;
+  };
 
-    enabled_payments?: string[];
+  customer_details?: {
+    first_name?: string;
 
-    qris?: {
-
-        acquirer?: string;
-
-    };
-
-    customer_details?: {
-
-        first_name?: string;
-
-        email?: string;
-
-    };
-
+    email?: string;
+  };
 }

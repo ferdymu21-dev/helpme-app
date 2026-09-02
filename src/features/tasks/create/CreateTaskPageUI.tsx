@@ -2,9 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import type {
-    CreateTaskPageUIProps,
-} from "./types/create-task.types";
+import type { CreateTaskPageUIProps } from "./types/create-task.types";
 
 import Header from "./components/Header";
 
@@ -22,100 +20,94 @@ import LocationSection from "./components/location/LocationSection";
 
 import ActionBar from "./components/ActionBar";
 
-import PaymentResultDialog
-    from "@/features/payments/components/dialog/PaymentResultDialog";
+import PaymentResultDialog from "@/features/payments/components/dialog/PaymentResultDialog";
 
 export default function CreateTaskPageUI({
+  title,
+  description,
+  category,
+  budget,
 
-    title,
-    description,
-    category,
-    budget,
+  taskDate,
+  taskTime,
 
-    taskDate,
-    taskTime,
+  isUrgent,
 
-    isUrgent,
+  loading,
 
-    loading,
+  paymentResult,
+  paymentOrderId,
+  paymentAmount,
+  paymentType,
+  taskId,
 
-    paymentResult,
-    paymentOrderId,
-    paymentAmount,
-    paymentType,
-    taskId,
+  closePaymentResult,
 
-    closePaymentResult,
+  locationMethod,
+  locationSearch,
 
-    locationMethod,
-    locationSearch,
+  searchResults,
+  searchingLocation,
 
-    searchResults,
-    searchingLocation,
+  selectedLocation,
+  manualAddress,
 
-    selectedLocation,
-    manualAddress,
+  onLocationMethodChange,
 
-    onLocationMethodChange,
+  onLocationSearchChange,
 
-    onLocationSearchChange,
+  onManualAddressChange,
 
-    onManualAddressChange,
+  onSelectedLocationChange,
 
-    onSelectedLocationChange,
+  onSearchResultsChange,
 
-    onSearchResultsChange,
+  onLatitudeChange,
 
-    onLatitudeChange,
+  onLongitudeChange,
 
-    onLongitudeChange,
+  onLocationQueryChange,
 
-    onLocationQueryChange,
+  onTitleChange,
+  onDescriptionChange,
+  onCategoryChange,
+  onBudgetChange,
 
-    onTitleChange,
-    onDescriptionChange,
-    onCategoryChange,
-    onBudgetChange,
+  onTaskDateChange,
+  onTaskTimeChange,
 
-    onTaskDateChange,
-    onTaskTimeChange,
+  onUrgentChange,
 
-    onUrgentChange,
+  onSubmit,
 
-    onSubmit,
+  onSearchLocation,
 
-    onSearchLocation,
-
-    onBack,
-
+  onBack,
 }: CreateTaskPageUIProps) {
+  const router = useRouter();
 
-    const router = useRouter();
+  return (
+    <main className="min-h-screen bg-slate-50/70 pb-28 sm:pb-12">
+      <div className="mx-auto w-full max-w-3xl">
+        {/* HEADER */}
+        <Header onBack={onBack} />
 
-    return (
-        <main className="min-h-screen bg-slate-50/70 pb-28 sm:pb-12">
-            <div className="mx-auto w-full max-w-3xl">
+        {/* INTRO */}
+        <IntroSection />
 
-                {/* HEADER */}
-                <Header onBack={onBack} />
-
-                {/* INTRO */}
-                <IntroSection />
-
-                {/* FORM */}
-                <form
-                    id="create-task-form"
-                    onSubmit={onSubmit}
-                    className="
+        {/* FORM */}
+        <form
+          id="create-task-form"
+          onSubmit={onSubmit}
+          className="
                       space-y-4
                       px-4
                       sm:px-6
                     "
-                >
-
-                    {/* DETAIL TASK */}
-                    <section
-                        className="
+        >
+          {/* DETAIL TASK */}
+          <section
+            className="
                           rounded-3xl
                           border
                         border-slate-200/80
@@ -124,120 +116,81 @@ export default function CreateTaskPageUI({
                           shadow-[0_8px_30px_rgba(15,23,42,0.04)]
                           sm:p-6
                         "
-                    >
-                        <BasicInformationSection
-                            title={title}
-                            description={description}
-                            onTitleChange={onTitleChange}
-                            onDescriptionChange={onDescriptionChange}
-                        />
-
-                        {/* CATEGORY */}
-                        <CategorySection
-                            category={category}
-                            onCategoryChange={onCategoryChange}
-                        />
-                    </section>
-
-                    {/* BUDGET & SCHEDULE */}
-                    <BudgetScheduleSection
-                        budget={budget}
-                        taskDate={taskDate}
-                        taskTime={taskTime}
-                        onBudgetChange={onBudgetChange}
-                        onTaskDateChange={onTaskDateChange}
-                        onTaskTimeChange={onTaskTimeChange}
-                    />
-
-                    {/* URGENT */}
-                    <UrgentSection
-                        isUrgent={isUrgent}
-                        onUrgentChange={onUrgentChange}
-                    />
-
-                    {/* LOCATION M */}
-                    <LocationSection
-
-                        locationMethod={locationMethod}
-
-                        locationSearch={locationSearch}
-
-                        searchingLocation={searchingLocation}
-
-                        searchResults={searchResults}
-
-                        selectedLocation={selectedLocation}
-
-                        manualAddress={manualAddress}
-
-                        onLocationMethodChange={
-                            onLocationMethodChange
-                        }
-
-                        onLocationSearchChange={
-                            onLocationSearchChange
-                        }
-
-                        onManualAddressChange={
-                            onManualAddressChange
-                        }
-
-                        onSelectedLocationChange={
-                            onSelectedLocationChange
-                        }
-
-                        onSearchResultsChange={
-                            onSearchResultsChange
-                        }
-
-                        onLatitudeChange={
-                            onLatitudeChange
-                        }
-
-                        onLongitudeChange={
-                            onLongitudeChange
-                        }
-
-                        onLocationQueryChange={
-                            onLocationQueryChange
-                        }
-
-                        onSearchLocation={
-                            onSearchLocation
-                        }
-
-                    />
-
-                    {/* ACTION BAR */}
-                    <ActionBar
-                        loading={loading}
-                    />
-
-                </form>
-
-            </div>
-
-            <PaymentResultDialog
-                open={paymentResult.status !== "IDLE"}
-                status={paymentResult.status}
-                amount={paymentAmount}
-                orderId={paymentOrderId}
-                paymentType={paymentType}
-                taskId={taskId}
-                onClose={() => {
-                    closePaymentResult();
-                    router.push("/home");
-                }}
-                onHistory={() => {
-                    closePaymentResult();
-                    router.push("/payments/history");
-                }}
-                onViewTask={(taskId) => {
-                    closePaymentResult();
-                    router.push(`/tasks/${taskId}`);
-                }}
+          >
+            <BasicInformationSection
+              title={title}
+              description={description}
+              onTitleChange={onTitleChange}
+              onDescriptionChange={onDescriptionChange}
             />
 
-        </main>
-    );
+            {/* CATEGORY */}
+            <CategorySection
+              category={category}
+              onCategoryChange={onCategoryChange}
+            />
+          </section>
+
+          {/* BUDGET & SCHEDULE */}
+          <BudgetScheduleSection
+            budget={budget}
+            taskDate={taskDate}
+            taskTime={taskTime}
+            onBudgetChange={onBudgetChange}
+            onTaskDateChange={onTaskDateChange}
+            onTaskTimeChange={onTaskTimeChange}
+          />
+
+          {/* URGENT */}
+          <UrgentSection isUrgent={isUrgent} onUrgentChange={onUrgentChange} />
+
+          {/* LOCATION M */}
+          <LocationSection
+            locationMethod={locationMethod}
+            locationSearch={locationSearch}
+            searchingLocation={searchingLocation}
+            searchResults={searchResults}
+            selectedLocation={selectedLocation}
+            manualAddress={manualAddress}
+            onLocationMethodChange={onLocationMethodChange}
+            onLocationSearchChange={onLocationSearchChange}
+            onManualAddressChange={onManualAddressChange}
+            onSelectedLocationChange={onSelectedLocationChange}
+            onSearchResultsChange={onSearchResultsChange}
+            onLatitudeChange={onLatitudeChange}
+            onLongitudeChange={onLongitudeChange}
+            onLocationQueryChange={onLocationQueryChange}
+            onSearchLocation={onSearchLocation}
+          />
+
+          {/* ACTION BAR */}
+          <ActionBar
+              loading={loading}
+              isUrgent={isUrgent}
+           />
+        </form>
+      </div>
+
+      <PaymentResultDialog
+        open={paymentResult.status !== "IDLE"}
+        status={paymentResult.status}
+        amount={paymentAmount}
+        orderId={paymentOrderId}
+        paymentType={paymentType}
+        taskId={taskId}
+        onClose={() => {
+          closePaymentResult();
+          router.push("/home");
+        }}
+        onHistory={() => {
+          closePaymentResult();
+          router.push("/payments/history");
+        }}
+        onViewTask={(taskId) => {
+          closePaymentResult();
+          router.push(`/tasks/${taskId}`);
+        }}
+      />
+    </main>
+  );
 }

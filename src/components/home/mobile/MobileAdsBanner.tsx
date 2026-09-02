@@ -75,83 +75,84 @@ export default function MobileAdsBanner() {
   }, [ads.length]);
 
   /*
- * QUALIFIED IMPRESSION TRACKING
- *
- * Iklan harus tetap tampil selama minimal 2 detik
- * sebelum dihitung sebagai impression.
- *
- * Satu iklan hanya dihitung 1 impression
- * selama satu kali halaman ini dibuka.
- */
-useEffect(() => {
-  const activeAd = ads[activeIndex];
-
-  if (!activeAd) {
-    return;
-  }
-
-  /*
-   * Jika iklan ini sudah pernah mendapatkan
-   * qualified impression dalam sesi halaman ini,
-   * jangan hitung lagi.
+   * QUALIFIED IMPRESSION TRACKING
+   *
+   * Iklan harus tetap tampil selama minimal 2 detik
+   * sebelum dihitung sebagai impression.
+   *
+   * Satu iklan hanya dihitung 1 impression
+   * selama satu kali halaman ini dibuka.
    */
-  if (impressionTrackedIds.current.has(activeAd.id)) {
-    return;
-  }
+  useEffect(() => {
+    const activeAd = ads[activeIndex];
 
-  const adId = activeAd.id;
-
-  /*
-   * Tunggu 2 detik sebelum mencatat impression.
-   */
-  const timeout = window.setTimeout(async () => {
-    /*
-     * Pastikan iklan masih merupakan iklan aktif
-     * ketika waktu 2 detik selesai.
-     */
-    const currentAd = ads[activeIndex];
-
-    if (!currentAd || currentAd.id !== adId) {
+    if (!activeAd) {
       return;
     }
 
     /*
-     * Tandai sebelum request untuk mencegah
-     * duplicate request.
+     * Jika iklan ini sudah pernah mendapatkan
+     * qualified impression dalam sesi halaman ini,
+     * jangan hitung lagi.
      */
-    impressionTrackedIds.current.add(adId);
+    if (impressionTrackedIds.current.has(activeAd.id)) {
+      return;
+    }
 
-    try {
-      await fetch(`/api/ads/${adId}/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          event_type: "impression",
-        }),
-      });
-    } catch (error) {
-      console.error(
-        "Gagal mencatat qualified impression iklan:",
-        error,
-      );
+    const adId = activeAd.id;
+
+    /*
+     * Tunggu 2 detik sebelum mencatat impression.
+     */
+    const timeout = window.setTimeout(async () => {
+      /*
+       * Pastikan iklan masih merupakan iklan aktif
+       * ketika waktu 2 detik selesai.
+       */
+      const currentAd = ads[activeIndex];
+
+      if (!currentAd || currentAd.id !== adId) {
+        return;
+      }
 
       /*
-       * Jika request gagal, izinkan retry.
+       * Tandai sebelum request untuk mencegah
+       * duplicate request.
        */
-      impressionTrackedIds.current.delete(adId);
-    }
-  }, QUALIFIED_IMPRESSION_DELAY);
+      impressionTrackedIds.current.add(adId);
 
-  /*
-   * Jika activeIndex berubah sebelum 2 detik,
-   * timer dibatalkan.
-   */
-  return () => {
-    window.clearTimeout(timeout);
-  };
-}, [activeIndex, ads]);
+      try {
+        const response = await fetch(`/api/ads/${adId}/events`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            event_type: "impression",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal mencatat qualified impression iklan.");
+        }
+      } catch (error) {
+        console.error("Gagal mencatat qualified impression iklan:", error);
+
+        /*
+         * Jika request gagal, izinkan retry.
+         */
+        impressionTrackedIds.current.delete(adId);
+      }
+    }, QUALIFIED_IMPRESSION_DELAY);
+
+    /*
+     * Jika activeIndex berubah sebelum 2 detik,
+     * timer dibatalkan.
+     */
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [activeIndex, ads]);
 
   /*
    * TOUCH START
@@ -195,11 +196,10 @@ useEffect(() => {
     if (distance > 0) {
       setActiveIndex((prev) => (prev + 1) % ads.length);
     } else {
-
-    /*
-     * Swipe kanan
-     * → iklan sebelumnya
-     */
+      /*
+       * Swipe kanan
+       * → iklan sebelumnya
+       */
       setActiveIndex((prev) => (prev - 1 + ads.length) % ads.length);
     }
 
@@ -220,30 +220,30 @@ useEffect(() => {
    * kemudian buka link iklan.
    */
   async function handleOpenAds(ad: Ad) {
-  try {
-    await fetch(`/api/ads/${ad.id}/events`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        event_type: "click",
-      }),
-      keepalive: true,
-    });
-  } catch (error) {
-    console.error("Ad click tracking error:", error);
+    try {
+      const response = await fetch(`/api/ads/${ad.id}/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event_type: "click",
+        }),
+        keepalive: true,
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal mencatat click iklan.");
+      }
+    } catch (error) {
+      console.error("Ad click tracking error:", error);
+    }
+
+    window.open(ad.link_url, "_blank", "noopener,noreferrer");
   }
 
-  window.open(
-    ad.link_url,
-    "_blank",
-    "noopener,noreferrer",
-  );
-}
-
   return (
-    <section className="mt-2 px-6">
+    <section className="mt-5 px-6">
       <div
         className="
           relative
@@ -258,7 +258,6 @@ useEffect(() => {
         onTouchEnd={handleTouchEnd}
       >
         {/* IMAGE */}
-
         <img
           src={activeAd.image_url}
           alt={activeAd.title}
@@ -273,7 +272,6 @@ useEffect(() => {
         />
 
         {/* CONTENT */}
-
         <div
           className="
             relative
@@ -288,8 +286,8 @@ useEffect(() => {
           "
         >
           <div>
-            {/* BADGE */}
 
+            {/* BADGE */}
             <div
               className="
                 relative
@@ -309,7 +307,6 @@ useEffect(() => {
           </div>
 
           {/* BUTTON */}
-
           <button
             type="button"
             onClick={() => handleOpenAds(activeAd)}
@@ -332,7 +329,6 @@ useEffect(() => {
         </div>
 
         {/* DOTS */}
-
         {ads.length > 1 && (
           <div
             className="

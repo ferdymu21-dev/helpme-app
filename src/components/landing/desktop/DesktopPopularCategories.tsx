@@ -1,83 +1,33 @@
 import Link from "next/link";
 
-import {
-  ArrowRight,
-  Binoculars,
-  FileText,
-  GraduationCap,
-  MapPinned,
-  PackageOpen,
-  ShoppingBag,
-  Sparkles,
-  UsersRound,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-const categories = [
-  {
-    icon: UsersRound,
-    title: "Jasa Antri",
-    description:
-      "Bantu antre makanan, tiket, layanan, atau kebutuhan lainnya.",
-    iconClass:
-      "bg-rose-50 text-rose-600",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Titip Belanja",
-    description:
-      "Titip beli kebutuhan harian tanpa harus keluar rumah.",
-    iconClass:
-      "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: FileText,
-    title: "Ambil Dokumen",
-    description:
-      "Bantu mengambil atau mengantarkan dokumen penting.",
-    iconClass:
-      "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: PackageOpen,
-    title: "Pindahan Ringan",
-    description:
-      "Bantuan untuk memindahkan barang kecil atau kebutuhan kos.",
-    iconClass:
-      "bg-amber-50 text-amber-600",
-  },
-  {
-    icon: GraduationCap,
-    title: "Bantuan Kampus",
-    description:
-      "Print, survey, kebutuhan organisasi, dan aktivitas kampus.",
-    iconClass:
-      "bg-violet-50 text-violet-600",
-  },
-  {
-    icon: MapPinned,
-    title: "Survey Lokasi",
-    description:
-      "Minta bantuan mengecek lokasi atau kondisi suatu tempat.",
-    iconClass:
-      "bg-cyan-50 text-cyan-600",
-  },
-  {
-    icon: Binoculars,
-    title: "Cari Hewan",
-    description:
-      "Dapatkan bantuan dari orang sekitar untuk pencarian.",
-    iconClass:
-      "bg-orange-50 text-orange-600",
-  },
-  {
-    icon: Sparkles,
-    title: "Lainnya",
-    description:
-      "Punya kebutuhan berbeda? Buat task sesuai kebutuhanmu.",
-    iconClass:
-      "bg-indigo-50 text-indigo-600",
-  },
-];
+import { TASK_CATEGORIES } from "@/features/tasks/constants/task-categories";
+
+const CATEGORY_ICON_CLASSES: Record<string, string> = {
+  Antri: "bg-rose-50 text-rose-600",
+
+  Kurir: "bg-sky-50 text-sky-600",
+
+  Dokumen: "bg-blue-50 text-blue-600",
+
+  Belanja: "bg-emerald-50 text-emerald-600",
+
+  "Rumah & Pindahan": "bg-amber-50 text-amber-600",
+
+  "Cari & Cek": "bg-cyan-50 text-cyan-600",
+
+  Kondangan: "bg-violet-50 text-violet-600",
+
+  Lainnya: "bg-indigo-50 text-indigo-600",
+};
+
+const categories = TASK_CATEGORIES.map((category) => ({
+  ...category,
+
+  iconClass:
+    CATEGORY_ICON_CLASSES[category.value] ?? "bg-indigo-50 text-indigo-600",
+}));
 
 export default function PopularServicesSection() {
   return (
@@ -124,9 +74,7 @@ export default function PopularServicesSection() {
               "
             >
               Bantuan untuk berbagai{" "}
-              <span className="text-indigo-600">
-                kebutuhan harian
-              </span>
+              <span className="text-indigo-600">kebutuhan harian</span>
             </h2>
 
             <p
@@ -138,9 +86,8 @@ export default function PopularServicesSection() {
                 text-slate-500
               "
             >
-              Dari kebutuhan sederhana sampai bantuan
-              di sekitar, buat task dan temukan helper
-              yang sesuai dengan kebutuhanmu.
+              Dari kebutuhan sederhana sampai bantuan di sekitar, buat task dan
+              temukan helper yang sesuai dengan kebutuhanmu.
             </p>
           </div>
 
@@ -159,11 +106,7 @@ export default function PopularServicesSection() {
             "
           >
             Mulai buat task
-
-            <ArrowRight
-              className="h-4 w-4"
-              strokeWidth={2}
-            />
+            <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
         </div>
 
@@ -179,14 +122,9 @@ export default function PopularServicesSection() {
           "
         >
           {categories.map(
-            ({
-              icon: Icon,
-              title,
-              description,
-              iconClass,
-            }) => (
+            ({ icon: Icon, value, label, description, iconClass }) => (
               <Link
-                key={title}
+                key={value}
                 href="/register"
                 className="
                   group
@@ -216,10 +154,7 @@ export default function PopularServicesSection() {
                     ${iconClass}
                   `}
                 >
-                  <Icon
-                    className="h-6 w-6"
-                    strokeWidth={1.9}
-                  />
+                  <Icon className="h-6 w-6" strokeWidth={1.9} />
                 </div>
 
                 {/* CONTENT */}
@@ -231,7 +166,7 @@ export default function PopularServicesSection() {
                     text-slate-900
                   "
                 >
-                  {title}
+                  {label}
                 </h3>
 
                 <p
@@ -261,7 +196,6 @@ export default function PopularServicesSection() {
                   "
                 >
                   Buat task
-
                   <ArrowRight
                     className="
                       h-3.5

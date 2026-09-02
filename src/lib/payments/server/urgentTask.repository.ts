@@ -1,70 +1,55 @@
-import {
-    adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import {
-    PAYMENT_METHOD,
-    PAYMENT_STATUS,
-} from "../constants/payment";
+import { PAYMENT_METHOD, PAYMENT_STATUS } from "../constants/payment";
 
 interface Payload {
+  userId: string;
 
-    userId: string;
+  amount: number;
 
-    amount: number;
-
-    metadata?: Record<string, unknown>;
-
+  metadata?: Record<string, unknown>;
 }
 
 export async function saveUrgentTaskPayment(
+  payload: Payload,
 
-    payload: Payload,
+  orderId: string,
 
-    orderId: string,
+  transaction: {
+    token: string;
 
-    transaction: {
+    redirect_url: string;
+  },
 
-        token: string;
-
-        redirect_url: string;
-
-    }
-
+  paymentExpiresAt: string,
 ) {
+  const { error } = await adminSupabase
 
-    const { error } =
+    .from("task_payments")
 
-        await adminSupabase
+    .insert({
+      user_id: payload.userId,
 
-            .from("task_payments")
+      payment_type: "URGENT_TASK",
 
-            .insert({
+      amount: payload.amount,
 
-                user_id: payload.userId,
+      payment_status: PAYMENT_STATUS.PENDING,
 
-                payment_type: "URGENT_TASK",
+      payment_method: PAYMENT_METHOD.QRIS,
 
-                amount: payload.amount,
+      midtrans_order_id: orderId,
 
-                payment_status: PAYMENT_STATUS.PENDING,
+      snap_token: transaction.token,
 
-                payment_method: PAYMENT_METHOD.QRIS,
+      payment_url: transaction.redirect_url,
 
-                midtrans_order_id: orderId,
+      payment_expires_at: paymentExpiresAt,
 
-                snap_token: transaction.token,
+      metadata: payload.metadata ?? {},
+    });
 
-                payment_url: transaction.redirect_url,
-
-                metadata: payload.metadata ?? {},
-
-            });
-
-    if (error) {
-
-        throw error;
-
-    }
-
+  if (error) {
+    throw error;
+  }
 }

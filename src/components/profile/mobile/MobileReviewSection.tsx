@@ -37,13 +37,21 @@ export default function MobileReviewSection({
   onLoadMore,
 }: Props) {
   return (
-    <div className="-mt-37 px-6 pb-32 lg:hidden">
+    <section
+      className="
+        bg-slate-50
+        px-5
+        pt-2
+        pb-32
+        lg:hidden
+      "
+    >
       <ProfileReviewList
         reviews={reviews}
         hasMore={hasMore}
         loading={loading}
         onLoadMore={onLoadMore}
       />
-    </div>
+    </section>
   );
 }

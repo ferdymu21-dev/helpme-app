@@ -1,119 +1,69 @@
 import "server-only";
 
-import {
-    paymentLog,
-} from "@/lib/monitoring/payment.logger";
+import { paymentLog } from "@/lib/monitoring/payment.logger";
 
+import { generateOrderId, PaymentType } from "./order";
 
-import {
-    generateOrderId,
-    PaymentType,
-} from "./order";
+import type { CreateDonationCommand, DonationResult } from "../types/donation";
 
-import type {
-    CreateDonationCommand,
-    DonationResult,
-} from "../types/donation";
+import { validateDonationAmount } from "./donation.validator";
 
-import {
-    validateDonationAmount,
-} from "./donation.validator";
+import { createMidtransDonation } from "./donation.midtrans";
 
-import {
-    createMidtransDonation,
-} from "./donation.midtrans";
+import { saveDonation } from "./donation.repository";
 
-import {
-    saveDonation,
-} from "./donation.repository";
+import { buildDonationResponse } from "./donation.mapper";
 
-import {
-    buildDonationResponse,
-} from "./donation.mapper";
-
+import { createPaymentExpiry } from "./paymentExpiry";
 
 export async function createDonation(
-
-    payload: CreateDonationCommand
-
+  payload: CreateDonationCommand,
 ): Promise<DonationResult> {
+  validateDonationAmount(payload.amount);
 
-    validateDonationAmount(
+  try {
+    const orderId = generateOrderId(PaymentType.DONATION);
 
-        payload.amount
+    const { paymentExpiresAt, midtransExpiry } = createPaymentExpiry();
 
+    const transaction = await createMidtransDonation(
+      orderId,
+
+      payload.amount,
+
+      payload.userId,
+
+      midtransExpiry,
     );
 
-    try {
+    await saveDonation(
+      payload,
 
-        const orderId =
+      orderId,
 
-            generateOrderId(
+      transaction,
 
-                PaymentType.DONATION
+      paymentExpiresAt,
+    );
 
-            );
+    return buildDonationResponse(
+      orderId,
 
-        const transaction =
+      transaction,
+    );
+  } catch (error) {
+    paymentLog(
+      "CREATE_DONATION_FAILED",
 
-            await createMidtransDonation(
+      error,
 
-                orderId,
+      {
+        amount: payload.amount,
 
-                payload.amount,
+        userId: payload.userId,
+      },
+    );
 
-                payload.userId
-
-            );
-
-        await saveDonation(
-
-            payload,
-
-            orderId,
-
-            transaction
-
-        );
-
-        return buildDonationResponse(
-
-            orderId,
-
-            transaction
-
-        );
-
-    }
-
-    catch (
-
-    error
-
-    ) {
-
-        paymentLog(
-
-            "CREATE_DONATION_FAILED",
-
-            error,
-
-            {
-
-                amount:
-
-                    payload.amount,
-
-                userId:
-
-                    payload.userId,
-
-            }
-
-        );
-
-        throw error;
-
-    }
-
+    throw error;
+  }
 }

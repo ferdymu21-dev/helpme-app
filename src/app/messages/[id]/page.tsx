@@ -126,7 +126,6 @@ export default function ChatRoomPage() {
       /* =========================
            GET CONVERSATION
       ========================= */
-
       const {
         data: conversation,
         error:
@@ -544,23 +543,30 @@ export default function ChatRoomPage() {
           user.id ===
           conversation.owner_id;
 
-        await supabase
-          .from("conversations")
-          .update({
-            owner_unread_count:
-              isOwner
-                ? 0
-                : conversation.owner_unread_count,
+        const { error: unreadUpdateError } =
+  isOwner
+    ? await supabase
+        .from("conversations")
+        .update({
+          owner_unread_count: 0,
+        })
+        .eq(
+          "id",
+          conversationId,
+        )
+    : await supabase
+        .from("conversations")
+        .update({
+          helper_unread_count: 0,
+        })
+        .eq(
+          "id",
+          conversationId,
+        );
 
-            helper_unread_count:
-              isOwner
-                ? conversation.helper_unread_count
-                : 0,
-          })
-          .eq(
-            "id",
-            conversationId,
-          );
+if (unreadUpdateError) {
+  throw unreadUpdateError;
+}
 
         /*
          * Badge unread room aktif

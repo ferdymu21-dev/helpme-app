@@ -12,8 +12,6 @@ import { useRouter } from "next/navigation";
 
 import { useNotificationBadge } from "@/features/notifications/hooks/useNotificationBadge";
 
-import { useNotifications } from "@/features/notifications/hooks/useNotifications";
-
 interface Props {
   onOpenSupport: () => void;
 }
@@ -24,8 +22,6 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
   const [avatarUrl, setAvatarUrl] = useState("");
 
   const { hasUnread, unreadCount } = useNotificationBadge();
-
-  const { notifications } = useNotifications();
 
   const router = useRouter();
 
@@ -75,55 +71,57 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
 
   return (
     <header
-      className="
-        sticky
-        top-0
-        z-30
-        border-b
-        border-slate-200
-        bg-white/80
-        backdrop-blur
-      "
-    >
+  className="
+    sticky
+    top-0
+    z-30
+    border-b
+    border-slate-200/80
+    bg-white/90
+    backdrop-blur-xl
+  "
+>
       <div
         className="
-          mx-auto
-          flex
-          h-18
-          max-w-300
-          items-center
-          justify-between
-          px-6
-        "
+  mx-auto
+  flex
+  h-18
+  max-w-300
+  items-center
+  justify-between
+  px-5
+"
       >
         {/* LEFT */}
         <Image
-  src="/logo_brand.svg"
-  alt="HelpMe Logo"
-  width={120}
-  height={34}
-  priority
-  className="h-auto w-30"
-/>
+          src="/logo_brand.svg"
+          alt="HelpMe Logo"
+          width={120}
+          height={34}
+          priority
+          className="h-auto w-30"
+        />
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenSupport}
             className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-full
-              border
-            border-slate-200
-            bg-white
-              text-xl
-              transition
-            hover:bg-pink-50
-            "
+  flex
+  h-10
+  w-10
+  items-center
+  justify-center
+  rounded-full
+  border
+  border-slate-200
+  bg-white
+  shadow-sm
+  transition
+  hover:border-pink-200
+  hover:bg-pink-50
+  active:scale-95
+"
             title="Support HelpMe"
           >
             <Image
@@ -140,17 +138,20 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
             <button
               onClick={() => router.push("/notifications")}
               className="
-relative
-flex
-h-11
-w-11
-items-center
-justify-center
-rounded-full
-border
-border-slate-200
-bg-white
-hover:bg-slate-50
+  relative
+  flex
+  h-10
+  w-10
+  items-center
+  justify-center
+  rounded-full
+  border
+  border-slate-200
+  bg-white
+  shadow-sm
+  transition
+  hover:bg-slate-50
+  active:scale-95
 "
             >
               <Image
@@ -188,35 +189,42 @@ text-white
           </div>
 
           {/* PROFILE */}
-
           <Link href="/profile">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt="Profile"
                 className="
-        h-10
-        w-10
-        rounded-full
-        object-cover
-        border
-        border-slate-200
-      "
+  h-10
+  w-10
+  rounded-full
+  border-2
+  border-white
+  object-cover
+  shadow-sm
+  ring-1
+  ring-slate-200
+"
               />
             ) : (
               <div
                 className="
-        flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        rounded-full
-        bg-indigo-100
-        text-sm
-        font-black
-        text-indigo-700
-      "
+  flex
+  h-10
+  w-10
+  items-center
+  justify-center
+  rounded-full
+  border-2
+  border-white
+  bg-indigo-100
+  text-xs
+  font-black
+  text-indigo-700
+  shadow-sm
+  ring-1
+  ring-slate-200
+"
               >
                 {initials}
               </div>

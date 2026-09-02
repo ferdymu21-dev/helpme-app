@@ -1,15 +1,24 @@
 "use server";
 
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+
 import { markNotificationReadServer } from "../../server/markNotificationRead.server";
 
-import { recordCampaignOpened } from "@/features/campaigns/repositories";
+export async function markNotificationReadAction(notificationId: string) {
+  const supabase = await createServerSupabaseClient();
 
-export async function markNotificationReadAction(
-  notificationId: string,
-) {
-  // Tandai notifikasi sebagai sudah dibaca
-  await markNotificationReadServer(notificationId);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  // Catat analytics OPENED (anti double-open)
-  await recordCampaignOpened(notificationId);
+  if (error || !user) {
+    throw new Error("Unauthorized");
+  }
+
+  await markNotificationReadServer(
+    notificationId,
+
+    user.id,
+  );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Info } from "lucide-react";
+
 type Props = {
   taskDate: string;
   taskTime: string;
@@ -75,6 +77,39 @@ export default function ScheduleInput({
             focus:ring-indigo-100
           "
         />
+      </div>
+
+      <div
+        className="
+          mt-3
+          flex
+          items-start
+          gap-2.5
+          rounded-2xl
+          border
+          border-indigo-100
+          bg-indigo-50/60
+          px-3.5
+          py-3
+        "
+      >
+        <Info
+          size={17}
+          className="
+            mt-0.5
+            shrink-0
+            text-indigo-500
+          "
+        />
+
+        <p className="text-[11px] leading-4.5 text-slate-600">
+          Jika task masih berstatus{" "}
+          <span className="font-semibold text-slate-700">
+            Terbuka
+          </span>{" "}
+          setelah waktu ini terlewati, task akan
+          otomatis kedaluwarsa.
+        </p>
       </div>
     </div>
   );

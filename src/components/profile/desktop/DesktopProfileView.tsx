@@ -43,11 +43,6 @@ interface Props {
 
   isPublicProfile?: boolean;
 
-  /*
-   * Digunakan khusus Public Profile
-   * untuk menempatkan review tepat
-   * di bawah Reputation Badge.
-   */
   reviewSection?: ReactNode;
 }
 
@@ -69,29 +64,42 @@ export default function DesktopProfileView({
   return (
     <main
       className="
+        relative
         hidden
         min-h-screen
         bg-slate-50
         lg:block
       "
     >
-      {/* PAGE BACKGROUND */}
+      {/* BACKGROUND */}
       <div
         className="
           pointer-events-none
-          fixed
+          absolute
           inset-x-0
           top-0
-          z-0
-          h-96
+          h-105
           bg-linear-to-b
-          from-indigo-50/70
-          via-slate-50/60
+          from-indigo-50
+          via-violet-50/40
           to-transparent
         "
       />
 
-      {/* CONTAINER */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -top-32
+          right-12
+          h-96
+          w-96
+          rounded-full
+          bg-indigo-100/40
+          blur-3xl
+        "
+      />
+
       <div
         className="
           relative
@@ -101,11 +109,10 @@ export default function DesktopProfileView({
           px-8
           py-10
           xl:px-10
+          2xl:px-12
         "
       >
-        {/* =========================
-            PAGE HEADER
-        ========================= */}
+        {/* PAGE HEADER */}
         <header
           className="
             mb-8
@@ -115,7 +122,7 @@ export default function DesktopProfileView({
             gap-8
           "
         >
-          <div>
+          <div className="max-w-3xl">
             <div
               className="
                 inline-flex
@@ -129,7 +136,7 @@ export default function DesktopProfileView({
                 py-2
                 text-xs
                 font-bold
-                text-indigo-600
+                text-indigo-700
                 shadow-sm
                 backdrop-blur
               "
@@ -160,51 +167,51 @@ export default function DesktopProfileView({
                 mt-4
                 text-4xl
                 font-black
-                tracking-tight
-                text-slate-900
+                tracking-[-0.03em]
+                text-slate-950
+                xl:text-[42px]
               "
             >
               {isPublicProfile
-                ? "Profil Pengguna"
-                : "Kelola Profil & Reputasi"}
+                ? "Reputasi & Profil Pengguna"
+                : "Profil & Reputasi Anda"}
             </h1>
 
             <p
               className="
                 mt-3
                 max-w-2xl
-                text-base
+                text-[15px]
                 leading-7
                 text-slate-500
               "
             >
               {isPublicProfile
-                ? "Lihat informasi, reputasi, dan ulasan pengguna di HelpMe."
-                : "Kelola identitas akun, pantau reputasi, dan akses seluruh aktivitasmu dari satu tempat."}
+                ? "Kenali pengguna melalui informasi profil, aktivitas, pencapaian, serta ulasan dari komunitas HelpMe."
+                : "Kelola identitas publik, pantau reputasi, pencapaian, dan seluruh aktivitas akun HelpMe dari satu tempat."}
             </p>
           </div>
         </header>
 
-        {/* =========================
-            MAIN PROFILE LAYOUT
-        ========================= */}
+        {/* MAIN LAYOUT */}
         <div
           className="
             grid
-            grid-cols-[380px_minmax(0,1fr)]
+            grid-cols-[350px_minmax(0,1fr)]
             items-start
             gap-7
+            xl:grid-cols-[370px_minmax(0,1fr)]
+            xl:gap-8
           "
         >
-          {/* =========================
-              LEFT PROFILE
-          ========================= */}
-          <div
-            className="
-              sticky
-              top-8
-            "
-          >
+          {/* LEFT */}
+          <aside
+  className="
+    sticky
+    top-6
+    self-start
+  "
+>
             <DesktopProfileSidebar
               profile={{
                 fullName:
@@ -238,36 +245,43 @@ export default function DesktopProfileView({
                 );
               }}
             />
-          </div>
+          </aside>
 
-          {/* =========================
-              RIGHT CONTENT
-          ========================= */}
+          {/* RIGHT */}
           <div className="min-w-0 space-y-7">
-            {/* REPUTATION SUMMARY */}
+            {/* REPUTATION */}
             <section>
-              <div className="mb-4">
-                <h2
-                  className="
-                    text-lg
-                    font-black
-                    tracking-tight
-                    text-slate-900
-                  "
-                >
-                  Ringkasan Reputasi
-                </h2>
+              <div
+                className="
+                  mb-4
+                  flex
+                  items-end
+                  justify-between
+                  gap-4
+                "
+              >
+                <div>
+                  <h2
+                    className="
+                      text-lg
+                      font-black
+                      tracking-tight
+                      text-slate-900
+                    "
+                  >
+                    Ringkasan Reputasi
+                  </h2>
 
-                <p
-                  className="
-                    mt-1
-                    text-sm
-                    text-slate-500
-                  "
-                >
-                  Performa akun berdasarkan
-                  aktivitas dan ulasan.
-                </p>
+                  <p
+                    className="
+                      mt-1
+                      text-sm
+                      text-slate-500
+                    "
+                  >
+                    Gambaran performa akun berdasarkan aktivitas dan ulasan.
+                  </p>
+                </div>
               </div>
 
               <DesktopStatsCards
@@ -283,16 +297,12 @@ export default function DesktopProfileView({
               />
             </section>
 
-            {/* REPUTATION BADGE */}
-            <section>
-              <DesktopBadgeCard
-                badges={profile.badges}
-              />
-            </section>
+            {/* BADGES */}
+            <DesktopBadgeCard
+              badges={profile.badges}
+            />
 
-            {/* =========================
-                PUBLIC USER REVIEWS
-            ========================= */}
+            {/* PUBLIC REVIEWS */}
             {isPublicProfile &&
               reviewSection && (
                 <section>
@@ -300,24 +310,19 @@ export default function DesktopProfileView({
                 </section>
               )}
 
-            {/* =========================
-                OWN PROFILE ACTIONS
-            ========================= */}
+            {/* OWN PROFILE */}
             {!isPublicProfile && (
-              <section>
-                <DesktopQuickActions
-                  role={role}
-                  isPublicProfile={
-                    false
-                  }
-                />
-              </section>
+              <DesktopQuickActions
+                role={role}
+                isPublicProfile={
+                  false
+                }
+              />
             )}
           </div>
         </div>
       </div>
 
-      {/* REPORT MODAL */}
       {isPublicProfile && (
         <ReportUserModal
           open={showReportModal}

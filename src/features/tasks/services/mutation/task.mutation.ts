@@ -51,7 +51,6 @@ export async function createTask(payload: CreateTaskPayload) {
 
         is_urgent: payload.is_urgent ?? false,
 
-        status: "OPEN",
       },
     ])
     .select()

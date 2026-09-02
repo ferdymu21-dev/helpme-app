@@ -1,163 +1,193 @@
 import {
-    adminSupabase,
+  adminSupabase,
 } from "@/lib/supabase/admin";
 
-interface UpdateDonationPayload {
+import {
+  PAYMENT_STATUS,
+} from "../constants/payment";
 
-    orderId: string;
+import type {
+  PaymentStatusValue,
+} from "../constants/payment";
 
-    paymentStatus: string;
+interface PaymentUpdatePayload {
+  orderId: string;
 
-    transactionId: string;
+  paymentStatus:
+    PaymentStatusValue;
 
-    paymentMethod: string;
+  transactionId?: string;
 
-    paidAt?: string;
+  paymentMethod?: string;
 
-    expiredAt?: string;
+  paidAt?: string;
 
+  expiredAt?: string;
+}
+
+interface PaymentUpdateFields {
+  payment_status:
+    PaymentStatusValue;
+
+  midtrans_transaction_id?: string;
+
+  payment_method?: string;
+
+  paid_at?: string;
+
+  expired_at?: string;
+}
+
+function createPaymentUpdateFields(
+  payload: PaymentUpdatePayload,
+): PaymentUpdateFields {
+  const updateFields:
+    PaymentUpdateFields = {
+      payment_status:
+        payload.paymentStatus,
+    };
+
+  if (
+    payload.transactionId !==
+    undefined
+  ) {
+    updateFields
+      .midtrans_transaction_id =
+      payload.transactionId;
+  }
+
+  if (
+    payload.paymentMethod !==
+    undefined
+  ) {
+    updateFields.payment_method =
+      payload.paymentMethod;
+  }
+
+  if (
+    payload.paidAt !==
+    undefined
+  ) {
+    updateFields.paid_at =
+      payload.paidAt;
+  }
+
+  if (
+    payload.expiredAt !==
+    undefined
+  ) {
+    updateFields.expired_at =
+      payload.expiredAt;
+  }
+
+  return updateFields;
 }
 
 export async function updateDonationPayment(
-
-    payload: UpdateDonationPayload
-
+  payload: PaymentUpdatePayload,
 ) {
+  const baseQuery =
+    adminSupabase
+      .from(
+        "support_donations",
+      )
+      .update(
+        createPaymentUpdateFields(
+          payload,
+        ),
+      )
+      .eq(
+        "midtrans_order_id",
+        payload.orderId,
+      );
 
-    const {
-
-        error,
-
-    }
-
-    =
-
-    await adminSupabase
-
-        .from(
-
-            "support_donations"
-
+  /*
+   * PAID memiliki prioritas tertinggi.
+   *
+   * Jika authoritative Midtrans kemudian
+   * membuktikan pembayaran berhasil,
+   * PAID boleh mengoreksi EXPIRED,
+   * FAILED, atau CANCELLED.
+   *
+   * Duplicate PAID tidak diproses lagi.
+   */
+  const transitionQuery =
+    payload.paymentStatus ===
+    PAYMENT_STATUS.PAID
+      ? baseQuery.neq(
+          "payment_status",
+          PAYMENT_STATUS.PAID,
         )
-
-        .update({
-
-            payment_status:
-
-                payload.paymentStatus,
-
-            midtrans_transaction_id:
-
-                payload.transactionId,
-
-            payment_method:
-
-                payload.paymentMethod,
-
-            paid_at:
-
-                payload.paidAt ?? null,
-
-            expired_at:
-
-                payload.expiredAt ?? null,
-
-        })
-
-        .eq(
-
-            "midtrans_order_id",
-
-            payload.orderId
-
+      : baseQuery.eq(
+          "payment_status",
+          PAYMENT_STATUS.PENDING,
         );
 
-    if (
+  const {
+    data,
+    error,
+  } =
+    await transitionQuery
+      .select(`
+        id,
+        user_id,
+        payment_status
+      `)
+      .maybeSingle();
 
-        error
+  if (error) {
+    throw error;
+  }
 
-    ) {
-
-        throw error;
-
-    }
-
-}
-
-interface UpdateTaskPaymentPayload {
-
-    orderId: string;
-
-    paymentStatus: string;
-
-    transactionId: string;
-
-    paymentMethod: string;
-
-    paidAt?: string;
-
-    expiredAt?: string;
-
+  return data;
 }
 
 export async function updateTaskPayment(
-
-    payload: UpdateTaskPaymentPayload
-
+  payload: PaymentUpdatePayload,
 ) {
+  const baseQuery =
+    adminSupabase
+      .from(
+        "task_payments",
+      )
+      .update(
+        createPaymentUpdateFields(
+          payload,
+        ),
+      )
+      .eq(
+        "midtrans_order_id",
+        payload.orderId,
+      );
 
-    const {
-
-        error,
-
-    }
-
-    =
-
-    await adminSupabase
-
-        .from(
-
-            "task_payments"
-
+  const transitionQuery =
+    payload.paymentStatus ===
+    PAYMENT_STATUS.PAID
+      ? baseQuery.neq(
+          "payment_status",
+          PAYMENT_STATUS.PAID,
         )
-
-        .update({
-
-            payment_status:
-
-                payload.paymentStatus,
-
-            midtrans_transaction_id:
-
-                payload.transactionId,
-
-            payment_method:
-
-                payload.paymentMethod,
-
-            paid_at:
-
-                payload.paidAt ?? null,
-
-            expired_at:
-
-                payload.expiredAt ?? null,
-
-        })
-
-        .eq(
-
-            "midtrans_order_id",
-
-            payload.orderId
-
+      : baseQuery.eq(
+          "payment_status",
+          PAYMENT_STATUS.PENDING,
         );
 
-    if (error) {
+  const {
+    data,
+    error,
+  } =
+    await transitionQuery
+      .select(`
+        id,
+        user_id,
+        payment_status,
+        task_id
+      `)
+      .maybeSingle();
 
-        throw error;
+  if (error) {
+    throw error;
+  }
 
-    }
-
+  return data;
 }

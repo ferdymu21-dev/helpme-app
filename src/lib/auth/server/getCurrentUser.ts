@@ -1,79 +1,31 @@
 import "server-only";
 
-import {
+import { createClient } from "@supabase/supabase-js";
 
-    createClient,
+export async function getCurrentUser(accessToken: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
 
-}
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 
-from "@supabase/supabase-js";
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    },
+  );
 
-export async function
+  const {
+    data,
 
-getCurrentUser(
+    error,
+  } = await supabase.auth.getUser();
 
-    accessToken: string
+  if (error || !data.user) {
+    throw new Error("Unauthorized");
+  }
 
-) {
-
-    const supabase =
-
-        createClient(
-
-            process.env
-
-                .NEXT_PUBLIC_SUPABASE_URL!,
-
-            process.env
-
-                .NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-
-            {
-
-                global: {
-
-                    headers: {
-
-                        Authorization:
-
-                            `Bearer ${accessToken}`,
-
-                    },
-
-                },
-
-            }
-
-        );
-
-    const {
-
-        data,
-
-        error,
-
-    }
-
-        =
-
-        await supabase.auth.getUser();
-
-    if (
-
-        error ||
-
-        !data.user
-
-    ) {
-
-        throw new Error(
-
-            "Unauthorized"
-
-        );
-
-    }
-
-    return data.user;
-
+  return data.user;
 }

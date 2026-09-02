@@ -1,51 +1,74 @@
 type Props = {
-
   loading: boolean;
-
+  isUrgent: boolean;
 };
 
 export default function ActionBar({
-
   loading,
-
+  isUrgent,
 }: Props) {
+  const buttonLabel = isUrgent
+    ? "+ Rp 1.000 & Cari Bantuan"
+    : "Cari Bantuan";
+
+  const loadingLabel = isUrgent
+    ? "Memproses pembayaran..."
+    : "Mencari helper...";
+
+  const desktopButtonColor = isUrgent
+    ? `
+      bg-emerald-600
+      shadow-emerald-600/20
+      hover:bg-emerald-700
+    `
+    : `
+      bg-indigo-600
+      shadow-indigo-600/20
+      hover:bg-indigo-700
+    `;
+
+  const mobileButtonColor = isUrgent
+    ? `
+      bg-emerald-600
+      shadow-emerald-600/20
+    `
+    : `
+      bg-indigo-600
+      shadow-indigo-600/20
+    `;
 
   return (
-
     <>
-
       {/* Desktop */}
-
       <button
         type="submit"
         disabled={loading}
-        className="
+        className={`
           hidden
           h-14
           w-full
           items-center
           justify-center
           rounded-2xl
-          bg-indigo-600
           text-sm
           font-bold
           text-white
           shadow-lg
-          shadow-indigo-600/20
           transition
-          hover:bg-indigo-700
           disabled:cursor-not-allowed
           disabled:bg-slate-300
+          disabled:shadow-none
           sm:flex
-        "
+
+          ${desktopButtonColor}
+        `}
       >
         {loading
-          ? "Mencari helper..."
-          : "Cari Bantuan"}
+          ? loadingLabel
+          : buttonLabel}
       </button>
 
       {/* Mobile */}
-
       <div
         className="
           fixed
@@ -61,40 +84,36 @@ export default function ActionBar({
         "
       >
         <div className="mx-auto max-w-3xl">
-
           <button
             type="submit"
             form="create-task-form"
             disabled={loading}
-            className="
+            className={`
               flex
               h-13
               w-full
               items-center
               justify-center
               rounded-2xl
-              bg-indigo-600
               text-sm
               font-bold
               text-white
-              shadow-[0_12px_30px_rgba(79,70,229,0.28)]
+              shadow-lg
               transition
               active:scale-[0.98]
               disabled:cursor-not-allowed
               disabled:bg-slate-300
-            "
+              disabled:shadow-none
+
+              ${mobileButtonColor}
+            `}
           >
             {loading
-              ? "Mencari helper..."
-              : "Cari Bantuan"}
+              ? loadingLabel
+              : buttonLabel}
           </button>
-
         </div>
-
       </div>
-
     </>
-
   );
-
 }

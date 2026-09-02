@@ -1,0 +1,1 @@
+export const URGENT_TASK_FEE = 1000;

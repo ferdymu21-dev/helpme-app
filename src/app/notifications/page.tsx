@@ -27,14 +27,20 @@ export default function NotificationsPage() {
   async function handleRead(notification: Notification) {
     try {
       await readNotification(notification.id);
-
-      await recordCampaignClickAction(notification.id);
-
-      if (notification.redirect_url) {
-        router.push(notification.redirect_url);
-      }
     } catch (error) {
-      console.error(error);
+      console.error("Gagal menandai notification sebagai read:", error);
+
+      return;
+    }
+
+    try {
+      await recordCampaignClickAction(notification.id);
+    } catch (error) {
+      console.error("Gagal mencatat campaign click:", error);
+    }
+
+    if (notification.redirect_url) {
+      router.push(notification.redirect_url);
     }
   }
 

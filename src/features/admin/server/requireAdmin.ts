@@ -1,5 +1,11 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+interface CurrentUserAccessState {
+  role: string | null;
+  is_admin: boolean | null;
+  is_banned: boolean | null;
+}
+
 export async function requireAdmin() {
   const supabase = await createServerSupabaseClient();
 
@@ -12,16 +18,12 @@ export async function requireAdmin() {
     throw new Error("UNAUTHORIZED");
   }
 
-  const { data: userData, error: userError } = await supabase
-    .from("users")
-    .select(
-      `
-                    role,
-                    is_banned
-                `,
-    )
-    .eq("id", user.id)
-    .single();
+  const {
+    data: userData,
+    error: userError,
+  } = await supabase
+    .rpc("get_current_user_access_state")
+    .maybeSingle<CurrentUserAccessState>();
 
   if (userError || !userData) {
     throw new Error("UNAUTHORIZED");
@@ -31,7 +33,7 @@ export async function requireAdmin() {
     throw new Error("BANNED");
   }
 
-  if (userData.role !== "ADMIN") {
+  if (!userData.is_admin) {
     throw new Error("FORBIDDEN");
   }
 

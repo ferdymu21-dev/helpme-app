@@ -6,6 +6,8 @@ import { ArrowLeft, CalendarDays, Clock3, MapPin } from "lucide-react";
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
+import { getTaskCategoryLabel } from "@/features/tasks/constants/task-categories";
+
 import {
   getTaskStatusBadgeClass,
   getTaskStatusLabel,
@@ -150,8 +152,8 @@ export default function MobileMyTasksView({
                 src="/icons/tasks/owner-aktif.svg"
                 alt="Aktif"
                 className={`
-                  h-8
-                  w-8
+                  h-5
+                  w-5
                   ${activeFilter === "OPEN" ? "brightness-0 invert" : ""}
                 `}
               />
@@ -190,8 +192,8 @@ export default function MobileMyTasksView({
                 src="/icons/tasks/owner-dikerjakan.svg"
                 alt="Dikerjakan"
                 className={`
-                  h-8
-                  w-8
+                  h-5
+                  w-5
                   ${activeFilter === "ACCEPTED" ? "brightness-0 invert" : ""}
                 `}
               />
@@ -234,8 +236,8 @@ export default function MobileMyTasksView({
                 src="/icons/tasks/menunggu-konfirmasi.svg"
                 alt="menunggu-konfirmasi"
                 className={`
-                  h-8
-                  w-8
+                  h-5
+                  w-5
                   ${activeFilter === "WAITING_CONFIRMATION" ? "brightness-0 invert" : ""}
                 `}
               />
@@ -274,8 +276,8 @@ export default function MobileMyTasksView({
                 src="/icons/tasks/owner-selesai.svg"
                 alt="Selesai"
                 className={`
-                  h-8
-                  w-8
+                  h-5
+                  w-5
                   ${activeFilter === "COMPLETED" ? "brightness-0 invert" : ""}
                 `}
               />
@@ -342,7 +344,7 @@ export default function MobileMyTasksView({
       text-indigo-600
     "
                   >
-                    {task.category}
+                    {getTaskCategoryLabel(task.category)}
                   </div>
 
                   {/* URGENT + STATUS */}

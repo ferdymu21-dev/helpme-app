@@ -79,6 +79,8 @@ export async function getTasks({
   page = 1,
   pageSize = 10,
   category = "Semua",
+  search = "",
+  urgentOnly = false,
 }: GetNearbyTasksParams): Promise<GetNearbyTasksResult> {
   if (
     !Number.isFinite(latitude) ||
@@ -109,9 +111,12 @@ export async function getTasks({
     ),
   );
 
+  const safeSearch =
+    search.trim();
+
   const { data, error } =
     await supabase.rpc(
-      "get_nearby_open_tasks",
+      "get_nearby_open_tasks_feed",
       {
         p_latitude: latitude,
         p_longitude: longitude,
@@ -121,6 +126,11 @@ export async function getTasks({
           category === "Semua"
             ? null
             : category,
+        p_search:
+          safeSearch.length > 0
+            ? safeSearch
+            : null,
+        p_urgent_only: urgentOnly,
       },
     );
 
@@ -133,13 +143,16 @@ export async function getTasks({
 
   const totalCount =
     tasks.length > 0
-      ? Number(tasks[0].total_count)
+      ? Number(
+          tasks[0].total_count,
+        )
       : 0;
 
   const totalPages = Math.max(
     1,
     Math.ceil(
-      totalCount / safePageSize,
+      totalCount /
+        safePageSize,
     ),
   );
 

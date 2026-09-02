@@ -121,7 +121,7 @@ export default function DesktopAdsBanner() {
       impressionTrackedIds.current.add(adId);
 
       try {
-        await fetch(`/api/ads/${adId}/events`, {
+        const response = await fetch(`/api/ads/${adId}/events`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,6 +130,10 @@ export default function DesktopAdsBanner() {
             event_type: "impression",
           }),
         });
+
+        if (!response.ok) {
+          throw new Error("Gagal mencatat qualified impression iklan.");
+        }
       } catch (error) {
         console.error("Gagal mencatat qualified impression iklan:", error);
 
@@ -262,7 +266,7 @@ export default function DesktopAdsBanner() {
 
   async function handleOpenAds() {
     try {
-      await fetch(`/api/ads/${activeAd.id}/events`, {
+      const response = await fetch(`/api/ads/${activeAd.id}/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,6 +275,10 @@ export default function DesktopAdsBanner() {
           event_type: "click",
         }),
       });
+
+      if (!response.ok) {
+        throw new Error("Gagal mencatat click iklan.");
+      }
     } catch (error) {
       console.error("Gagal mencatat click iklan:", error);
     }

@@ -1,219 +1,102 @@
 import {
-    getDonationTransactions,
-    getDonationTransactionById,
-    getTaskTransactions,
-    getTaskTransactionById,
+  getDonationTransactions,
+  getDonationTransactionById,
+  getTaskTransactions,
+  getTaskTransactionById,
 } from "./history.repository";
 
-import {
-    mapPaymentDetail,
-} from "./mappers/paymentDetail.mapper";
+import { mapPaymentDetail } from "./mappers/paymentDetail.mapper";
 
-import {
-    mapPaymentHistory,
-} from "./mappers/payment.mapper";
+import { mapPaymentHistory } from "./mappers/payment.mapper";
 
 export async function getTransactionHistory(
+  userId: string,
 
-    userId: string,
+  cursor?: string,
 
-    cursor?: string,
-
-    limit: number = 10,
-
+  limit: number = 10,
 ) {
+  const [donations, taskPayments] = await Promise.all([
+    getDonationTransactions(
+      userId,
 
-    const [
-        donations,
-        taskPayments,
-    ]
+      cursor,
 
-        =
+      limit + 1,
+    ),
 
-        await Promise.all([
+    getTaskTransactions(
+      userId,
 
-            getDonationTransactions(
+      cursor,
 
-                userId,
+      limit + 1,
+    ),
+  ]);
 
-                cursor,
+  const merged = [...donations, ...taskPayments];
 
-                limit + 1,
+  merged.sort(
+    (
+      a,
 
-            ),
+      b,
+    ) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
 
-            getTaskTransactions(
+  const hasMore = merged.length > limit;
 
-                userId,
+  const items = merged.slice(
+    0,
 
-                cursor,
+    limit,
+  );
 
-                limit + 1,
+  const transactions = items.map(mapPaymentHistory);
 
-            ),
+  const nextCursor = hasMore ? items[items.length - 1].created_at : null;
 
-        ]);
-
-    const merged = [
-
-        ...donations,
-
-        ...taskPayments,
-
-    ];
-
-    merged.sort(
-
-        (
-
-            a,
-
-            b,
-
-        ) =>
-
-            new Date(
-
-                b.created_at,
-
-            ).getTime()
-
-            -
-
-            new Date(
-
-                a.created_at,
-
-            ).getTime(),
-
-    );
-
-    const hasMore =
-
-        merged.length > limit;
-
-    const items =
-
-        merged.slice(
-
-            0,
-
-            limit,
-
-        );
-
-    const transactions =
-
-        items.map(
-
-            mapPaymentHistory,
-
-        );
-
-    const nextCursor =
-
-        hasMore
-
-            ? items[
-
-                items.length - 1
-
-            ].created_at
-
-            : null;
-
-    return {
-
-        transactions,
-        nextCursor,
-        hasMore,
-
-    };
-
+  return {
+    transactions,
+    nextCursor,
+    hasMore,
+  };
 }
 
 export async function getTransactionDetail(
+  userId: string,
 
-    id: string,
-
+  id: string,
 ) {
+  try {
+    const donation = await getDonationTransactionById(
+      userId,
 
-    try {
+      id,
+    );
 
-        const donation =
-
-            await getDonationTransactionById(
-
-                id,
-
-            )
-
-                .catch(
-
-                    () => null,
-
-                );
-
-        if (
-
-            donation
-
-        ) {
-
-            return mapPaymentDetail(
-
-                donation,
-
-            );
-
-        }
-
-        const task =
-
-            await getTaskTransactionById(
-
-                id,
-
-            );
-
-        if (
-
-            task
-
-        ) {
-
-            return mapPaymentDetail(
-
-                task,
-
-            );
-
-        }
-
-        throw new Error(
-
-            "Transaction tidak ditemukan.",
-
-        );
-
+    if (donation) {
+      return mapPaymentDetail(donation);
     }
 
-    catch (
+    const task = await getTaskTransactionById(
+      userId,
 
-        error
+      id,
+    );
 
-    ) {
-
-        console.error(
-
-            "[Transaction Detail]",
-
-            error,
-
-        );
-
-        throw error;
-
+    if (task) {
+      return mapPaymentDetail(task);
     }
 
+    throw new Error("Transaction tidak ditemukan.");
+  } catch (error) {
+    console.error(
+      "[Transaction Detail]",
+
+      error,
+    );
+
+    throw error;
+  }
 }

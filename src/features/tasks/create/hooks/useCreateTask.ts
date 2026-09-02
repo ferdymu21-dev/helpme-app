@@ -38,7 +38,10 @@ export function useCreateTask({
 
   const { createPayment } = usePayment();
 
-  const { openPayment } = useMidtrans();
+  const {
+  openPayment,
+  hidePayment,
+} = useMidtrans();
 
   const {
     result,
@@ -84,12 +87,19 @@ export function useCreateTask({
     }
 
     if (status === "PENDING") {
-      return;
-    }
+  return;
+}
 
-    handledResultRef.current = true;
+handledResultRef.current = true;
 
-    switch (status) {
+/*
+ * Status server sudah final.
+ * Tutup Snap sebelum menampilkan
+ * PaymentResultDialog.
+ */
+hidePayment();
+
+switch (status) {
       case "PAID":
         openResult(
           "SUCCESS",
@@ -139,7 +149,13 @@ export function useCreateTask({
 
         break;
     }
-  }, [status, orderId, paymentAmount, openResult]);
+  }, [
+  status,
+  orderId,
+  paymentAmount,
+  openResult,
+  hidePayment,
+]);
 
   async function handleCreateTask(e: FormEvent, data: HandleCreateTaskParams) {
     e.preventDefault();

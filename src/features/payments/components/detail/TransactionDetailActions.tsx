@@ -1,118 +1,133 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ExternalLink,
+} from "lucide-react";
 
-import { ArrowLeft } from "lucide-react";
+import {
+  useRouter,
+} from "next/navigation";
 
 import type {
-    TransactionDetail,
+  TransactionDetail,
 } from "../../types/transactionDetail";
 
 interface Props {
-
-    transaction: TransactionDetail;
-
+  transaction: TransactionDetail;
 }
 
 export default function TransactionDetailActions({
-
-    transaction,
-
+  transaction,
 }: Props) {
+  const router = useRouter();
 
-    const router = useRouter();
+  const canViewTask =
+    transaction.type ===
+      "URGENT_TASK" &&
+    !!transaction.taskId;
 
-    return (
-        <section className="mt-8">
+  return (
+    <section
+      className="
+        mt-4
+        rounded-3xl
+        border
+        border-slate-200
+        bg-white
+        p-4
+        shadow-[0_8px_24px_rgba(15,23,42,0.03)]
+      "
+    >
+      <div
+        className="
+          flex
+          flex-col
+          gap-2.5
+          sm:flex-row
+        "
+      >
+        <button
+          type="button"
+          onClick={() =>
+            router.push(
+              "/payments/history",
+            )
+          }
+          className={`
+            group
+            inline-flex
+            h-11
+            items-center
+            justify-center
+            gap-2
+            rounded-2xl
+            border
+            border-slate-200
+            bg-white
+            px-5
+            text-xs
+            font-bold
+            text-slate-600
+            transition
+            hover:bg-slate-50
 
-            {transaction.type === "URGENT_TASK" &&
-                transaction.taskId && (
-                    <button
-                        type="button"
-                        onClick={() =>
-                            router.push(
-                                `/tasks/${transaction.taskId}`,
-                            )
-                        }
-                        className="
-                            mb-3
-                            not-only-of-type:flex
-                h-10
-                w-full
-                items-center
-                justify-center
-                rounded-4xl
-                border
-                border-primary-600
-                bg-white
-                text-sm
-                font-semibold
-                text-primary-600
-                transition
-                hover:bg-primary-50
-            "
-                    >
-                        Lihat Task
-                    </button>
-                )
+            ${
+              canViewTask
+                ? "sm:flex-1"
+                : "w-full"
             }
+          `}
+        >
+          <ArrowLeft
+            className="
+              h-4
+              w-4
+              transition-transform
+              group-hover:-translate-x-0.5
+            "
+            strokeWidth={2}
+          />
 
-            <button
-                type="button"
-                onClick={() => router.push("/payments/history")}
-                className="
-                    group
-                    flex
-                    h-10
-                    w-full
-                    items-center
-                    justify-center
-                    gap-3
-                    rounded-4xl
-                    bg-primary-600
-                    px-5
-                    text-sm
-                    font-semibold
-                    text-white
-                    shadow-lg
-                    shadow-primary-500/20
-                    transition-all
-                    duration-200
-                    hover:-translate-y-0.5
-                    hover:bg-primary-700
-                    hover:shadow-xl
-                    hover:shadow-primary-500/30
-                    active:translate-y-0
-                    active:scale-[0.98]
-                "
-            >
+          Kembali ke Riwayat
+        </button>
 
-                <span
-                    className="
-                        flex
-                        h-5
-                        w-5
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-white/20
-                        transition-transform
-                        duration-200
-                        group-hover:-translate-x-1
-                    "
-                >
-                    <ArrowLeft
-                        size={16}
-                        strokeWidth={2.5}
-                    />
-                </span>
+        {canViewTask && (
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/tasks/${transaction.taskId}`,
+              )
+            }
+            className="
+              inline-flex
+              h-11
+              items-center
+              justify-center
+              gap-2
+              rounded-2xl
+              bg-indigo-600
+              px-5
+              text-xs
+              font-black
+              text-white
+              shadow-[0_8px_22px_rgba(79,70,229,0.18)]
+              transition
+              hover:bg-indigo-700
+              active:scale-[0.99]
+              sm:flex-1
+            "
+          >
+            Lihat Task
 
-                <span>
-                    Kembali ke Riwayat
-                </span>
-
-            </button>
-
-        </section>
-    );
+            <ExternalLink
+              className="h-3.5 w-3.5"
+              strokeWidth={2}
+            />
+          </button>
+        )}
+      </div>
+    </section>
+  );
 }

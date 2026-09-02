@@ -2,61 +2,44 @@
 
 import { useMemo } from "react";
 
+import { URGENT_TASK_FEE } from "../constants/premiumServices";
+
 import type {
-    PremiumTaskService,
+  PremiumTaskService,
 } from "../types/create-task.types";
 
 type Params = {
-
-    isUrgent: boolean;
-
+  isUrgent: boolean;
 };
 
 export function useTaskPremium({
-
-    isUrgent,
-
+  isUrgent,
 }: Params) {
+  const premiumServices =
+    useMemo<PremiumTaskService[]>(() => {
+      const services: PremiumTaskService[] = [];
 
-    const premiumServices =
-        useMemo<PremiumTaskService[]>(() => {
+      if (isUrgent) {
+        services.push({
+          type: "URGENT_TASK",
+          amount: URGENT_TASK_FEE,
+        });
+      }
 
-            const services: PremiumTaskService[] = [];
+      return services;
+    }, [isUrgent]);
 
-            if (isUrgent) {
+  return {
+    premiumServices,
 
-                services.push({
+    hasPremiumService:
+      premiumServices.length > 0,
 
-                    type: "URGENT_TASK",
-
-                    amount: 1000,
-
-                });
-
-            }
-
-            return services;
-
-        }, [isUrgent]);
-
-    return {
-
-        premiumServices,
-
-        hasPremiumService:
-            premiumServices.length > 0,
-
-        totalPremiumAmount:
-            premiumServices.reduce(
-
-                (total, service) =>
-
-                    total + service.amount,
-
-                0,
-
-            ),
-
-    };
-
+    totalPremiumAmount:
+      premiumServices.reduce(
+        (total, service) =>
+          total + service.amount,
+        0,
+      ),
+  };
 }

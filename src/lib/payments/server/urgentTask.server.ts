@@ -1,68 +1,51 @@
 import "server-only";
 
-import {
-    PaymentType,
-    generateOrderId,
-} from "./order";
+import { PaymentType, generateOrderId } from "./order";
 
-import {
-    createTransaction,
-} from "./createTransaction";
+import { createTransaction } from "./createTransaction";
 
-import {
-    saveUrgentTaskPayment,
-} from "./urgentTask.repository";
+import { saveUrgentTaskPayment } from "./urgentTask.repository";
 
-import {
-    buildUrgentTaskResponse,
-} from "./urgentTask.mapper";
+import { buildUrgentTaskResponse } from "./urgentTask.mapper";
+
+import { createPaymentExpiry } from "./paymentExpiry";
 
 interface Payload {
+  userId: string;
 
-    userId: string;
+  amount: number;
 
-    amount: number;
-
-    metadata?: Record<string, unknown>;
-
+  metadata?: Record<string, unknown>;
 }
 
-export async function createUrgentTaskPayment(
+export async function createUrgentTaskPayment(payload: Payload) {
+  const orderId = generateOrderId(PaymentType.URGENT_TASK);
 
-    payload: Payload
+  const { paymentExpiresAt, midtransExpiry } = createPaymentExpiry();
 
-) {
+  const transaction = await createTransaction({
+    orderId,
 
-    const orderId = generateOrderId(
+    amount: payload.amount,
 
-        PaymentType.URGENT_TASK
+    options: {
+      expiry: midtransExpiry,
+    },
+  });
 
-    );
+  await saveUrgentTaskPayment(
+    payload,
 
-    const transaction = await createTransaction({
+    orderId,
 
-        orderId,
+    transaction,
 
-        amount: payload.amount,
+    paymentExpiresAt,
+  );
 
-    });
+  return buildUrgentTaskResponse(
+    orderId,
 
-    await saveUrgentTaskPayment(
-
-        payload,
-
-        orderId,
-
-        transaction,
-
-    );
-
-    return buildUrgentTaskResponse(
-
-        orderId,
-
-        transaction,
-
-    );
-
+    transaction,
+  );
 }

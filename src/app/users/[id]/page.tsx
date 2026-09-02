@@ -120,10 +120,20 @@ export default function PublicProfilePage() {
         ========================= */
 
         const { data: user } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", params.id)
-          .single();
+  .from("users")
+  .select(
+    `
+      id,
+      full_name,
+      username,
+      bio,
+      location,
+      verification_status,
+      avatar_url
+    `,
+  )
+  .eq("id", params.id)
+  .single();
 
         if (!user) return;
 
