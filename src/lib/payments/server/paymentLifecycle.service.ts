@@ -6,7 +6,6 @@ import {
 
 import {
   reconcileExpiredPendingPayment,
-  reconcilePendingPayment,
 } from "./paymentReconciliation.service";
 
 const PAYMENT_RECONCILIATION_BATCH_SIZE =
@@ -81,7 +80,7 @@ Promise<PaymentLifecycleResult> {
          * terdeteksi meskipun webhook
          * gagal.
          */
-        await reconcilePendingPayment(
+        await reconcileExpiredPendingPayment(
           candidate.snapshot,
 
           candidate.orderId,

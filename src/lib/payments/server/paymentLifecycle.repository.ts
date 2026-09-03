@@ -62,6 +62,10 @@ export async function listPendingPaymentCandidates(
         "is",
         null,
       )
+      .lte(
+        "payment_expires_at",
+         nowIso,
+      )
       .order(
         "payment_expires_at",
         {
@@ -99,6 +103,10 @@ export async function listPendingPaymentCandidates(
         "payment_expires_at",
         "is",
         null,
+      )
+      .lte(
+        "payment_expires_at",
+         nowIso,
       )
       .order(
         "payment_expires_at",
