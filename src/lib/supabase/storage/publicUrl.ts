@@ -1,11 +1,24 @@
 import { supabase } from "@/lib/supabase/client";
 
-export function getTaskCompletionProofUrl(path?: string | null) {
-  if (!path) return "";
+const TASK_COMPLETION_PROOF_SIGNED_URL_TTL_SECONDS = 60 * 10;
 
-  const { data } = supabase.storage
+export async function createTaskCompletionProofSignedUrl(
+  path?: string | null,
+): Promise<string> {
+  if (!path) {
+    return "";
+  }
+
+  const { data, error } = await supabase.storage
     .from("task-completion-proofs")
-    .getPublicUrl(path);
+    .createSignedUrl(
+      path,
+      TASK_COMPLETION_PROOF_SIGNED_URL_TTL_SECONDS,
+    );
 
-  return data.publicUrl;
+  if (error) {
+    throw error;
+  }
+
+  return data.signedUrl;
 }

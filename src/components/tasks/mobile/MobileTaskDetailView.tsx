@@ -32,7 +32,7 @@ import {
   getTaskCategoryHeroImage,
 } from "@/features/tasks/constants/task-categories";
 
-import { getTaskCompletionProofUrl } from "@/lib/supabase/storage/publicUrl";
+import { useTaskCompletionProofUrl } from "@/features/task-completion/hooks/useTaskCompletionProofUrl";
 
 interface TaskDetail {
   id: string;
@@ -230,13 +230,19 @@ export default function MobileTaskDetailView({
 
   const isSelectedHelper = task.selected_helper_id === currentUserId;
 
+  const shouldLoadCompletionProof =
+    isOwner &&
+    task.status === "WAITING_CONFIRMATION" &&
+    Boolean(task.completion_proof_photo);
+
   const category = getTaskCategoryDefinition(task.category);
 
   const heroImage = getTaskCategoryHeroImage(task.category);
 
-  const completionProofUrl = getTaskCompletionProofUrl(
-    task.completion_proof_photo,
-  );
+  const { url: completionProofUrl, loading: completionProofLoading } =
+    useTaskCompletionProofUrl(
+      shouldLoadCompletionProof ? task.completion_proof_photo : null,
+    );
 
   const location =
     task.location_type === "SEARCH"
@@ -956,7 +962,13 @@ export default function MobileTaskDetailView({
                   </span>
                 </div>
 
-                {completionProofUrl ? (
+                {completionProofLoading ? (
+                  <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
+                    <p className="text-xs text-slate-500">
+                      Memuat bukti penyelesaian...
+                    </p>
+                  </div>
+                ) : completionProofUrl ? (
                   <div className="mt-4 overflow-hidden rounded-[18px] bg-slate-100">
                     <img
                       src={completionProofUrl}
@@ -967,7 +979,7 @@ export default function MobileTaskDetailView({
                 ) : (
                   <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
                     <p className="text-xs text-slate-500">
-                      Bukti penyelesaian tidak ditemukan.
+                      Bukti penyelesaian tidak dapat dimuat.
                     </p>
                   </div>
                 )}

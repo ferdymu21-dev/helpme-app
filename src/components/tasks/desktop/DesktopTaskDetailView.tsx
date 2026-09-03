@@ -16,6 +16,8 @@ import ReportTaskModal from "@/features/reports/components/ReportTaskModal";
 
 import FinishTaskDialog from "@/features/tasks/components/dialog/FinishTaskDialog";
 
+import { useTaskCompletionProofUrl } from "@/features/task-completion/hooks/useTaskCompletionProofUrl";
+
 import {
   getTaskCategoryDefinition,
   getTaskCategoryHeroImage,
@@ -119,6 +121,16 @@ export default function DesktopTaskDetailView({
 
   const isSelectedHelper = task.selected_helper_id === currentUserId;
 
+  const shouldLoadCompletionProof =
+    isOwner &&
+    task.status === "WAITING_CONFIRMATION" &&
+    Boolean(task.completion_proof_photo);
+
+  const { url: completionProofUrl, loading: completionProofLoading } =
+    useTaskCompletionProofUrl(
+      shouldLoadCompletionProof ? task.completion_proof_photo : null,
+    );
+
   const canAccessChat =
     task.selected_helper_id === currentUserId || task.user_id === currentUserId;
 
@@ -212,7 +224,6 @@ export default function DesktopTaskDetailView({
         {/* =====================================================
             HERO
         ===================================================== */}
-
         <div
           className="
             overflow-hidden
@@ -226,7 +237,6 @@ export default function DesktopTaskDetailView({
           {/* =====================================================
               HERO IMAGE
           ===================================================== */}
-
           <div
             className="
               relative
@@ -249,7 +259,6 @@ export default function DesktopTaskDetailView({
             />
 
             {/* OVERLAY */}
-
             <div
               className="
                 absolute
@@ -262,7 +271,6 @@ export default function DesktopTaskDetailView({
             />
 
             {/* CATEGORY + STATUS */}
-
             <div
               className="
                 absolute
@@ -350,7 +358,6 @@ export default function DesktopTaskDetailView({
             </div>
 
             {/* HERO CONTENT */}
-
             <div
               className="
                 absolute
@@ -410,7 +417,6 @@ export default function DesktopTaskDetailView({
           {/* =====================================================
               HERO INFORMATION
           ===================================================== */}
-
           <div className="grid gap-6 p-8 md:grid-cols-2">
             {/* LOCATION */}
 
@@ -454,7 +460,6 @@ export default function DesktopTaskDetailView({
         {/* =====================================================
             DESCRIPTION
         ===================================================== */}
-
         <div
           className="
             mt-6
@@ -506,7 +511,6 @@ export default function DesktopTaskDetailView({
         {/* =====================================================
             OWNER
         ===================================================== */}
-
         <div className="mt-6">
           <h2
             className="
@@ -605,7 +609,6 @@ export default function DesktopTaskDetailView({
         {/* =====================================================
             APPLICANTS
         ===================================================== */}
-
         {isOwner && applications.length > 0 && (
           <div className="mt-6">
             <div>
@@ -662,7 +665,6 @@ export default function DesktopTaskDetailView({
                     `}
                   >
                     {/* LEFT */}
-
                     <Link
                       href={`/users/${application.helper?.id}`}
                       className="
@@ -673,7 +675,6 @@ export default function DesktopTaskDetailView({
                       "
                     >
                       {/* AVATAR */}
-
                       {application.helper?.avatar_url ? (
                         <img
                           src={application.helper.avatar_url}
@@ -720,7 +721,6 @@ export default function DesktopTaskDetailView({
                       )}
 
                       {/* INFO */}
-
                       <div className="min-w-0">
                         <div className="flex items-center gap-3">
                           <h3
@@ -735,7 +735,6 @@ export default function DesktopTaskDetailView({
                           </h3>
 
                           {/* HELPER TERPILIH */}
-
                           {isSelected && (
                             <span
                               className="
@@ -799,7 +798,6 @@ export default function DesktopTaskDetailView({
                     </Link>
 
                     {/* BUTTON */}
-
                     {task.status === "OPEN" && (
                       <button
                         type="button"
@@ -846,7 +844,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           OWNER ACTIONS
       ======================================================= */}
-
       {isOwner && (task.status === "OPEN" || task.status === "ACCEPTED") && (
         <div className="mt-8 flex justify-center">
           <button
@@ -876,7 +873,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           CHAT / HELPER ACTION
       ======================================================= */}
-
       {task.status === "ACCEPTED" && canAccessChat && (
         <div
           className="
@@ -895,7 +891,6 @@ export default function DesktopTaskDetailView({
           <div className="mx-auto max-w-5xl">
             <div className="flex gap-3">
               {/* SELESAIKAN TASK */}
-
               {isSelectedHelper && (
                 <button
                   type="button"
@@ -965,7 +960,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           HELPER WAITING CONFIRMATION
       ======================================================= */}
-
       {isSelectedHelper && task.status === "WAITING_CONFIRMATION" && (
         <div
           className="
@@ -1035,7 +1029,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           STICKY APPLY BUTTON
       ======================================================= */}
-
       {!isOwner &&
         !isSelectedHelper &&
         !hasApplied &&
@@ -1105,7 +1098,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           ALREADY APPLIED
       ======================================================= */}
-
       {!isOwner &&
         !isSelectedHelper &&
         hasApplied &&
@@ -1146,7 +1138,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           TASK CLOSED INFO
       ======================================================= */}
-
       {!isOwner && !isSelectedHelper && task.status === "ACCEPTED" && (
         <div
           className="
@@ -1184,7 +1175,6 @@ export default function DesktopTaskDetailView({
       {/* =======================================================
           COMPLETION PROOF — OWNER
       ======================================================= */}
-
       {isOwner &&
         task.status === "WAITING_CONFIRMATION" &&
         task.completion_proof_photo && (
@@ -1232,22 +1222,56 @@ export default function DesktopTaskDetailView({
                 selesai.
               </p>
 
-              <img
-                loading="lazy"
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/task-completion-proofs/${task.completion_proof_photo}`}
-                alt="Completion Proof"
-                className="
-                  mt-6
-                  w-full
-                  rounded-2xl
-                  border
-                  border-slate-200
-                  object-cover
-                "
-                onError={(event) => {
-                  event.currentTarget.src = "/images/image-error.png";
-                }}
-              />
+              {completionProofLoading ? (
+                <div
+                  className="
+      mt-6
+      rounded-2xl
+      border
+      border-slate-200
+      bg-slate-50
+      p-10
+      text-center
+      text-sm
+      text-slate-500
+    "
+                >
+                  Memuat bukti penyelesaian...
+                </div>
+              ) : completionProofUrl ? (
+                <img
+                  loading="lazy"
+                  src={completionProofUrl}
+                  alt="Completion Proof"
+                  className="
+      mt-6
+      w-full
+      rounded-2xl
+      border
+      border-slate-200
+      object-cover
+    "
+                  onError={(event) => {
+                    event.currentTarget.src = "/images/image-error.png";
+                  }}
+                />
+              ) : (
+                <div
+                  className="
+      mt-6
+      rounded-2xl
+      border
+      border-slate-200
+      bg-slate-50
+      p-10
+      text-center
+      text-sm
+      text-slate-500
+    "
+                >
+                  Bukti penyelesaian tidak dapat dimuat.
+                </div>
+              )}
 
               <div className="mt-5 flex items-center gap-2">
                 <Lock
@@ -1291,10 +1315,6 @@ export default function DesktopTaskDetailView({
           </div>
         )}
 
-      {/* =======================================================
-          FINISH TASK DIALOG
-      ======================================================= */}
-
       <FinishTaskDialog
         open={showFinishDialog}
         onClose={() => setShowFinishDialog(false)}
@@ -1303,10 +1323,6 @@ export default function DesktopTaskDetailView({
         handleProofChange={handleProofChange}
         handleFinish={handleFinish}
       />
-
-      {/* =======================================================
-          REPORT MODAL
-      ======================================================= */}
 
       <ReportTaskModal
         open={showReportModal}
