@@ -3,72 +3,119 @@
 import {
   loadPaymentTypes,
   loadPayments,
-  simulateWebhook,
+  syncPaymentWithMidtrans,
 } from "../services/paymentSimulator.service";
 
-import { generateSimulatorTransactionId } from "../../utils/simulator.generator";
-
 import {
-  validateSimulatorAmount,
   validateSimulatorOrderId,
 } from "../../utils/simulator.validator";
 
-import type { SimulatorResult } from "../types/simulatorResult";
+import type {
+  SimulatorResult,
+} from "../types/simulatorResult";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { copyToClipboard } from "../../utils/clipboard";
+import {
+  copyToClipboard,
+} from "../../utils/clipboard";
 
-import type { SimulationHistoryItem } from "../types/simulationHistory";
+import type {
+  SimulationHistoryItem,
+} from "../types/simulationHistory";
 
-import type { SimulatorPayment } from "../types/paymentSimulator";
+import type {
+  SimulatorPayment,
+} from "../types/paymentSimulator";
 
 export function usePaymentSimulator() {
-  const [orderId, setOrderId] = useState("");
+  const [
+    orderId,
+    setOrderId,
+  ] = useState("");
 
-  const [amount, setAmount] = useState("5000");
+  const [
+    amount,
+    setAmount,
+  ] = useState("");
 
-  const [transactionType, setTransactionType] = useState("");
+  const [
+    transactionType,
+    setTransactionType,
+  ] = useState("");
 
-  const [paymentTypes, setPaymentTypes] = useState<string[]>([]);
+  const [
+    paymentTypes,
+    setPaymentTypes,
+  ] = useState<string[]>([]);
 
-  const [paymentMethod, setPaymentMethod] = useState("QRIS");
+  const [
+    selectedPayment,
+    setSelectedPayment,
+  ] = useState("");
 
-  const [transactionStatus, setTransactionStatus] = useState("SETTLEMENT");
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
 
-  const [transactionId, setTransactionId] = useState(
-    generateSimulatorTransactionId(),
-  );
+  const [
+    result,
+    setResult,
+  ] =
+    useState<SimulatorResult>({
+      status: "PENDING",
 
-  const [selectedPayment, setSelectedPayment] = useState("");
+      response: "",
 
-  const [loading, setLoading] = useState(false);
+      executionTime: 0,
+    });
 
-  const [result, setResult] = useState<SimulatorResult>({
-    status: "PENDING",
-    response: "",
-    executionTime: 0,
-  });
+  const [
+    history,
+    setHistory,
+  ] =
+    useState<
+      SimulationHistoryItem[]
+    >([]);
 
-  const [history, setHistory] = useState<SimulationHistoryItem[]>([]);
-
-  const [payments, setPayments] = useState<SimulatorPayment[]>([]);
+  const [
+    payments,
+    setPayments,
+  ] =
+    useState<
+      SimulatorPayment[]
+    >([]);
 
   /*
-   * Load transaction types.
+   * Load payment types.
    */
   useEffect(() => {
     async function fetchPaymentTypes() {
       try {
-        const types = await loadPaymentTypes();
+        const types =
+          await loadPaymentTypes();
 
-        setPaymentTypes(types);
+        setPaymentTypes(
+          types,
+        );
 
-        if (types.length > 0) {
-          setTransactionType((current) => current || types[0]);
+        if (
+          types.length > 0
+        ) {
+          setTransactionType(
+            (current) =>
+              current ||
+              types[0],
+          );
         }
       } catch (error) {
-        console.error(error);
+        console.error(
+          error,
+        );
       }
     }
 
@@ -76,60 +123,84 @@ export function usePaymentSimulator() {
   }, []);
 
   /*
-   * Load pending payments berdasarkan transaction type.
+   * Hanya tampilkan payment HelpMe
+   * yang masih PENDING.
    */
   useEffect(() => {
     async function fetchPayments() {
-      if (!transactionType) {
+      if (
+        !transactionType
+      ) {
         setPayments([]);
+
         return;
       }
 
       try {
-        const data = await loadPayments(transactionType);
+        const data =
+          await loadPayments(
+            transactionType,
+          );
 
-        const pendingPayments = data.filter(
-          (payment) => payment.payment_status === "PENDING",
+        setPayments(
+          data.filter(
+            (payment) =>
+              payment
+                .payment_status ===
+              "PENDING",
+          ),
         );
-
-        setPayments(pendingPayments);
       } catch (error) {
-        console.error(error);
+        console.error(
+          error,
+        );
       }
     }
 
     void fetchPayments();
   }, [transactionType]);
 
-  /*
-   * Ketika user memilih payment dari dropdown,
-   * isi Order ID dan Amount dari payment tersebut.
-   *
-   * Payment Method juga diisi dari payment awal,
-   * tetapi tetap dapat diubah secara manual oleh user.
-   */
-  function handlePaymentSelection(paymentId: string) {
-    setSelectedPayment(paymentId);
-
-    const payment = payments.find(
-      (item) => item.id === paymentId,
+  function handlePaymentSelection(
+    paymentId: string,
+  ) {
+    setSelectedPayment(
+      paymentId,
     );
 
+    const payment =
+      payments.find(
+        (item) =>
+          item.id ===
+          paymentId,
+      );
+
     if (!payment) {
+      setOrderId("");
+
+      setAmount("");
+
       return;
     }
 
-    setOrderId(payment.midtrans_order_id);
+    setOrderId(
+      payment.midtrans_order_id,
+    );
 
-    setAmount(String(payment.amount));
-
-    setPaymentMethod(
-      payment.payment_method
-        ? payment.payment_method.toUpperCase()
-        : "QRIS",
+    setAmount(
+      String(
+        payment.amount,
+      ),
     );
   }
 
+  /*
+   * Nama dipertahankan sementara agar
+   * consumer UI existing tidak rusak.
+   *
+   * Sekarang fungsinya hanya reset
+   * selection, bukan generate fake
+   * transaction ID.
+   */
   function generateNewIds() {
     setSelectedPayment("");
 
@@ -137,34 +208,26 @@ export function usePaymentSimulator() {
 
     setAmount("");
 
-    setPaymentMethod("QRIS");
-
-    setTransactionId(generateSimulatorTransactionId());
-
     setResult({
       status: "PENDING",
+
       response: "",
+
       executionTime: 0,
     });
   }
 
   async function copyPayload() {
-    const payload = {
-      orderId,
-
-      transactionId,
-
-      transactionType,
-
-      paymentMethod,
-
-      transactionStatus,
-
-      amount,
-    };
-
     await copyToClipboard(
-      JSON.stringify(payload, null, 2),
+      JSON.stringify(
+        {
+          transactionType,
+
+          orderId,
+        },
+        null,
+        2,
+      ),
     );
   }
 
@@ -173,16 +236,21 @@ export function usePaymentSimulator() {
       return;
     }
 
-    await copyToClipboard(result.response);
+    await copyToClipboard(
+      result.response,
+    );
   }
 
   async function handleSubmit() {
     try {
-      if (!selectedPayment) {
+      if (
+        !selectedPayment
+      ) {
         setResult({
           status: "ERROR",
 
-          response: "Silakan pilih payment terlebih dahulu.",
+          response:
+            "Silakan pilih payment terlebih dahulu.",
 
           executionTime: 0,
         });
@@ -190,35 +258,26 @@ export function usePaymentSimulator() {
         return;
       }
 
-      const startedAt = performance.now();
-
-      const amountError = validateSimulatorAmount(amount);
-
-      if (amountError) {
-        setResult({
-          status: "ERROR",
-
-          response: amountError,
-
-          executionTime: 0,
-        });
-
-        return;
-      }
-
-      const orderIdError = validateSimulatorOrderId(orderId);
+      const orderIdError =
+        validateSimulatorOrderId(
+          orderId,
+        );
 
       if (orderIdError) {
         setResult({
           status: "ERROR",
 
-          response: orderIdError,
+          response:
+            orderIdError,
 
           executionTime: 0,
         });
 
         return;
       }
+
+      const startedAt =
+        performance.now();
 
       setResult({
         status: "PENDING",
@@ -230,29 +289,26 @@ export function usePaymentSimulator() {
 
       setLoading(true);
 
-      const simulationResult = await simulateWebhook({
-        orderId,
+      const syncResult =
+        await syncPaymentWithMidtrans(
+          orderId,
+        );
 
-        amount: Number(amount),
+      const finishedAt =
+        performance.now();
 
-        paymentMethod,
+      const executionTime =
+        Math.round(
+          finishedAt -
+            startedAt,
+        );
 
-        transactionStatus,
-
-        transactionId,
-      });
-
-      const finishedAt = performance.now();
-
-      const executionTime = Math.round(
-        finishedAt - startedAt,
-      );
-
-      const response = JSON.stringify(
-        simulationResult,
-        null,
-        2,
-      );
+      const response =
+        JSON.stringify(
+          syncResult,
+          null,
+          2,
+        );
 
       setResult({
         status: "SUCCESS",
@@ -262,71 +318,90 @@ export function usePaymentSimulator() {
         executionTime,
       });
 
-      setHistory((previous) =>
-        [
-          {
-            id: crypto.randomUUID(),
+      setHistory(
+        (previous) =>
+          [
+            {
+              id:
+                crypto.randomUUID(),
 
-            createdAt: new Date(),
+              createdAt:
+                new Date(),
 
-            orderId,
+              orderId,
 
-            amount: Number(amount),
+              amount:
+                Number(
+                  amount,
+                ),
 
-            result: {
-              status: "SUCCESS" as const,
+              result: {
+                status:
+                  "SUCCESS" as const,
 
-              response,
+                response,
 
-              executionTime,
+                executionTime,
+              },
             },
-          },
 
-          ...previous,
-        ].slice(0, 10),
+            ...previous,
+          ].slice(
+            0,
+            10,
+          ),
       );
 
       /*
-       * Refresh daftar payment setelah simulasi.
-       */
-      const refreshed = await loadPayments(
-        transactionType,
-      );
-
-      const pending = refreshed.filter(
-        (payment) =>
-          payment.payment_status === "PENDING",
-      );
-
-      setPayments(pending);
-
-      /*
-       * Jika payment yang sebelumnya dipilih
-       * masih pending, pertahankan selection.
+       * Re-read database.
        *
-       * Jika sudah tidak pending, kosongkan selection.
+       * Bila reconciliation mengubah
+       * PENDING -> PAID/terminal,
+       * payment akan hilang dari dropdown.
        */
-      setSelectedPayment((current) => {
-        if (
-          pending.some(
-            (payment) => payment.id === current,
-          )
-        ) {
-          return current;
-        }
+      const refreshed =
+        await loadPayments(
+          transactionType,
+        );
 
-        return "";
-      });
+      const pending =
+        refreshed.filter(
+          (payment) =>
+            payment
+              .payment_status ===
+            "PENDING",
+        );
+
+      setPayments(
+        pending,
+      );
+
+      setSelectedPayment(
+        (current) => {
+          if (
+            pending.some(
+              (payment) =>
+                payment.id ===
+                current,
+            )
+          ) {
+            return current;
+          }
+
+          return "";
+        },
+      );
     } catch (error) {
-      if (error instanceof Error) {
-        setResult({
-          status: "ERROR",
+      setResult({
+        status: "ERROR",
 
-          response: error.message,
+        response:
+          error instanceof Error
+            ? error.message
+            : "Sinkronisasi payment gagal.",
 
-          executionTime: 0,
-        });
-      }
+        executionTime: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -341,12 +416,6 @@ export function usePaymentSimulator() {
 
     transactionType,
 
-    paymentMethod,
-
-    transactionStatus,
-
-    transactionId,
-
     loading,
 
     result,
@@ -355,17 +424,14 @@ export function usePaymentSimulator() {
 
     selectedPayment,
 
-    setSelectedPayment: handlePaymentSelection,
+    setSelectedPayment:
+      handlePaymentSelection,
 
     setOrderId,
 
     setAmount,
 
     setTransactionType,
-
-    setPaymentMethod,
-
-    setTransactionStatus,
 
     handleSubmit,
 

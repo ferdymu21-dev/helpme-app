@@ -6,82 +6,135 @@ import SimulatorButton from "./SimulatorButton";
 
 import SimulatorResponse from "./SimulatorResponse";
 
-import {
-  PAYMENT_METHODS,
-  TRANSACTION_STATUSES,
-} from "../constants/paymentSimulator";
-
-import type { usePaymentSimulator } from "../hooks/usePaymentSimulator";
+import type {
+  usePaymentSimulator,
+} from "../hooks/usePaymentSimulator";
 
 interface Props {
-  simulator: ReturnType<typeof usePaymentSimulator>;
+  simulator:
+    ReturnType<
+      typeof usePaymentSimulator
+    >;
 }
 
-export default function SimulatorForm({ simulator }: Props) {
-
+export default function SimulatorForm({
+  simulator,
+}: Props) {
   return (
     <div
       className="
-                space-y-6
-                p-6
-            "
+        space-y-6
+        p-6
+      "
     >
       <SimulatorSelect
         label="Transaction Type"
-        options={simulator.paymentTypes.map((item) => ({
-          label: item,
-          value: item,
-        }))}
-        value={simulator.transactionType}
-        onChange={simulator.setTransactionType}
+        options={
+          simulator
+            .paymentTypes
+            .map(
+              (item) => ({
+                label:
+                  item,
+
+                value:
+                  item,
+              }),
+            )
+        }
+        value={
+          simulator
+            .transactionType
+        }
+        onChange={
+          simulator
+            .setTransactionType
+        }
       />
 
       <SimulatorSelect
         label="Select Existing Payment"
-        options={simulator.payments.map((payment) => ({
-          label: `${payment.midtrans_order_id}
-                            • Rp ${payment.amount.toLocaleString("id-ID")}
-                            • ${payment.payment_method ?? "-"}
-                            • ${payment.payment_status}`,
-          value: payment.id,
-        }))}
-        value={simulator.selectedPayment}
-        onChange={simulator.setSelectedPayment}
+        options={
+          simulator
+            .payments
+            .map(
+              (payment) => ({
+                label:
+                  `${payment.midtrans_order_id}
+                  • Rp ${payment.amount.toLocaleString("id-ID")}
+                  • ${payment.payment_status}`,
+
+                value:
+                  payment.id,
+              }),
+            )
+        }
+        value={
+          simulator
+            .selectedPayment
+        }
+        onChange={
+          simulator
+            .setSelectedPayment
+        }
       />
 
-      <SimulatorSelect
-        label="Payment Method"
-        options={PAYMENT_METHODS.map((item) => ({
-          label: item,
-          value: item,
-        }))}
-        value={simulator.paymentMethod}
-        onChange={simulator.setPaymentMethod}
-      />
-
-      <SimulatorSelect
-        label="Transaction Status"
-        options={TRANSACTION_STATUSES.map((item) => ({
-          label: item,
-          value: item,
-        }))}
-        value={simulator.transactionStatus}
-        onChange={simulator.setTransactionStatus}
+      <SimulatorField
+        label="Order ID"
+        value={
+          simulator.orderId
+        }
+        onChange={
+          simulator.setOrderId
+        }
+        disabled
       />
 
       <SimulatorField
         label="Amount"
-        value={simulator.amount}
-        onChange={simulator.setAmount}
+        value={
+          simulator.amount
+        }
+        onChange={
+          simulator.setAmount
+        }
         disabled
       />
 
+      <div
+        className="
+          rounded-xl
+          border
+          border-slate-200
+          bg-slate-50
+          p-4
+          text-sm
+          leading-6
+          text-slate-600
+        "
+      >
+        Tool ini tidak mengubah
+        status transaksi Midtrans.
+        Status pembayaran tetap
+        ditentukan oleh Midtrans
+        Sandbox dan kemudian
+        disinkronkan ke HelpMe.
+      </div>
+
       <SimulatorButton
-        loading={simulator.loading}
-        onClick={simulator.handleSubmit}
+        loading={
+          simulator.loading
+        }
+        onClick={
+          simulator.handleSubmit
+        }
       />
 
-      <SimulatorResponse result={simulator.result} />
+      <SimulatorResponse
+        result={
+          simulator.result
+        }
+      />
     </div>
   );
 }

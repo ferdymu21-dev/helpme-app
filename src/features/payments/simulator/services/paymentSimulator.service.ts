@@ -1,10 +1,83 @@
-import type { SimulatorPayment } from "../types/paymentSimulator";
+import type {
+  SimulatorPayment,
+} from "../types/paymentSimulator";
 
-export async function loadPaymentTypes(): Promise<string[]> {
-  const response = await fetch("/api/dev/payment/types");
+interface PaymentSyncResponse {
+  success: boolean;
+
+  orderId: string;
+
+  paymentType: string;
+
+  helpMeBefore: string;
+
+  midtransStatus: string;
+
+  helpMeAfter: string;
+}
+
+function isRecord(
+  value: unknown,
+): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null
+  );
+}
+
+function parsePaymentSyncResponse(
+  value: unknown,
+): PaymentSyncResponse {
+  if (
+    !isRecord(value) ||
+    value.success !== true ||
+    typeof value.orderId !==
+      "string" ||
+    typeof value.paymentType !==
+      "string" ||
+    typeof value.helpMeBefore !==
+      "string" ||
+    typeof value.midtransStatus !==
+      "string" ||
+    typeof value.helpMeAfter !==
+      "string"
+  ) {
+    throw new Error(
+      "Response sinkronisasi payment tidak valid.",
+    );
+  }
+
+  return {
+    success: true,
+
+    orderId:
+      value.orderId,
+
+    paymentType:
+      value.paymentType,
+
+    helpMeBefore:
+      value.helpMeBefore,
+
+    midtransStatus:
+      value.midtransStatus,
+
+    helpMeAfter:
+      value.helpMeAfter,
+  };
+}
+
+export async function loadPaymentTypes():
+Promise<string[]> {
+  const response =
+    await fetch(
+      "/api/dev/payment/types",
+    );
 
   if (!response.ok) {
-    throw new Error("Failed to load payment types.");
+    throw new Error(
+      "Failed to load payment types.",
+    );
   }
 
   return await response.json();
@@ -13,67 +86,61 @@ export async function loadPaymentTypes(): Promise<string[]> {
 export async function loadPayments(
   paymentType: string,
 ): Promise<SimulatorPayment[]> {
-  const response = await fetch(
-    `/api/dev/payment/list?paymentType=${paymentType}`,
-  );
+  const response =
+    await fetch(
+      `/api/dev/payment/list?paymentType=${paymentType}`,
+    );
 
   if (!response.ok) {
-    throw new Error("Failed to load payments.");
+    throw new Error(
+      "Failed to load payments.",
+    );
   }
 
   return await response.json();
 }
 
-export interface SimulateWebhookPayload {
-  orderId: string;
+export async function syncPaymentWithMidtrans(
+  orderId: string,
+): Promise<PaymentSyncResponse> {
+  const response =
+    await fetch(
+      "/api/dev/payment/sync",
+      {
+        method: "POST",
 
-  amount: number;
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
 
-  paymentMethod: string;
-
-  transactionStatus: string;
-
-  transactionId: string;
-}
-
-export async function simulateWebhook(payload: SimulateWebhookPayload) {
-  const response = await fetch(
-    "/api/dev/payment/simulate",
-
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
+        body:
+          JSON.stringify({
+            orderId,
+          }),
       },
+    );
 
-      body: JSON.stringify({
-        order_id: payload.orderId,
-
-        transaction_id: payload.transactionId,
-
-        transaction_status: payload.transactionStatus.toLowerCase(),
-
-        payment_type: payload.paymentMethod.toLowerCase(),
-
-        gross_amount: payload.amount.toFixed(2),
-
-        status_code: payload.transactionStatus === "SETTLEMENT" ? "200" : "201",
-
-        fraud_status: "accept",
-
-        settlement_time: new Date().toISOString(),
-
-        expiry_time: new Date().toISOString(),
-
-        signature_key: "",
-      }),
-    },
-  );
+  const data: unknown =
+    await response.json();
 
   if (!response.ok) {
-    throw new Error("Simulation failed.");
+    if (
+      isRecord(data) &&
+      typeof data.message ===
+        "string"
+    ) {
+      throw new Error(
+        data.message,
+      );
+    }
+
+    throw new Error(
+      "Sinkronisasi payment gagal.",
+    );
   }
 
-  return await response.json();
+  return parsePaymentSyncResponse(
+    data,
+  );
 }

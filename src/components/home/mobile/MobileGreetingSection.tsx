@@ -20,7 +20,7 @@ export default function MobileGreetingSection() {
       <h1
         className="
           mt-1
-          text-[11px]
+          text-[13px]
           font-semibold
           tracking-tight
           text-slate-950
@@ -35,7 +35,7 @@ export default function MobileGreetingSection() {
       <p
         className="
           mt-0.5
-          text-[10px]
+          text-[12px]
           leading-5
           text-slate-500
         "
