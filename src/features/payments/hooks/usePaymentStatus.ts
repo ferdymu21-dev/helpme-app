@@ -59,7 +59,7 @@ const INITIAL_SNAPSHOT: PaymentSnapshot =
 export function usePaymentStatus({
   enabled,
   orderId,
-  interval = 3000,
+  interval = 10000,
 }: Options) {
   const [
     snapshot,

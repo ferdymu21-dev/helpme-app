@@ -1,10 +1,6 @@
-import {
-  PAYMENT_STATUS,
-} from "../constants/payment";
+import { PAYMENT_STATUS } from "../constants/payment";
 
-import type {
-  PaymentStatusValue,
-} from "../constants/payment";
+import type { PaymentStatusValue } from "../constants/payment";
 
 import {
   getMidtransTransactionStatus,
@@ -16,31 +12,20 @@ import {
   parseMidtransStatusResponse,
 } from "./midtransStatus.parser";
 
-import {
-  resolvePaymentStatus,
-} from "./paymentStatus.mapper";
+import { resolvePaymentStatus } from "./paymentStatus.mapper";
 
-import {
-  handleDonationPayment,
-} from "./handlers/donation.handler";
+import { handleDonationPayment } from "./handlers/donation.handler";
 
-import {
-  handleUrgentTaskPayment,
-} from "./handlers/urgent-task.handler";
+import { handleUrgentTaskPayment } from "./handlers/urgent-task.handler";
 
-import type {
-  MidtransStatusResponse,
-} from "./midtrans.types";
+import type { MidtransStatusResponse } from "./midtrans.types";
 
-import type {
-  PaymentStatusSnapshot,
-} from "./paymentStatus.repository";
+import type { PaymentStatusSnapshot } from "./paymentStatus.repository";
 
 interface ReconciliationPayload {
   orderId: string;
 
-  paymentStatus:
-    PaymentStatusValue;
+  paymentStatus: PaymentStatusValue;
 
   transactionId?: string;
 
@@ -52,69 +37,58 @@ interface ReconciliationPayload {
 }
 
 async function dispatchPaymentStatus(
-  paymentType:
-    PaymentStatusSnapshot["paymentType"],
+  paymentType: PaymentStatusSnapshot["paymentType"],
 
-  payload:
-    ReconciliationPayload,
+  payload: ReconciliationPayload,
 ) {
   switch (paymentType) {
     case "DONATION":
-      await handleDonationPayment(
-        payload,
-      );
+      await handleDonationPayment(payload);
 
       return;
 
     case "URGENT_TASK":
-      await handleUrgentTaskPayment(
-        payload,
-      );
+      await handleUrgentTaskPayment(payload);
 
       return;
   }
 }
 
 async function applyMidtransStatus(
-  snapshot:
-    PaymentStatusSnapshot,
+  snapshot: PaymentStatusSnapshot,
 
   orderId: string,
 
-  response:
-    MidtransStatusResponse,
+  response: MidtransStatusResponse,
+
+  afterDeadline: boolean,
 ): Promise<boolean> {
-  const paymentStatus =
-    resolvePaymentStatus(
-      response.transaction_status,
+  /*
+   * Seluruh response Midtrans yang akan
+   * mengubah payment HelpMe wajib
+   * mengacu ke Order ID yang sama.
+   */
+  if (response.order_id !== orderId) {
+    throw new Error("Order ID response Midtrans tidak sesuai.");
+  }
 
-      response.fraud_status,
+  const paymentStatus = resolvePaymentStatus(
+    response.transaction_status,
 
-      {
-        afterDeadline: true,
-      },
-    );
+    response.fraud_status,
 
-  if (
-    paymentStatus ===
-    PAYMENT_STATUS.PENDING
-  ) {
+    {
+      afterDeadline,
+    },
+  );
+
+  if (paymentStatus === PAYMENT_STATUS.PENDING) {
     return false;
   }
 
-  /*
-   * Untuk PAID kita tidak boleh
-   * menciptakan/update transaksi tanpa
-   * identitas transaksi dan payment
-   * method authoritative dari Midtrans.
-   */
   if (
-    paymentStatus ===
-      PAYMENT_STATUS.PAID &&
-    (
-      !response.transaction_id ||
-      !response.payment_type
-    )
+    paymentStatus === PAYMENT_STATUS.PAID &&
+    (!response.transaction_id || !response.payment_type)
   ) {
     throw new Error(
       "Status PAID Midtrans tidak memiliki data transaksi lengkap.",
@@ -129,21 +103,17 @@ async function applyMidtransStatus(
 
       paymentStatus,
 
-      transactionId:
-        response.transaction_id,
+      transactionId: response.transaction_id,
 
-      paymentMethod:
-        response.payment_type,
+      paymentMethod: response.payment_type,
 
       paidAt:
-        paymentStatus ===
-        PAYMENT_STATUS.PAID
+        paymentStatus === PAYMENT_STATUS.PAID
           ? response.settlement_time
           : undefined,
 
       expiredAt:
-        paymentStatus ===
-        PAYMENT_STATUS.EXPIRED
+        paymentStatus === PAYMENT_STATUS.EXPIRED
           ? response.expiry_time
           : undefined,
     },
@@ -152,21 +122,16 @@ async function applyMidtransStatus(
   return true;
 }
 
-async function fetchAndApplyLatestStatus(
-  snapshot:
-    PaymentStatusSnapshot,
+export async function reconcilePendingPayment(
+  snapshot: PaymentStatusSnapshot,
 
   orderId: string,
-) {
-  const rawStatus =
-    await getMidtransTransactionStatus(
-      orderId,
-    );
 
-  const status =
-    parseMidtransStatusResponse(
-      rawStatus,
-    );
+  afterDeadline = false,
+) {
+  const rawStatus = await getMidtransTransactionStatus(orderId);
+
+  const status = parseMidtransStatusResponse(rawStatus);
 
   return await applyMidtransStatus(
     snapshot,
@@ -174,12 +139,13 @@ async function fetchAndApplyLatestStatus(
     orderId,
 
     status,
+
+    afterDeadline,
   );
 }
 
 export async function reconcileExpiredPendingPayment(
-  snapshot:
-    PaymentStatusSnapshot,
+  snapshot: PaymentStatusSnapshot,
 
   orderId: string,
 ) {
@@ -187,19 +153,12 @@ export async function reconcileExpiredPendingPayment(
    * STEP 1
    * Ambil authoritative status Midtrans.
    */
-  let initialStatus:
-    MidtransStatusResponse;
+  let initialStatus: MidtransStatusResponse;
 
   try {
-    const rawStatus =
-      await getMidtransTransactionStatus(
-        orderId,
-      );
+    const rawStatus = await getMidtransTransactionStatus(orderId);
 
-    initialStatus =
-      parseMidtransStatusResponse(
-        rawStatus,
-      );
+    initialStatus = parseMidtransStatusResponse(rawStatus);
   } catch (error) {
     /*
      * Order ID berasal dari database
@@ -214,19 +173,14 @@ export async function reconcileExpiredPendingPayment(
      * Tutup checkout session HelpMe
      * sebagai EXPIRED.
      */
-    if (
-      getMidtransHttpStatusCode(
-        error,
-      ) === 404
-    ) {
+    if (getMidtransHttpStatusCode(error) === 404) {
       await dispatchPaymentStatus(
         snapshot.paymentType,
 
         {
           orderId,
 
-          paymentStatus:
-            PAYMENT_STATUS.EXPIRED,
+          paymentStatus: PAYMENT_STATUS.EXPIRED,
         },
       );
 
@@ -239,14 +193,15 @@ export async function reconcileExpiredPendingPayment(
   /*
    * Midtrans ternyata sudah terminal.
    */
-  const initialTerminal =
-    await applyMidtransStatus(
-      snapshot,
+  const initialTerminal = await applyMidtransStatus(
+    snapshot,
 
-      orderId,
+    orderId,
 
-      initialStatus,
-    );
+    initialStatus,
+
+    true,
+  );
 
   if (initialTerminal) {
     return;
@@ -262,14 +217,10 @@ export async function reconcileExpiredPendingPayment(
    * transaksi, jangan set EXPIRED secara
    * lokal lebih dulu.
    */
-  let expireResponse:
-    unknown;
+  let expireResponse: unknown;
 
   try {
-    expireResponse =
-      await expireMidtransTransaction(
-        orderId,
-      );
+    expireResponse = await expireMidtransTransaction(orderId);
   } catch {
     /*
      * Bisa terjadi race:
@@ -280,10 +231,12 @@ export async function reconcileExpiredPendingPayment(
      *
      * Maka selalu GET status lagi.
      */
-    await fetchAndApplyLatestStatus(
+    await reconcilePendingPayment(
       snapshot,
 
       orderId,
+
+      true,
     );
 
     return;
@@ -296,19 +249,17 @@ export async function reconcileExpiredPendingPayment(
    * Gunakan langsung bila valid.
    */
   try {
-    const parsedExpireResponse =
-      parseMidtransStatusResponse(
-        expireResponse,
-      );
+    const parsedExpireResponse = parseMidtransStatusResponse(expireResponse);
 
-    const expireTerminal =
-      await applyMidtransStatus(
-        snapshot,
+    const expireTerminal = await applyMidtransStatus(
+      snapshot,
 
-        orderId,
+      orderId,
 
-        parsedExpireResponse,
-      );
+      parsedExpireResponse,
+
+      true,
+    );
 
     if (expireTerminal) {
       return;
@@ -324,9 +275,11 @@ export async function reconcileExpiredPendingPayment(
   /*
    * Final authoritative re-check.
    */
-  await fetchAndApplyLatestStatus(
+  await reconcilePendingPayment(
     snapshot,
 
     orderId,
+
+    true,
   );
 }

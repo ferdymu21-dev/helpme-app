@@ -1,3 +1,5 @@
+import "server-only";
+
 import crypto from "crypto";
 
 interface VerifySignaturePayload {
@@ -10,18 +12,49 @@ interface VerifySignaturePayload {
   signatureKey: string;
 }
 
-export function verifySignature(payload: VerifySignaturePayload) {
-  const serverKey = process.env.MIDTRANS_SERVER_KEY!;
+export function verifySignature(
+  payload: VerifySignaturePayload,
+) {
+  const serverKey =
+    process.env.MIDTRANS_SERVER_KEY;
 
-  const hash = crypto
+  if (
+    !serverKey ||
+    !payload.orderId ||
+    !payload.statusCode ||
+    !payload.grossAmount ||
+    !payload.signatureKey
+  ) {
+    return false;
+  }
 
-    .createHash("sha512")
+  const expectedSignature =
+    crypto
+      .createHash("sha512")
+      .update(
+        payload.orderId +
+          payload.statusCode +
+          payload.grossAmount +
+          serverKey,
+      )
+      .digest("hex");
 
-    .update(
-      payload.orderId + payload.statusCode + payload.grossAmount + serverKey,
-    )
+  if (
+    expectedSignature.length !==
+    payload.signatureKey.length
+  ) {
+    return false;
+  }
 
-    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(
+      expectedSignature,
+      "utf8",
+    ),
 
-  return hash === payload.signatureKey;
+    Buffer.from(
+      payload.signatureKey,
+      "utf8",
+    ),
+  );
 }

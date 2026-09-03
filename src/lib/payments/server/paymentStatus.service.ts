@@ -8,6 +8,7 @@ import {
 
 import {
   reconcileExpiredPendingPayment,
+  reconcilePendingPayment,
 } from "./paymentReconciliation.service";
 
 import type {
@@ -56,8 +57,11 @@ export async function fetchPaymentStatus(
     );
 
   /*
-   * Sudah terminal.
-   * Tidak perlu Midtrans request.
+   * Status lokal sudah terminal.
+   *
+   * Jangan melakukan provider request
+   * berulang pada payment yang sudah
+   * selesai direconcile.
    */
   if (
     current.status !==
@@ -68,52 +72,62 @@ export async function fetchPaymentStatus(
     );
   }
 
-  /*
-   * Legacy payment tanpa deadline
-   * tidak direconcile otomatis.
-   */
-  if (
-    !current.paymentExpiresAt
-  ) {
-    return toPublicPaymentStatus(
-      current,
-    );
-  }
-
   const expiresAt =
-    Date.parse(
-      current.paymentExpiresAt,
-    );
+    current.paymentExpiresAt
+      ? Date.parse(
+          current.paymentExpiresAt,
+        )
+      : Number.NaN;
 
-  if (
-    Number.isNaN(
+  const deadlinePassed =
+    Number.isFinite(
       expiresAt,
-    ) ||
-    expiresAt > Date.now()
-  ) {
-    return toPublicPaymentStatus(
-      current,
-    );
-  }
+    ) &&
+    expiresAt <= Date.now();
 
-  /*
-   * Deadline sudah lewat.
-   *
-   * Midtrans menjadi authoritative
-   * reconciliation source.
-   *
-   * Error provider tidak boleh membuat
-   * kita menebak terminal status.
-   * Biarkan PENDING dan polling berikutnya
-   * akan mencoba lagi.
-   */
   try {
-    await reconcileExpiredPendingPayment(
-      current,
+    /*
+     * PAYMENT MASIH AKTIF
+     *
+     * Midtrans tetap authoritative.
+     *
+     * Ini adalah fallback apabila
+     * webhook terlambat atau tidak
+     * berhasil sampai ke HelpMe.
+     */
+    if (!deadlinePassed) {
+      await reconcilePendingPayment(
+        current,
 
-      orderId,
-    );
+        orderId,
+      );
+    } else {
+      /*
+       * DEADLINE SUDAH LEWAT
+       *
+       * Gunakan flow existing:
+       *
+       * 1. GET Midtrans
+       * 2. bila terminal → reconcile
+       * 3. bila masih pending → expire
+       *    melalui Midtrans
+       * 4. reconcile kembali
+       */
+      await reconcileExpiredPendingPayment(
+        current,
+
+        orderId,
+      );
+    }
   } catch (error) {
+    /*
+     * Provider error tidak boleh
+     * menyebabkan HelpMe menebak status.
+     *
+     * Pertahankan state lokal PENDING
+     * dan coba kembali pada polling
+     * berikutnya.
+     */
     console.error(
       "[Payment Reconciliation]",
 
@@ -126,11 +140,12 @@ export async function fetchPaymentStatus(
   }
 
   /*
-   * Handler reconciliation mungkin
-   * mengubah DB sekaligus menciptakan
-   * Task untuk Urgent PAID.
+   * Reconciliation mungkin sudah
+   * mengubah payment_status dan untuk
+   * URGENT_TASK juga mungkin membuat
+   * Task.
    *
-   * Selalu baca state terbaru.
+   * Selalu baca DB kembali.
    */
   const reconciled =
     await getPaymentStatus(
