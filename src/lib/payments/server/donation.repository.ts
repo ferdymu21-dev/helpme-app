@@ -2,7 +2,7 @@ import { adminSupabase } from "@/lib/supabase/admin";
 
 import { paymentLog } from "@/lib/monitoring/payment.logger";
 
-import { PAYMENT_METHOD, PAYMENT_STATUS } from "../constants/payment";
+import { PAYMENT_STATUS } from "../constants/payment";
 
 import type { CreateDonationCommand } from "../types/donation";
 
@@ -30,7 +30,7 @@ export async function saveDonation(
 
       payment_status: PAYMENT_STATUS.PENDING,
 
-      payment_method: PAYMENT_METHOD.QRIS,
+      payment_method: null,
 
       midtrans_order_id: orderId,
 

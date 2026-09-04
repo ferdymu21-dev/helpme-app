@@ -1,6 +1,6 @@
 import { adminSupabase } from "@/lib/supabase/admin";
 
-import { PAYMENT_METHOD, PAYMENT_STATUS } from "../constants/payment";
+import { PAYMENT_STATUS } from "../constants/payment";
 
 interface Payload {
   userId: string;
@@ -36,7 +36,7 @@ export async function saveUrgentTaskPayment(
 
       payment_status: PAYMENT_STATUS.PENDING,
 
-      payment_method: PAYMENT_METHOD.QRIS,
+      payment_method: null,
 
       midtrans_order_id: orderId,
 

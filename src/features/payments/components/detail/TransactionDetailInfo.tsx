@@ -59,28 +59,55 @@ function formatTime(
 
 function formatPaymentMethod(
   method: string | null,
+  status: TransactionDetail["status"],
 ) {
+  if (status === "PENDING") {
+    return "Belum dibayar";
+  }
+
+  if (
+    status === "EXPIRED" ||
+    status === "CANCELLED"
+  ) {
+    return "Tidak ada pembayaran";
+  }
+
+  if (status === "FAILED") {
+    return "Pembayaran tidak berhasil";
+  }
+
   if (!method) {
-    return "Belum dipilih";
+    return "Tidak tersedia";
   }
 
   switch (
     method.toLowerCase()
   ) {
     case "qris":
+    case "other_qris":
       return "QRIS";
-
-    case "bank_transfer":
-      return "Transfer Bank";
-
-    case "credit_card":
-      return "Kartu Kredit";
 
     case "gopay":
       return "GoPay";
 
     case "shopeepay":
       return "ShopeePay";
+
+    case "ovo":
+      return "OVO";
+
+    case "dana":
+      return "DANA";
+
+    case "credit_card":
+      return "Kartu Kredit / Debit";
+
+    case "bank_transfer":
+      return "Virtual Account";
+
+    case "echannel":
+    case "mandiri_va":
+      return "Mandiri Virtual Account";
 
     case "bca_va":
       return "BCA Virtual Account";
@@ -91,8 +118,23 @@ function formatPaymentMethod(
     case "bri_va":
       return "BRI Virtual Account";
 
-    case "mandiri_va":
-      return "Mandiri Virtual Account";
+    case "permata_va":
+      return "Permata Virtual Account";
+
+    case "cimb_va":
+      return "CIMB Niaga Virtual Account";
+
+    case "seabank_va":
+      return "SeaBank Virtual Account";
+
+    case "bsi_va":
+      return "BSI Virtual Account";
+
+    case "danamon_va":
+      return "Danamon Virtual Account";
+
+    case "saqu_va":
+      return "Bank Saqu Virtual Account";
 
     default:
       return method;
@@ -345,6 +387,7 @@ export default function TransactionDetailInfo({
           label="Metode Pembayaran"
           value={formatPaymentMethod(
             transaction.paymentMethod,
+            transaction.status,
           )}
           icon={CreditCard}
         />
