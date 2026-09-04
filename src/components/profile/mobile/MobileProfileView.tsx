@@ -112,7 +112,7 @@ export default function MobileProfileView({
         <header className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push("/home")}
             aria-label="Kembali"
             title="Kembali"
             className="
