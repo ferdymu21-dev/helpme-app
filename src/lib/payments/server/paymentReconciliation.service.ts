@@ -174,6 +174,15 @@ export async function reconcileExpiredPendingPayment(
      * sebagai EXPIRED.
      */
     if (getMidtransHttpStatusCode(error) === 404) {
+      /*
+       * Payment sudah melewati deadline
+       * lokal dan Midtrans tidak lagi
+       * mengenal transaksi tersebut.
+       *
+       * Tutup lifecycle HelpMe sebagai
+       * EXPIRED menggunakan deadline resmi
+       * payment sebagai waktu expiry.
+       */
       await dispatchPaymentStatus(
         snapshot.paymentType,
 
@@ -181,6 +190,8 @@ export async function reconcileExpiredPendingPayment(
           orderId,
 
           paymentStatus: PAYMENT_STATUS.EXPIRED,
+
+          expiredAt: snapshot.paymentExpiresAt ?? undefined,
         },
       );
 
