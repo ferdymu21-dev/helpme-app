@@ -9,6 +9,8 @@ export interface PaymentStatusSnapshot {
 
   status: string;
 
+  amount: number;
+
   paymentExpiresAt:
     string | null;
 
@@ -36,6 +38,7 @@ export async function getPaymentStatus(
       )
       .select(`
         payment_status,
+        amount,
         payment_expires_at
       `)
       .eq(
@@ -60,6 +63,9 @@ export async function getPaymentStatus(
       status:
         donation.payment_status,
 
+       amount:
+        donation.amount,
+
       paymentExpiresAt:
         donation.payment_expires_at,
     };
@@ -81,6 +87,7 @@ export async function getPaymentStatus(
       )
       .select(`
         payment_status,
+        amount,
         payment_expires_at,
         task_id
       `)
@@ -105,6 +112,9 @@ export async function getPaymentStatus(
 
       status:
         taskPayment.payment_status,
+
+      amount:
+        taskPayment.amount,
 
       paymentExpiresAt:
         taskPayment

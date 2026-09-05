@@ -12,6 +12,8 @@ import {
   parseMidtransStatusResponse,
 } from "./midtransStatus.parser";
 
+import { assertPaymentAmountMatches } from "./paymentAmount";
+
 import { resolvePaymentStatus } from "./paymentStatus.mapper";
 
 import { handleDonationPayment } from "./handlers/donation.handler";
@@ -71,6 +73,12 @@ async function applyMidtransStatus(
   if (response.order_id !== orderId) {
     throw new Error("Order ID response Midtrans tidak sesuai.");
   }
+
+  if (!response.gross_amount) {
+    throw new Error("Response Midtrans tidak memiliki nominal pembayaran.");
+  }
+
+  assertPaymentAmountMatches(snapshot.amount, response.gross_amount);
 
   const paymentStatus = resolvePaymentStatus(
     response.transaction_status,

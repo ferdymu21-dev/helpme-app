@@ -10,6 +10,8 @@ import { handleDonationPayment } from "./handlers/donation.handler";
 
 import { handleUrgentTaskPayment } from "./handlers/urgent-task.handler";
 
+import { assertPaymentAmountMatches } from "./paymentAmount";
+
 export async function handlePaymentNotification(
   notification: MidtransNotification,
 ) {
@@ -20,6 +22,11 @@ export async function handlePaymentNotification(
   if (!paymentRecord) {
     throw new Error("Payment tidak ditemukan.");
   }
+
+  assertPaymentAmountMatches(
+    paymentRecord.payment["amount"],
+    notification.gross_amount,
+  );
 
   const paymentExpiresAt =
     typeof paymentRecord.payment["payment_expires_at"] === "string"

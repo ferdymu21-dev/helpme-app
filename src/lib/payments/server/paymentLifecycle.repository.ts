@@ -45,6 +45,7 @@ export async function listPendingPaymentCandidates(
       .select(`
         midtrans_order_id,
         payment_status,
+        amount,
         payment_expires_at,
         created_at
       `)
@@ -91,6 +92,7 @@ export async function listPendingPaymentCandidates(
       .select(`
         midtrans_order_id,
         payment_status,
+        amount,
         payment_expires_at,
         task_id,
         created_at
@@ -156,6 +158,10 @@ export async function listPendingPaymentCandidates(
           donation
             .payment_status,
 
+        amount:
+          donation
+             .amount,
+
         paymentExpiresAt:
           donation
             .payment_expires_at,
@@ -193,6 +199,10 @@ export async function listPendingPaymentCandidates(
         status:
           payment
             .payment_status,
+
+        amount:
+          payment
+            .amount,
 
         paymentExpiresAt:
           payment
