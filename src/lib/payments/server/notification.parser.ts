@@ -1,5 +1,7 @@
 import type { MidtransNotification } from "./midtrans.types";
 
+import { normalizeMidtransTimestamp } from "./midtransTimestamp";
+
 export interface PaymentNotification {
   orderId: string;
 
@@ -34,8 +36,14 @@ export function parseNotification(
 
     amount: Number(notification.gross_amount),
 
-    settlementTime: notification.settlement_time,
+    settlementTime:
+      normalizeMidtransTimestamp(
+        notification.settlement_time
+      ),
 
-    expiryTime: notification.expiry_time,
+    expiryTime:
+      normalizeMidtransTimestamp(
+        notification.expiry_time
+      ),
   };
 }

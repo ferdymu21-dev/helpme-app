@@ -1,5 +1,9 @@
 import type { MidtransStatusResponse } from "./midtrans.types";
 
+import {
+  normalizeMidtransTimestamp,
+} from "./midtransTimestamp";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -39,9 +43,19 @@ export function parseMidtransStatusResponse(
 
     status_message: optionalString(value.status_message),
 
-    settlement_time: optionalString(value.settlement_time),
+    settlement_time:
+      normalizeMidtransTimestamp(
+        optionalString(
+         value.settlement_time,
+        ),
+      ),
 
-    expiry_time: optionalString(value.expiry_time),
+   expiry_time:
+    normalizeMidtransTimestamp(
+      optionalString(
+        value.expiry_time,
+      ),
+    ),
   };
 }
 
