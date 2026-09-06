@@ -13,11 +13,17 @@ export default function AdminGuard({
 }) {
   const router = useRouter();
 
-  const authUser = useAuthStore((state) => state.user);
+  const authUser = useAuthStore(
+    (state) => state.user,
+  );
 
-  const authLoading = useAuthStore((state) => state.loading);
+  const authLoading = useAuthStore(
+    (state) => state.loading,
+  );
 
-  const role = useAuthStore((state) => state.role);
+  const role = useAuthStore(
+    (state) => state.role,
+  );
 
   useEffect(() => {
     if (authLoading) {
@@ -30,19 +36,32 @@ export default function AdminGuard({
       return;
     }
 
-    if (role && role !== "ADMIN") {
+    /*
+     * Setelah authLoading=false,
+     * role seharusnya sudah resolved.
+     *
+     * role=null maupun role non-ADMIN
+     * harus fail closed, bukan menunggu
+     * "Memuat role..." tanpa akhir.
+     */
+    if (role !== "ADMIN") {
       router.replace("/");
     }
-  }, [authLoading, authUser, role, router]);
+  }, [
+    authLoading,
+    authUser,
+    role,
+    router,
+  ]);
 
   if (authLoading) {
     return (
       <main
         className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
+          flex
+          min-h-screen
+          items-center
+          justify-center
         "
       >
         <p>Memuat sesi...</p>
@@ -50,26 +69,10 @@ export default function AdminGuard({
     );
   }
 
-  if (!authUser) {
-    return null;
-  }
-
-  if (!role) {
-    return (
-      <main
-        className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-        "
-      >
-        <p>Memuat role...</p>
-      </main>
-    );
-  }
-
-  if (role !== "ADMIN") {
+  if (
+    !authUser ||
+    role !== "ADMIN"
+  ) {
     return null;
   }
 
