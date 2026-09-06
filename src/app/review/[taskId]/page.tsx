@@ -320,7 +320,7 @@ export default function ReviewPage() {
                 <div>
                   <h2
                     className="
-                      text-base
+                      text-xs
                       font-black
                       text-slate-900
                     "
@@ -331,7 +331,7 @@ export default function ReviewPage() {
                   <p
                     className="
                       mt-0.5
-                      text-xs
+                      text-sm
                       leading-5
                       text-slate-500
                     "
@@ -500,7 +500,7 @@ export default function ReviewPage() {
                     <label
                       htmlFor="review-comment"
                       className="
-                        text-base
+                        text-xs
                         font-black
                         text-slate-900
                       "
@@ -526,7 +526,7 @@ export default function ReviewPage() {
                   <p
                     className="
                       mt-0.5
-                      text-xs
+                      text-sm
                       leading-5
                       text-slate-500
                     "

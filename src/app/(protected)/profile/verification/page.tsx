@@ -1307,7 +1307,7 @@ const documentsReady =
                             text-slate-900
                           "
                         >
-                          Foto KTP
+                          Foto Identitas (KTP, SIM, KTM)
                         </p>
 
                         <p
@@ -1706,7 +1706,7 @@ const documentsReady =
                   >
                     {[
                       "Pastikan foto tidak buram atau gelap.",
-                      "Seluruh informasi KTP harus terlihat.",
+                      "Seluruh informasi kartu identitas harus terlihat.",
                       "Wajah pada selfie terlihat jelas.",
                       "Hindari filter atau edit berlebihan.",
                     ].map((tip) => (
@@ -1824,7 +1824,7 @@ const documentsReady =
                         text-slate-400
                       "
                     >
-                      Lengkapi foto KTP dan selfie untuk
+                      Lengkapi foto kartu identitas dan selfie untuk
                       mengaktifkan tombol kirim.
                     </p>
                   )}
@@ -1888,7 +1888,7 @@ const documentsReady =
                   text-slate-500
                 "
               >
-                Foto KTP dan selfie tidak ditampilkan pada profil
+                Foto kartu identitas dan selfie tidak ditampilkan pada profil
                 publik. Dokumen digunakan untuk proses pemeriksaan
                 identitas akun.
               </p>
@@ -1967,7 +1967,7 @@ const documentsReady =
                   {
                     number: "01",
                     title: "Kirim dokumen",
-                    text: "Unggah KTP dan selfie yang jelas.",
+                    text: "Unggah kartu identitas dan selfie yang jelas.",
                   },
                   {
                     number: "02",
