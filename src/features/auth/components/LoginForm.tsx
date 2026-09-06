@@ -1,11 +1,10 @@
 "use client";
 
-import {
-  FormEvent,
-  useState,
-} from "react";
+import { FormEvent, useState } from "react";
 
 import Link from "next/link";
+
+import { useRouter } from "next/navigation";
 
 import {
   AlertCircle,
@@ -16,9 +15,15 @@ import {
   Mail,
 } from "lucide-react";
 
+import { useAuthStore } from "@/store/auth.store";
+
 import { login } from "../services/auth.service";
 
 export default function LoginForm() {
+  const router = useRouter();
+
+  const setAuthUser = useAuthStore((state) => state.setUser);
+
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
@@ -29,9 +34,7 @@ export default function LoginForm() {
 
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleLogin(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (loading) return;
@@ -41,23 +44,32 @@ export default function LoginForm() {
     try {
       setLoading(true);
 
-      await login({
+      const authData = await login({
         email: email.trim(),
         password,
       });
 
-      window.location.href = "/home";
-    } catch (error: unknown) {
-      const rawMessage =
-        error instanceof Error
-          ? error.message
-          : "";
+      if (!authData.user) {
+        throw new Error("Session login tidak tersedia.");
+      }
 
-      if (
-        rawMessage
-          .toLowerCase()
-          .includes("invalid login credentials")
-      ) {
+      /*
+       * signInWithPassword sudah memberi kita
+       * authenticated user.
+       *
+       * Sinkronkan store sebelum masuk ke
+       * protected route agar ProtectedLayout
+       * tidak melihat user=null sementara.
+       */
+      setAuthUser(authData.user);
+
+      router.replace("/home");
+
+      router.refresh();
+    } catch (error: unknown) {
+      const rawMessage = error instanceof Error ? error.message : "";
+
+      if (rawMessage.toLowerCase().includes("invalid login credentials")) {
         setErrorMessage(
           "Email atau kata sandi yang Anda masukkan tidak sesuai.",
         );
@@ -65,11 +77,7 @@ export default function LoginForm() {
         return;
       }
 
-      if (
-        rawMessage
-          .toLowerCase()
-          .includes("email not confirmed")
-      ) {
+      if (rawMessage.toLowerCase().includes("email not confirmed")) {
         setErrorMessage(
           "Email Anda belum dikonfirmasi. Silakan periksa email terlebih dahulu.",
         );
@@ -78,8 +86,7 @@ export default function LoginForm() {
       }
 
       setErrorMessage(
-        rawMessage ||
-          "Terjadi kesalahan saat masuk. Silakan coba kembali.",
+        rawMessage || "Terjadi kesalahan saat masuk. Silakan coba kembali.",
       );
     } finally {
       setLoading(false);
@@ -87,11 +94,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form
-      onSubmit={handleLogin}
-      className="space-y-5"
-      noValidate
-    >
+    <form onSubmit={handleLogin} className="space-y-5" noValidate>
       {errorMessage && (
         <div
           role="alert"
@@ -157,9 +160,7 @@ export default function LoginForm() {
             id="login-email"
             type="email"
             value={email}
-            onChange={(event) =>
-              setEmail(event.target.value)
-            }
+            onChange={(event) => setEmail(event.target.value)}
             placeholder="nama@email.com"
             autoComplete="email"
             inputMode="email"
@@ -247,9 +248,7 @@ export default function LoginForm() {
             id="login-password"
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(event) =>
-              setPassword(event.target.value)
-            }
+            onChange={(event) => setPassword(event.target.value)}
             placeholder="Masukkan kata sandi"
             autoComplete="current-password"
             required
@@ -281,14 +280,10 @@ export default function LoginForm() {
 
           <button
             type="button"
-            onClick={() =>
-              setShowPassword((current) => !current)
-            }
+            onClick={() => setShowPassword((current) => !current)}
             disabled={loading}
             aria-label={
-              showPassword
-                ? "Sembunyikan kata sandi"
-                : "Tampilkan kata sandi"
+              showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
             }
             className="
               absolute
@@ -313,15 +308,9 @@ export default function LoginForm() {
             "
           >
             {showPassword ? (
-              <EyeOff
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
             ) : (
-              <Eye
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <Eye className="h-5 w-5" aria-hidden="true" />
             )}
           </button>
         </div>
@@ -356,15 +345,10 @@ export default function LoginForm() {
         "
       >
         {loading && (
-          <LoaderCircle
-            className="h-5 w-5 animate-spin"
-            aria-hidden="true"
-          />
+          <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
         )}
 
-        {loading
-          ? "Memproses..."
-          : "Masuk ke HelpMe"}
+        {loading ? "Memproses..." : "Masuk ke HelpMe"}
       </button>
     </form>
   );

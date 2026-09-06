@@ -1,11 +1,10 @@
 "use client";
 
-import {
-  type ReactNode,
-  useState,
-} from "react";
+import { type ReactNode, useState } from "react";
 
 import Link from "next/link";
+
+import { useRouter } from "next/navigation";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -27,26 +26,20 @@ import { logout } from "@/features/auth/services/auth.service";
 
 import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 
-function getVerificationPresentation(
-  status?: string,
-) {
+function getVerificationPresentation(status?: string) {
   switch (status) {
     case "VERIFIED":
       return {
         label: "Terverifikasi",
-        description:
-          "Identitas Anda telah berhasil diverifikasi.",
-        className:
-          "border-emerald-200 bg-emerald-50 text-emerald-700",
+        description: "Identitas Anda telah berhasil diverifikasi.",
+        className: "border-emerald-200 bg-emerald-50 text-emerald-700",
       };
 
     case "PENDING":
       return {
         label: "Sedang Ditinjau",
-        description:
-          "Dokumen Anda sedang diperiksa oleh tim HelpMe.",
-        className:
-          "border-blue-200 bg-blue-50 text-blue-700",
+        description: "Dokumen Anda sedang diperiksa oleh tim HelpMe.",
+        className: "border-blue-200 bg-blue-50 text-blue-700",
       };
 
     case "REJECTED":
@@ -54,8 +47,7 @@ function getVerificationPresentation(
         label: "Perlu Diperbaiki",
         description:
           "Verifikasi sebelumnya ditolak. Periksa dan kirim ulang dokumen.",
-        className:
-          "border-red-200 bg-red-50 text-red-700",
+        className: "border-red-200 bg-red-50 text-red-700",
       };
 
     default:
@@ -63,43 +55,28 @@ function getVerificationPresentation(
         label: "Belum Diverifikasi",
         description:
           "Verifikasi identitas untuk meningkatkan kepercayaan akun.",
-        className:
-          "border-amber-200 bg-amber-50 text-amber-700",
+        className: "border-amber-200 bg-amber-50 text-amber-700",
       };
   }
 }
 
 export default function SettingsPage() {
-  const {
-    user,
-    loading,
-  } = useCurrentUser();
+  const router = useRouter();
 
-  const [
-    loggingOut,
-    setLoggingOut,
-  ] = useState(false);
+  const { user, loading } = useCurrentUser();
 
-  const verification =
-    getVerificationPresentation(
-      user?.verificationStatus,
-    );
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const initial =
-    user?.fullName
-      ?.trim()
-      .charAt(0)
-      .toUpperCase() || "U";
+  const verification = getVerificationPresentation(user?.verificationStatus);
+
+  const initial = user?.fullName?.trim().charAt(0).toUpperCase() || "U";
 
   async function handleLogout() {
     if (loggingOut) {
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        "Keluar dari akun HelpMe?",
-      );
+    const confirmed = window.confirm("Keluar dari akun HelpMe?");
 
     if (!confirmed) {
       return;
@@ -110,14 +87,13 @@ export default function SettingsPage() {
 
       await logout();
 
-      window.location.href =
-        "/login";
+      router.replace("/login");
+
+      router.refresh();
     } catch (error) {
       console.error(error);
 
-      alert(
-        "Gagal keluar dari akun",
-      );
+      alert("Gagal keluar dari akun");
     } finally {
       setLoggingOut(false);
     }
@@ -188,10 +164,7 @@ export default function SettingsPage() {
               active:scale-95
             "
           >
-            <ArrowLeft
-              className="h-5 w-5"
-              strokeWidth={2.2}
-            />
+            <ArrowLeft className="h-5 w-5" strokeWidth={2.2} />
           </Link>
 
           <div>
@@ -234,8 +207,7 @@ export default function SettingsPage() {
                 lg:text-sm
               "
             >
-              Kelola akun, keamanan,
-              dan identitas Anda.
+              Kelola akun, keamanan, dan identitas Anda.
             </p>
           </div>
         </header>
@@ -299,8 +271,7 @@ export default function SettingsPage() {
               >
                 {loading
                   ? "Memuat profil..."
-                  : user?.fullName ||
-                    "Pengguna HelpMe"}
+                  : user?.fullName || "Pengguna HelpMe"}
               </p>
 
               <p
@@ -311,8 +282,7 @@ export default function SettingsPage() {
                   text-slate-500
                 "
               >
-                {user?.username ||
-                  "Kelola informasi akun HelpMe Anda"}
+                {user?.username || "Kelola informasi akun HelpMe Anda"}
               </p>
             </div>
           </div>
@@ -334,9 +304,7 @@ export default function SettingsPage() {
             href="/profile/verification"
             icon={ShieldCheck}
             title="Verifikasi Akun"
-            description={
-              verification.description
-            }
+            description={verification.description}
             trailing={
               <span
                 className={`
@@ -442,10 +410,7 @@ export default function SettingsPage() {
                     "
                   />
                 ) : (
-                  <LogOut
-                    className="h-5 w-5"
-                    strokeWidth={2}
-                  />
+                  <LogOut className="h-5 w-5" strokeWidth={2} />
                 )}
               </div>
 
@@ -468,9 +433,7 @@ export default function SettingsPage() {
                     text-slate-500
                   "
                 >
-                  Akhiri sesi pada perangkat
-                  ini dan kembali ke halaman
-                  masuk.
+                  Akhiri sesi pada perangkat ini dan kembali ke halaman masuk.
                 </p>
               </div>
             </button>
@@ -507,12 +470,9 @@ export default function SettingsPage() {
               text-indigo-800
             "
           >
-            Beberapa pengaturan tambahan
-            seperti preferensi notifikasi
-            akan ditambahkan setelah
-            fiturnya siap digunakan. Menu
-            yang tampil saat ini seluruhnya
-            sudah dapat digunakan.
+            Beberapa pengaturan tambahan seperti preferensi notifikasi akan
+            ditambahkan setelah fiturnya siap digunakan. Menu yang tampil saat
+            ini seluruhnya sudah dapat digunakan.
           </p>
         </div>
       </div>
@@ -621,10 +581,7 @@ function SettingsItem({
           group-hover:bg-indigo-100
         "
       >
-        <Icon
-          className="h-5 w-5"
-          strokeWidth={2}
-        />
+        <Icon className="h-5 w-5" strokeWidth={2} />
       </div>
 
       <div className="min-w-0 flex-1">

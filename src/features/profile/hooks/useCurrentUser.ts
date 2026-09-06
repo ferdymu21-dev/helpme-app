@@ -1,8 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import { supabase } from "@/lib/supabase/client";
+
+import { useAuthStore } from "@/store/auth.store";
 
 export interface CurrentUser {
   id: string;
@@ -15,72 +21,121 @@ export interface CurrentUser {
 }
 
 export function useCurrentUser() {
-  const [user, setUser] = useState<CurrentUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const authUserId = useAuthStore(
+    (state) => state.user?.id ?? null,
+  );
+
+  const authLoading = useAuthStore(
+    (state) => state.loading,
+  );
+
+  const [user, setUser] =
+    useState<CurrentUser | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   const refresh = useCallback(async () => {
+    /*
+     * AuthProvider adalah source of truth
+     * untuk session/authenticated user.
+     *
+     * Jangan memanggil auth.getUser()
+     * kembali dari setiap consumer.
+     */
+    if (authLoading) {
+      setLoading(true);
+
+      return;
+    }
+
+    if (!authUserId) {
+      setUser(null);
+
+      setLoading(false);
+
+      return;
+    }
+
     try {
       setLoading(true);
 
       const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-
-      if (!authUser) {
-        setUser(null);
-        return;
-      }
-
-      const { data, error } = await supabase
+        data,
+        error,
+      } = await supabase
         .from("users")
         .select(
           `
-          id,
-          full_name,
-          username,
-          avatar_url,
-          bio,
-          location,
-          verification_status
-        `,
+            id,
+            full_name,
+            username,
+            avatar_url,
+            bio,
+            location,
+            verification_status
+          `,
         )
-        .eq("id", authUser.id)
+        .eq("id", authUserId)
         .single();
 
       if (error) {
-        console.error("GET CURRENT USER ERROR:", error);
+        console.error(
+          "GET CURRENT USER ERROR:",
+          error,
+        );
 
         setUser(null);
+
         return;
       }
 
       setUser({
         id: data.id,
-        fullName: data.full_name ?? "",
-        username: data.username ?? "",
-        avatarUrl: data.avatar_url ?? "",
-        bio: data.bio ?? "",
-        location: data.location ?? "",
-        verificationStatus: data.verification_status ?? "",
+
+        fullName:
+          data.full_name ?? "",
+
+        username:
+          data.username ?? "",
+
+        avatarUrl:
+          data.avatar_url ?? "",
+
+        bio:
+          data.bio ?? "",
+
+        location:
+          data.location ?? "",
+
+        verificationStatus:
+          data.verification_status ?? "",
       });
     } catch (error) {
-      console.error("REFRESH CURRENT USER ERROR:", error);
+      console.error(
+        "REFRESH CURRENT USER ERROR:",
+        error,
+      );
 
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [
+    authLoading,
+    authUserId,
+  ]);
 
   useEffect(() => {
-  const timer = window.setTimeout(() => {
-    void refresh();
-  }, 0);
+    const timer =
+      window.setTimeout(() => {
+        void refresh();
+      }, 0);
 
-  return () => {
-    window.clearTimeout(timer);
-  };
-}, [refresh]);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [refresh]);
 
   return {
     user,

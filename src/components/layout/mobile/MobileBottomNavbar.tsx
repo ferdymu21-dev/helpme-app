@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
+import { useAuthStore } from "@/store/auth.store";
+
 const menus = [
   {
     href: "/home",
@@ -54,80 +56,98 @@ const menus = [
 ];
 
 export default function MobileBottomNavbar() {
+  const userId = useAuthStore((state) => state.user?.id ?? null);
+
   const [hasUnread, setHasUnread] = useState(false);
 
   const pathname = usePathname();
 
   useEffect(() => {
-    async function loadUnread() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    if (!userId) {
+      const resetTimer = window.setTimeout(() => {
+        setHasUnread(false);
+      }, 0);
 
-      if (!user) return;
-
-      const { data } = await supabase.from("conversations").select(`
-      id,
-      owner_id,
-      helper_id,
-      owner_unread_count,
-      helper_unread_count,
-      last_message_at,
-      created_at
-    `);
-
-      if (!data) return;
-
-      const latestByOtherUser = new Map<string, (typeof data)[number]>();
-
-      for (const conversation of data) {
-        const isOwner = conversation.owner_id === user.id;
-
-        const otherUserId = isOwner
-          ? conversation.helper_id
-          : conversation.owner_id;
-
-        const existing = latestByOtherUser.get(otherUserId);
-
-        if (!existing) {
-          latestByOtherUser.set(otherUserId, conversation);
-
-          continue;
-        }
-
-        const currentTimestamp = new Date(
-          conversation.last_message_at || conversation.created_at,
-        ).getTime();
-
-        const existingTimestamp = new Date(
-          existing.last_message_at || existing.created_at,
-        ).getTime();
-
-        if (currentTimestamp > existingTimestamp) {
-          latestByOtherUser.set(otherUserId, conversation);
-        }
-      }
-
-      const hasUnreadMessage = Array.from(latestByOtherUser.values()).some(
-        (conversation) => {
-          const isOwner = conversation.owner_id === user.id;
-
-          return isOwner
-            ? (conversation.owner_unread_count || 0) > 0
-            : (conversation.helper_unread_count || 0) > 0;
-        },
-      );
-
-      setHasUnread(hasUnreadMessage);
+      return () => {
+        window.clearTimeout(resetTimer);
+      };
     }
 
-    loadUnread();
+    let cancelled = false;
 
-    /* =========================
-       REALTIME
-    ========================= */
+    async function loadUnread() {
+      try {
+        const { data, error } = await supabase.from("conversations").select(`
+              id,
+              owner_id,
+              helper_id,
+              owner_unread_count,
+              helper_unread_count,
+              last_message_at,
+              created_at
+            `);
 
-    const channel = supabase.channel("mobile-navbar-unread");
+        if (cancelled || error || !data) {
+          if (error && !cancelled) {
+            console.error("Gagal memuat unread conversations:", error);
+          }
+
+          return;
+        }
+
+        const latestByOtherUser = new Map<string, (typeof data)[number]>();
+
+        for (const conversation of data) {
+          const isOwner = conversation.owner_id === userId;
+
+          const otherUserId = isOwner
+            ? conversation.helper_id
+            : conversation.owner_id;
+
+          const existing = latestByOtherUser.get(otherUserId);
+
+          if (!existing) {
+            latestByOtherUser.set(otherUserId, conversation);
+
+            continue;
+          }
+
+          const currentTimestamp = new Date(
+            conversation.last_message_at || conversation.created_at,
+          ).getTime();
+
+          const existingTimestamp = new Date(
+            existing.last_message_at || existing.created_at,
+          ).getTime();
+
+          if (currentTimestamp > existingTimestamp) {
+            latestByOtherUser.set(otherUserId, conversation);
+          }
+        }
+
+        const hasUnreadMessage = Array.from(latestByOtherUser.values()).some(
+          (conversation) => {
+            const isOwner = conversation.owner_id === userId;
+
+            return isOwner
+              ? (conversation.owner_unread_count || 0) > 0
+              : (conversation.helper_unread_count || 0) > 0;
+          },
+        );
+
+        if (!cancelled) {
+          setHasUnread(hasUnreadMessage);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Gagal memuat unread conversations:", error);
+        }
+      }
+    }
+
+    void loadUnread();
+
+    const channel = supabase.channel(`mobile-navbar-unread-${userId}`);
 
     channel.on(
       "postgres_changes",
@@ -137,16 +157,18 @@ export default function MobileBottomNavbar() {
         table: "messages",
       },
       () => {
-        loadUnread();
+        void loadUnread();
       },
     );
 
-    channel.subscribe();
+    void channel.subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+
+      void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [userId]);
 
   return (
     <div
