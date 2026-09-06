@@ -29,6 +29,8 @@ interface Coordinates {
   longitude: number;
 }
 
+type HomeViewport = "MOBILE" | "DESKTOP";
+
 function getLocationErrorMessage(error: GeolocationPositionError) {
   switch (error.code) {
     case error.PERMISSION_DENIED:
@@ -47,6 +49,8 @@ function getLocationErrorMessage(error: GeolocationPositionError) {
 
 export default function HomePage() {
   const router = useRouter();
+
+  const [viewport, setViewport] = useState<HomeViewport | null>(null);
 
   const [openSupport, setOpenSupport] = useState(false);
 
@@ -79,6 +83,33 @@ export default function HomePage() {
   const requestIdRef = useRef(0);
 
   const searchDebounceRef = useRef<number | null>(null);
+
+  /* =========================
+     RESPONSIVE VIEW
+  ========================= */
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    function updateViewport() {
+      setViewport(mediaQuery.matches ? "DESKTOP" : "MOBILE");
+    }
+
+    /*
+     * Jalankan melalui callback browser
+     * agar state tidak diubah langsung
+     * secara sinkron dari body effect.
+     */
+    const timeoutId = window.setTimeout(updateViewport, 0);
+
+    mediaQuery.addEventListener("change", updateViewport);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+
+      mediaQuery.removeEventListener("change", updateViewport);
+    };
+  }, []);
 
   /* =========================
    GET HELPER LOCATION
@@ -421,9 +452,25 @@ export default function HomePage() {
 
   return (
     <>
-      <MobileHomeView {...feedProps} />
-
-      <DesktopHomeView {...feedProps} />
+      {viewport === "MOBILE" ? (
+        <MobileHomeView {...feedProps} />
+      ) : viewport === "DESKTOP" ? (
+        <DesktopHomeView {...feedProps} />
+      ) : (
+        <main
+          className="
+            flex
+            min-h-screen
+            items-center
+            justify-center
+            bg-slate-50
+            text-sm
+            text-slate-500
+          "
+        >
+          Menyiapkan tampilan...
+        </main>
+      )}
 
       {/*
        * Hanya SATU PaymentRoot untuk
