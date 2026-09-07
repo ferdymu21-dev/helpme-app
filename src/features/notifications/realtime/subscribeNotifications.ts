@@ -2,18 +2,52 @@ import { supabase } from "@/lib/supabase/client";
 
 export async function subscribeNotifications(
   onNotification: () => void,
+  userId?: string | null,
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let resolvedUserId =
+    userId ?? null;
 
-  if (!user) {
-    return () => {};
+  /*
+   * Caller baru sebaiknya memberikan
+   * userId dari AuthProvider/Zustand.
+   *
+   * Fallback dipertahankan agar caller
+   * notification lama tidak rusak.
+   */
+  if (!resolvedUserId) {
+    try {
+      const {
+        data: { user },
+        error,
+      } =
+        await supabase.auth.getUser();
+
+      if (
+        error ||
+        !user
+      ) {
+        return () => {};
+      }
+
+      resolvedUserId =
+        user.id;
+    } catch {
+      /*
+       * Session dapat hilang ketika
+       * logout berlangsung.
+       *
+       * Kondisi tersebut normal dan
+       * tidak perlu menghasilkan
+       * unhandled AuthSessionMissingError.
+       */
+      return () => {};
+    }
   }
 
-  const channel = supabase.channel(
-    `notifications-${user.id}-${Date.now()}`,
-  );
+  const channel =
+    supabase.channel(
+      `notifications-${resolvedUserId}-${Date.now()}`,
+    );
 
   channel.on(
     "postgres_changes",
@@ -21,7 +55,8 @@ export async function subscribeNotifications(
       event: "INSERT",
       schema: "public",
       table: "notifications",
-      filter: `user_id=eq.${user.id}`,
+      filter:
+        `user_id=eq.${resolvedUserId}`,
     },
     () => {
       onNotification();
@@ -31,6 +66,8 @@ export async function subscribeNotifications(
   channel.subscribe();
 
   return () => {
-    supabase.removeChannel(channel);
+    void supabase.removeChannel(
+      channel,
+    );
   };
 }

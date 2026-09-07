@@ -4,6 +4,8 @@ import Image from "next/image";
 
 import Link from "next/link";
 
+import { useAuthStore } from "@/store/auth.store";
+
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
@@ -17,57 +19,95 @@ interface Props {
 }
 
 export default function MobileHomeHeader({ onOpenSupport }: Props) {
-  const [initials, setInitials] = useState("U");
-
   const [avatarUrl, setAvatarUrl] = useState("");
+
+    const authUser =
+    useAuthStore(
+      (state) => state.user,
+    );
+
+  const userId =
+    authUser?.id ?? null;
 
   const { hasUnread, unreadCount } = useNotificationBadge();
 
   const router = useRouter();
 
-  useEffect(() => {
-    async function loadUser() {
+    useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadProfile() {
       try {
         const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) return;
-
-        const { data: profile } = await supabase
+          data: profile,
+          error,
+        } = await supabase
           .from("users")
-          .select(
-            `
-      avatar_url
-    `,
-          )
-          .eq("id", user.id)
+          .select("avatar_url")
+          .eq("id", userId)
           .single();
 
-        if (profile?.avatar_url) {
-          setAvatarUrl(profile.avatar_url);
+        if (
+          cancelled ||
+          error
+        ) {
+          if (
+            error &&
+            !cancelled
+          ) {
+            console.error(error);
+          }
+
+          return;
         }
 
-        const fullName = user.user_metadata?.full_name;
-
-        if (!fullName) return;
-
-        const words = fullName.split(" ");
-
-        const first = words[0]?.charAt(0) || "";
-
-        const second = words[1]?.charAt(0) || "";
-
-        const result = `${first}${second}`;
-
-        setInitials(result.toUpperCase());
+        setAvatarUrl(
+          profile?.avatar_url ??
+            "",
+        );
       } catch (error) {
-        console.error(error);
+        if (!cancelled) {
+          console.error(error);
+        }
       }
     }
 
-    loadUser();
-  }, []);
+    void loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+    const metadataFullName =
+    authUser?.user_metadata
+      ?.full_name;
+
+  const fullName =
+    typeof metadataFullName ===
+    "string"
+      ? metadataFullName.trim()
+      : "";
+
+  const words = fullName
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const firstInitial =
+    words[0]?.charAt(0) ||
+    "";
+
+  const secondInitial =
+    words[1]?.charAt(0) ||
+    "";
+
+  const initials =
+    `${firstInitial}${secondInitial}`.toUpperCase() ||
+    "U";
 
   return (
     <header

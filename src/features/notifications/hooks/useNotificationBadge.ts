@@ -1,70 +1,137 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import { supabase } from "@/lib/supabase/client";
+
+import { useAuthStore } from "@/store/auth.store";
 
 import { subscribeNotifications } from "../realtime";
 
 export function useNotificationBadge() {
-  const [unreadCount, setUnreadCount] = useState(0);
+  const userId = useAuthStore(
+    (state) => state.user?.id ?? null,
+  );
 
-  const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] =
+    useState(0);
 
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const [loading, setLoading] =
+    useState(true);
 
-      if (!user) {
+  const loadUnreadCount =
+    useCallback(async () => {
+      if (!userId) {
         setUnreadCount(0);
+
+        setLoading(false);
 
         return;
       }
 
-      const { count, error } = await supabase
-        .from("notifications")
-        .select("*", {
-          count: "exact",
-          head: true,
-        })
-        .eq("user_id", user.id)
-        .eq("is_read", false);
+      try {
+        const {
+          count,
+          error,
+        } = await supabase
+          .from("notifications")
+          .select("*", {
+            count: "exact",
+            head: true,
+          })
+          .eq(
+            "user_id",
+            userId,
+          )
+          .eq(
+            "is_read",
+            false,
+          );
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        setUnreadCount(
+          count ?? 0,
+        );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-
-      setUnreadCount(count ?? 0);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    }, [userId]);
 
   useEffect(() => {
-  let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
 
-  void Promise.resolve().then(() => loadUnreadCount());
+    let unsubscribe:
+      | (() => void)
+      | undefined;
 
-  (async () => {
-    unsubscribe = await subscribeNotifications(loadUnreadCount);
-  })();
+    /*
+     * Initial unread load.
+     */
+    void Promise.resolve().then(
+      async () => {
+        if (cancelled) {
+          return;
+        }
 
-  return () => {
-    unsubscribe?.();
-  };
-}, [loadUnreadCount]);
+        await loadUnreadCount();
+      },
+    );
+
+    /*
+     * Subscription menggunakan userId
+     * dari AuthProvider/Zustand.
+     *
+     * Kalau component sudah unmount saat
+     * subscription selesai dibuat,
+     * cleanup langsung dijalankan.
+     */
+    void subscribeNotifications(
+      loadUnreadCount,
+      userId,
+    )
+      .then((cleanup) => {
+        if (cancelled) {
+          cleanup();
+
+          return;
+        }
+
+        unsubscribe = cleanup;
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error(error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+
+      unsubscribe?.();
+    };
+  }, [
+    loadUnreadCount,
+    userId,
+  ]);
 
   return {
     unreadCount,
 
-    hasUnread: unreadCount > 0,
+    hasUnread:
+      unreadCount > 0,
 
     loading,
 
-    reload: loadUnreadCount,
+    reload:
+      loadUnreadCount,
   };
 }
