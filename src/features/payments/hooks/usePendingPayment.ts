@@ -40,8 +40,25 @@ export function usePendingPayment() {
   const requestIdRef =
     useRef(0);
 
+  const refreshInFlightRef =
+    useRef(false);
+
   const refresh =
     useCallback(async () => {
+      /*
+       * Jangan mulai request baru jika
+       * request pending-payment sebelumnya
+       * masih berjalan.
+       */
+      if (
+        refreshInFlightRef.current
+      ) {
+        return;
+      }
+
+      refreshInFlightRef.current =
+        true;
+
       const requestId =
         ++requestIdRef.current;
 
@@ -84,6 +101,9 @@ export function usePendingPayment() {
         ) {
           setLoading(false);
         }
+
+        refreshInFlightRef.current =
+          false;
       }
     }, []);
 
@@ -97,11 +117,6 @@ export function usePendingPayment() {
     window.setTimeout(() => {
       void refresh();
     }, 0);
-
-  const intervalId =
-    window.setInterval(() => {
-      void refresh();
-    }, REFRESH_INTERVAL);
 
   function handleVisibilityChange() {
     if (
@@ -122,16 +137,36 @@ export function usePendingPayment() {
       initialRefreshId,
     );
 
-    window.clearInterval(
-      intervalId,
-    );
-
     document.removeEventListener(
       "visibilitychange",
       handleVisibilityChange,
     );
   };
 }, [refresh]);
+
+  /*
+   * Polling 5 detik hanya berjalan
+   * ketika memang ada transaksi pending.
+   */
+  useEffect(() => {
+  if (!payment) {
+    return;
+  }
+
+  const intervalId =
+    window.setInterval(() => {
+      void refresh();
+    }, REFRESH_INTERVAL);
+
+  return () => {
+    window.clearInterval(
+      intervalId,
+    );
+  };
+}, [
+  payment,
+  refresh,
+]);
 
   useEffect(() => {
   if (!payment) {

@@ -14,6 +14,8 @@ interface Props {
 
     onCloseSupport: () => void;
 
+    onPendingPaymentChange: () => void | Promise<void>;
+
 }
 
 export default function PaymentRoot({
@@ -22,9 +24,13 @@ export default function PaymentRoot({
 
     onCloseSupport,
 
+    onPendingPaymentChange,
+
 }: Props) {
 
-    const donation = useDonationFlow();
+    const donation = useDonationFlow({
+        onPendingPaymentChange,
+    });
 
     const router = useRouter();
 

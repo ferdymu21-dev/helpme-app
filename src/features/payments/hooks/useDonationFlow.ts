@@ -10,7 +10,14 @@ import { usePaymentStatus } from "./usePaymentStatus";
 
 import { usePaymentResult } from "./usePaymentResult";
 
-export function useDonationFlow() {
+interface Options {
+  onPendingPaymentChange:
+    () => void | Promise<void>;
+}
+
+export function useDonationFlow({
+  onPendingPaymentChange,
+}: Options) {
   const {
     donate,
 
@@ -127,17 +134,23 @@ export function useDonationFlow() {
         // Polling akan menentukan status akhir.
       },
 
-      onClose() {
+            onClose() {
         /*
          * User menutup Snap bukan berarti
          * transaksi dibatalkan.
          *
-         * Lepaskan lifecycle lokal agar
-         * transaksi PENDING dapat diambil alih
-         * oleh Pending Payment di Home tanpa
-         * membuat dua polling untuk order yang sama.
+         * Lepaskan lifecycle polling lokal,
+         * lalu minta Home membaca status
+         * pending terbaru satu kali.
+         *
+         * Jika transaksi masih PENDING,
+         * usePendingPayment akan menemukan
+         * transaksi dan memulai polling
+         * kondisionalnya sendiri.
          */
         setOrderId("");
+
+        void onPendingPaymentChange();
       },
     });
   }

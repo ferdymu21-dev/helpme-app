@@ -482,6 +482,7 @@ export default function HomePage() {
       <PaymentRoot
         supportOpen={openSupport}
         onCloseSupport={() => setOpenSupport(false)}
+        onPendingPaymentChange={pendingPayment.refresh}
       />
 
       {/*
