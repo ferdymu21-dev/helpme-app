@@ -17,10 +17,12 @@ import {
   ChevronRight,
   Clock3,
   Lock,
+  MapPin,
   MessageCircle,
   ShieldCheck,
   Trophy,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import { useState } from "react";
@@ -280,7 +282,6 @@ export default function MobileTaskDetailView({
         {/* =====================================================
             TOP BAR
         ===================================================== */}
-
         <header className="flex h-12 items-center justify-between">
           <button
             type="button"
@@ -323,10 +324,10 @@ export default function MobileTaskDetailView({
             to-indigo-50
           "
         >
-          {/* =====================================================
-    HERO IMAGE
-===================================================== */}
 
+        {/* =====================================================
+            HERO IMAGE
+        ===================================================== */}
           <div
             className="
     relative
@@ -462,12 +463,10 @@ export default function MobileTaskDetailView({
                 text-slate-500
               "
             >
-              <Image
-                src="/icons/detail-task/lokasi.svg"
-                alt="Lokasi"
-                width={13}
-                height={13}
-                className="mt-0.5 shrink-0"
+              <MapPin
+                size={14}
+                strokeWidth={2}
+                className="mt-0.5 shrink-0 text-slate-500"
               />
 
               <span>{location}</span>
@@ -480,17 +479,15 @@ export default function MobileTaskDetailView({
         ===================================================== */}
         <section className="mt-4 rounded-[22px] border border-slate-100 bg-white p-4 shadow-[0_5px_22px_rgba(15,23,42,0.05)]">
           <div className="grid grid-cols-2">
+
             {/* BUDGET */}
             <div className="border-r border-slate-100 pr-4">
               <p className="text-[11px] font-semibold text-slate-500">Budget</p>
-
               <div className="mt-3 flex items-center gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
-                  <Image
-                    src="/icons/detail-task/budget.svg"
-                    alt="Budget"
-                    width={22}
-                    height={22}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <Wallet
+                    size={19}
+                    strokeWidth={2}
                   />
                 </div>
 
@@ -501,7 +498,6 @@ export default function MobileTaskDetailView({
             </div>
 
             {/* SCHEDULE */}
-
             <div className="pl-4">
               <p className="text-[11px] font-semibold text-slate-500">
                 Pelaksanaan
@@ -731,6 +727,105 @@ export default function MobileTaskDetailView({
           </>
         )}
 
+        {/* =====================================================
+            COMPLETION PROOF — OWNER
+        ===================================================== */}
+        {isOwner &&
+          task.status === "WAITING_CONFIRMATION" &&
+          task.completion_proof_photo && (
+            <>
+              <div className="my-6 h-px bg-slate-100" />
+
+              <section
+                className="
+                  rounded-[22px]
+                  border
+                  border-slate-100
+                  bg-white
+                  p-4
+                  shadow-[0_5px_22px_rgba(15,23,42,0.05)]
+                "
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-[14px] font-extrabold text-slate-950">
+                      Bukti Penyelesaian dari Helper
+                    </h2>
+
+                    <p className="mt-1 text-[10px] text-slate-400">
+                      Periksa sebelum mengonfirmasi
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-600">
+                    Privat
+                  </span>
+                </div>
+
+                {completionProofLoading ? (
+                  <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
+                    <p className="text-xs text-slate-500">
+                      Memuat bukti penyelesaian...
+                    </p>
+                  </div>
+                ) : completionProofUrl ? (
+                  <div className="mt-4 overflow-hidden rounded-[18px] bg-slate-100">
+                    <img
+                      src={completionProofUrl}
+                      alt="Bukti Penyelesaian"
+                      className="max-h-90 w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
+                    <p className="text-xs text-slate-500">
+                      Bukti penyelesaian tidak dapat dimuat.
+                    </p>
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-3">
+                  <Lock size={13} className="shrink-0 text-slate-500" />
+
+                  <p className="text-[10px] leading-4 text-slate-500">
+                    Hanya Anda dan helper yang dapat melihat bukti ini.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onConfirmCompletion}
+                  disabled={confirmingCompletion}
+                  className="
+                    mt-4
+                    flex
+                    h-12
+                    w-full
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-2xl
+                    bg-emerald-500
+                    text-sm
+                    font-extrabold
+                    text-white
+                    shadow-[0_6px_18px_rgba(16,185,129,0.18)]
+                    transition
+                    active:scale-[0.98]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+                  "
+                >
+                  <CheckCircle2 size={17} />
+
+                  {confirmingCompletion
+                    ? "Mengonfirmasi..."
+                    : "Konfirmasi Penyelesaian"}
+                </button>
+              </section>
+            </>
+          )}
+
         <div className="my-6 h-px bg-slate-100" />
 
         {/* =====================================================
@@ -926,106 +1021,6 @@ export default function MobileTaskDetailView({
             </section>
           </>
         )}
-
-        {/* =====================================================
-            COMPLETION PROOF — OWNER
-        ===================================================== */}
-        {isOwner &&
-          task.status === "WAITING_CONFIRMATION" &&
-          task.completion_proof_photo && (
-            <>
-              <div className="my-6 h-px bg-slate-100" />
-
-              <section
-                className="
-                  rounded-[22px]
-                  border
-                  border-slate-100
-                  bg-white
-                  p-4
-                  shadow-[0_5px_22px_rgba(15,23,42,0.05)]
-                "
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-[14px] font-extrabold text-slate-950">
-                      Bukti Penyelesaian dari Helper
-                    </h2>
-
-                    <p className="mt-1 text-[10px] text-slate-400">
-                      Periksa sebelum mengonfirmasi
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-600">
-                    Privat
-                  </span>
-                </div>
-
-                {completionProofLoading ? (
-                  <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
-                    <p className="text-xs text-slate-500">
-                      Memuat bukti penyelesaian...
-                    </p>
-                  </div>
-                ) : completionProofUrl ? (
-                  <div className="mt-4 overflow-hidden rounded-[18px] bg-slate-100">
-                    <img
-                      src={completionProofUrl}
-                      alt="Bukti Penyelesaian"
-                      className="max-h-90 w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-4 rounded-[18px] bg-slate-50 p-8 text-center">
-                    <p className="text-xs text-slate-500">
-                      Bukti penyelesaian tidak dapat dimuat.
-                    </p>
-                  </div>
-                )}
-
-                <div className="mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-3">
-                  <Lock size={13} className="shrink-0 text-slate-500" />
-
-                  <p className="text-[10px] leading-4 text-slate-500">
-                    Hanya Anda dan helper yang dapat melihat bukti ini.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onConfirmCompletion}
-                  disabled={confirmingCompletion}
-                  className="
-                    mt-4
-                    flex
-                    h-12
-                    w-full
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-2xl
-                    bg-emerald-500
-                    text-sm
-                    font-extrabold
-                    text-white
-                    shadow-[0_6px_18px_rgba(16,185,129,0.18)]
-                    transition
-                    active:scale-[0.98]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
-                >
-                  <CheckCircle2 size={17} />
-
-                  {confirmingCompletion
-                    ? "Mengonfirmasi..."
-                    : "Konfirmasi Penyelesaian"}
-                </button>
-              </section>
-            </>
-          )}
-
         {/* =====================================================
             HELPER WAITING CONFIRMATION
         ===================================================== */}

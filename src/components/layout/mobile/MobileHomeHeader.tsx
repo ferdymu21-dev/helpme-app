@@ -167,9 +167,9 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
             <Image
               src="/icons/support.svg"
               alt="Support HelpMe"
-              width={20}
-              height={20}
-              className="h-6 w-6 object-contain"
+              width={24}
+              height={24}
+              className="object-contain"
             />
           </button>
 
@@ -197,9 +197,9 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
               <Image
                 src="/icons/notif.svg"
                 alt="Notifications"
-                width={20}
-                height={20}
-                className="h-6 w-6"
+                width={24}
+                height={24}
+                className="object-contain"
               />
 
               {hasUnread && (

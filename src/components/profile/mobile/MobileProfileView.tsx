@@ -138,7 +138,7 @@ export default function MobileProfileView({
             />
           </button>
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1
               className="
                 text-base
@@ -158,6 +158,34 @@ export default function MobileProfileView({
                 : "Kelola identitas dan aktivitas akun Anda"}
             </p>
           </div>
+
+          {!isPublicProfile && (
+            <Link
+              href="/profile/edit"
+              aria-label="Edit profil"
+              title="Edit profil"
+              className="
+                flex
+                h-10
+                w-10
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                text-slate-700
+                transition
+                hover:border-indigo-200
+                hover:bg-indigo-50
+                hover:text-indigo-600
+                active:scale-95
+              "
+            >
+              <Pencil
+                className="h-4.5 w-4.5"
+                strokeWidth={2.2}
+              />
+            </Link>
+          )}
         </header>
 
         {/* PROFILE HERO */}
@@ -275,37 +303,8 @@ export default function MobileProfileView({
                   "Helper aktif yang siap membantu berbagai kebutuhan harian di HelpMe."}
               </p>
 
-              {/* PRIMARY ACTION */}
-              {!isPublicProfile ? (
-                <Link
-                  href="/profile/edit"
-                  className="
-                    mt-5
-                    flex
-                    h-11
-                    w-full
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-2xl
-                    bg-indigo-600
-                    text-sm
-                    font-bold
-                    text-white
-                    shadow-[0_8px_20px_rgba(79,70,229,0.2)]
-                    transition
-                    hover:bg-indigo-700
-                    active:scale-[0.99]
-                  "
-                >
-                  <Pencil
-                    className="h-4 w-4"
-                    strokeWidth={2.2}
-                  />
-
-                  Edit Profil
-                </Link>
-              ) : (
+              {/* PUBLIC PROFILE ACTION */}
+              {isPublicProfile && (
                 <button
                   type="button"
                   onClick={() =>
