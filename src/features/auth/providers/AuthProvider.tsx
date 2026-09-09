@@ -24,35 +24,22 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const {
-    setUser,
-    setRole,
-    setLoading,
-  } = useAuthStore();
+  const { setUser, setRole, setLoading } = useAuthStore();
 
   const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
 
-    let authSyncTimer: number | null =
-      null;
+    let authSyncTimer: number | null = null;
 
     async function getUserData() {
-      const {
-        data,
-        error,
-      } = await supabase
-        .rpc(
-          "get_current_user_access_state",
-        )
+      const { data, error } = await supabase
+        .rpc("get_current_user_access_state")
         .maybeSingle<CurrentUserAccessState>();
 
       if (error) {
-        console.error(
-          "AUTH ACCESS STATE ERROR:",
-          error,
-        );
+        console.error("AUTH ACCESS STATE ERROR:", error);
 
         return null;
       }
@@ -60,11 +47,8 @@ export default function AuthProvider({
       return data;
     }
 
-    async function syncAuthenticatedUser(
-      user: User,
-    ) {
-      const userData =
-        await getUserData();
+    async function syncAuthenticatedUser(user: User) {
+      const userData = await getUserData();
 
       if (!isMounted) {
         return;
@@ -81,9 +65,7 @@ export default function AuthProvider({
 
         setRole(null);
 
-        alert(
-          "Akun Anda telah diblokir oleh admin.",
-        );
+        alert("Akun Anda telah diblokir oleh admin.");
 
         router.replace("/login");
 
@@ -92,9 +74,7 @@ export default function AuthProvider({
 
       setUser(user);
 
-      setRole(
-        userData?.role ?? null,
-      );
+      setRole(userData?.role ?? null);
     }
 
     async function loadUser() {
@@ -102,18 +82,27 @@ export default function AuthProvider({
         const {
           data: { user },
           error,
-        } =
-          await supabase.auth.getUser();
+        } = await supabase.auth.getUser();
 
         if (!isMounted) {
           return;
         }
 
         if (error) {
-          console.error(
-            "AUTH INITIAL USER ERROR:",
-            error,
-          );
+          /*
+           * Tidak adanya session adalah state
+           * normal untuk browser yang belum login,
+           * sudah logout, atau session-nya telah
+           * berakhir.
+           *
+           * Supabase getUser() mengembalikan
+           * AuthSessionMissingError pada kondisi
+           * tersebut. Jangan laporkan sebagai
+           * runtime error ke console.
+           */
+          if (error.name !== "AuthSessionMissingError") {
+            console.error("AUTH INITIAL USER ERROR:", error);
+          }
 
           setUser(null);
 
@@ -130,18 +119,13 @@ export default function AuthProvider({
           return;
         }
 
-        await syncAuthenticatedUser(
-          user,
-        );
+        await syncAuthenticatedUser(user);
       } catch (error) {
         if (!isMounted) {
           return;
         }
 
-        console.error(
-          "AUTH INITIALIZATION ERROR:",
-          error,
-        );
+        console.error("AUTH INITIALIZATION ERROR:", error);
 
         setUser(null);
 
@@ -164,110 +148,84 @@ export default function AuthProvider({
      * Jangan await RPC / auth method /
      * query Supabase langsung di sini.
      */
-    const {
-      data: listener,
-    } =
-      supabase.auth.onAuthStateChange(
-        (event, session) => {
-          if (!isMounted) {
-            return;
-          }
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isMounted) {
+          return;
+        }
 
-          /*
-           * Initial state sudah ditangani
-           * loadUser().
-           *
-           * Mengabaikan INITIAL_SESSION
-           * juga mencegah initial request
-           * dijalankan dua kali.
-           */
-          if (
-            event ===
-            "INITIAL_SESSION"
-          ) {
-            return;
-          }
+        /*
+         * Initial state sudah ditangani
+         * loadUser().
+         *
+         * Mengabaikan INITIAL_SESSION
+         * juga mencegah initial request
+         * dijalankan dua kali.
+         */
+        if (event === "INITIAL_SESSION") {
+          return;
+        }
 
-          if (
-            authSyncTimer !== null
-          ) {
-            window.clearTimeout(
-              authSyncTimer,
-            );
+        if (authSyncTimer !== null) {
+          window.clearTimeout(authSyncTimer);
 
-            authSyncTimer = null;
-          }
+          authSyncTimer = null;
+        }
 
-          if (!session?.user) {
-            setUser(null);
+        if (!session?.user) {
+          setUser(null);
 
-            setRole(null);
+          setRole(null);
 
-            setLoading(false);
+          setLoading(false);
 
-            return;
-          }
+          return;
+        }
 
-          const authUser =
-            session.user;
+        const authUser = session.user;
 
-          /*
-           * State user boleh disinkronkan
-           * langsung karena ini bukan
-           * Supabase API call.
-           */
-          setUser(authUser);
+        /*
+         * State user boleh disinkronkan
+         * langsung karena ini bukan
+         * Supabase API call.
+         */
+        setUser(authUser);
 
-          /*
-           * Supabase API call dijadwalkan
-           * setelah auth callback selesai
-           * agar tidak menahan auth lock.
-           */
-          authSyncTimer =
-            window.setTimeout(() => {
-              authSyncTimer = null;
+        /*
+         * Supabase API call dijadwalkan
+         * setelah auth callback selesai
+         * agar tidak menahan auth lock.
+         */
+        authSyncTimer = window.setTimeout(() => {
+          authSyncTimer = null;
 
-              void syncAuthenticatedUser(
-                authUser,
-              )
-                .catch((error) => {
-                  if (!isMounted) {
-                    return;
-                  }
+          void syncAuthenticatedUser(authUser)
+            .catch((error) => {
+              if (!isMounted) {
+                return;
+              }
 
-                  console.error(
-                    "AUTH STATE SYNC ERROR:",
-                    error,
-                  );
-                })
-                .finally(() => {
-                  if (isMounted) {
-                    setLoading(false);
-                  }
-                });
-            }, 0);
-        },
-      );
+              console.error("AUTH STATE SYNC ERROR:", error);
+            })
+            .finally(() => {
+              if (isMounted) {
+                setLoading(false);
+              }
+            });
+        }, 0);
+      },
+    );
 
     return () => {
       isMounted = false;
 
-      if (
-        authSyncTimer !== null
-      ) {
-        window.clearTimeout(
-          authSyncTimer,
-        );
+      if (authSyncTimer !== null) {
+        window.clearTimeout(authSyncTimer);
       }
 
       listener.subscription.unsubscribe();
     };
-  }, [
-    router,
-    setLoading,
-    setRole,
-    setUser,
-  ]);
+  }, [router, setLoading, setRole, setUser]);
 
   return children;
 }
