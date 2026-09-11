@@ -5,7 +5,8 @@ import {
 export interface PaymentStatusSnapshot {
   paymentType:
     | "DONATION"
-    | "URGENT_TASK";
+    | "URGENT_TASK"
+    | "SERVICE_LISTING";
 
   status: string;
 
@@ -15,6 +16,9 @@ export interface PaymentStatusSnapshot {
     string | null;
 
   taskId?: string | null;
+
+  serviceListingId?:
+    string | null;
 }
 
 export async function getPaymentStatus(
@@ -122,6 +126,70 @@ export async function getPaymentStatus(
 
       taskId:
         taskPayment.task_id,
+    };
+  }
+
+    /*
+  |---------------------------------------
+  | SERVICE LISTING
+  |---------------------------------------
+  */
+
+  const {
+    data:
+      serviceListingPayment,
+
+    error:
+      serviceListingPaymentError,
+  } =
+    await adminSupabase
+      .from(
+        "service_listing_payments",
+      )
+      .select(`
+        payment_status,
+        amount,
+        payment_expires_at,
+        service_listing_id
+      `)
+      .eq(
+        "midtrans_order_id",
+        orderId,
+      )
+      .eq(
+        "provider_id",
+        userId,
+      )
+      .maybeSingle();
+
+  if (
+    serviceListingPaymentError
+  ) {
+    throw serviceListingPaymentError;
+  }
+
+  if (
+    serviceListingPayment
+  ) {
+    return {
+      paymentType:
+        "SERVICE_LISTING",
+
+      status:
+        serviceListingPayment
+          .payment_status,
+
+      amount:
+        serviceListingPayment
+          .amount,
+
+      paymentExpiresAt:
+        serviceListingPayment
+          .payment_expires_at,
+
+      serviceListingId:
+        serviceListingPayment
+          .service_listing_id,
     };
   }
 

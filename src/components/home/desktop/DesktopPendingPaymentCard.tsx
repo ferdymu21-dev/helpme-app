@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  ArrowRight,
-  Clock3,
-  Heart,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Clock3, Heart, ReceiptText, Zap } from "lucide-react";
 
-import type {
-  PendingPaymentSummary,
-} from "@/features/payments/types/pendingPayment";
+import type { PendingPaymentSummary } from "@/features/payments/types/pendingPayment";
 
 interface Props {
   payment: PendingPaymentSummary;
@@ -19,12 +12,8 @@ interface Props {
   onResume: () => void;
 }
 
-function formatRupiah(
-  amount: number,
-) {
-  return new Intl.NumberFormat(
-    "id-ID",
-  ).format(amount);
+function formatRupiah(amount: number) {
+  return new Intl.NumberFormat("id-ID").format(amount);
 }
 
 export default function DesktopPendingPaymentCard({
@@ -32,14 +21,17 @@ export default function DesktopPendingPaymentCard({
   loading,
   onResume,
 }: Props) {
-  const donation =
-    payment.paymentType ===
-    "DONATION";
+  const donation = payment.paymentType === "DONATION";
 
-  const PaymentIcon =
-    donation
-      ? Heart
-      : Zap;
+  const serviceListing = payment.paymentType === "SERVICE_LISTING";
+
+  const PaymentIcon = donation ? Heart : serviceListing ? ReceiptText : Zap;
+
+  const paymentLabel = donation
+    ? "Dukungan HelpMe"
+    : serviceListing
+      ? "Publikasi Jasa"
+      : "Prioritas Task";
 
   return (
     <button
@@ -84,10 +76,7 @@ export default function DesktopPendingPaymentCard({
           text-white
         "
       >
-        <Clock3
-          className="h-5 w-5"
-          strokeWidth={2}
-        />
+        <Clock3 className="h-5 w-5" strokeWidth={2} />
       </div>
 
       <div
@@ -132,9 +121,7 @@ export default function DesktopPendingPaymentCard({
               text-slate-900
             "
           >
-            {donation
-              ? "Dukungan HelpMe"
-              : "Prioritas Task"}
+            {paymentLabel}
           </span>
 
           <span
@@ -146,9 +133,7 @@ export default function DesktopPendingPaymentCard({
             "
           >
             · Rp
-            {formatRupiah(
-              payment.amount,
-            )}
+            {formatRupiah(payment.amount)}
           </span>
         </div>
       </div>
@@ -164,9 +149,7 @@ export default function DesktopPendingPaymentCard({
           text-amber-700
         "
       >
-        {loading
-          ? "Membuka..."
-          : "Lanjutkan"}
+        {loading ? "Membuka..." : "Lanjutkan"}
 
         <ArrowRight
           className="

@@ -1,7 +1,10 @@
 import { adminSupabase } from "@/lib/supabase/admin";
 
 export interface PaymentLookupResult {
-  paymentType: "DONATION" | "URGENT_TASK";
+  paymentType:
+    | "DONATION"
+    | "URGENT_TASK"
+    | "SERVICE_LISTING";
 
   payment: Record<string, unknown>;
 }
@@ -19,13 +22,33 @@ export async function findPaymentByOrderId(
     };
   }
 
-  const taskPayment = await findTaskPaymentByOrderId(orderId);
+    const taskPayment =
+    await findTaskPaymentByOrderId(
+      orderId,
+    );
 
   if (taskPayment) {
     return {
-      paymentType: "URGENT_TASK",
+      paymentType:
+        "URGENT_TASK",
 
-      payment: taskPayment,
+      payment:
+        taskPayment,
+    };
+  }
+
+  const serviceListingPayment =
+    await findServiceListingPaymentByOrderId(
+      orderId,
+    );
+
+  if (serviceListingPayment) {
+    return {
+      paymentType:
+        "SERVICE_LISTING",
+
+      payment:
+        serviceListingPayment,
     };
   }
 
@@ -61,6 +84,31 @@ export async function findTaskPaymentByOrderId(orderId: string) {
     .eq("midtrans_order_id", orderId)
 
     .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function findServiceListingPaymentByOrderId(
+  orderId: string,
+) {
+  const {
+    data,
+    error,
+  } =
+    await adminSupabase
+      .from(
+        "service_listing_payments",
+      )
+      .select("*")
+      .eq(
+        "midtrans_order_id",
+        orderId,
+      )
+      .maybeSingle();
 
   if (error) {
     throw error;

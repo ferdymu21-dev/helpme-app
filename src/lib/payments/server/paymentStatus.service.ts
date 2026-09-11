@@ -35,6 +35,22 @@ function toPublicPaymentStatus(
     };
   }
 
+    if (
+    snapshot.paymentType ===
+    "SERVICE_LISTING"
+  ) {
+    return {
+      paymentType:
+        "SERVICE_LISTING" as const,
+
+      status:
+        snapshot.status,
+
+      serviceListingId:
+        snapshot.serviceListingId,
+    };
+  }
+
   return {
     paymentType:
       "DONATION" as const,

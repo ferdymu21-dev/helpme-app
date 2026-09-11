@@ -10,6 +10,10 @@ import { handleDonationPayment } from "./handlers/donation.handler";
 
 import { handleUrgentTaskPayment } from "./handlers/urgent-task.handler";
 
+import {
+  handleServiceListingPayment,
+} from "./handlers/service-listing.handler";
+
 import { assertPaymentAmountMatches } from "./paymentAmount";
 
 export async function handlePaymentNotification(
@@ -81,6 +85,32 @@ export async function handlePaymentNotification(
         paidAt: paymentStatus === "PAID" ? payment.settlementTime : undefined,
 
         expiredAt: paymentStatus === "EXPIRED" ? payment.expiryTime : undefined,
+      });
+
+      break;
+
+    case "SERVICE_LISTING":
+      await handleServiceListingPayment({
+        orderId:
+          payment.orderId,
+
+        paymentStatus,
+
+        transactionId:
+          payment.transactionId,
+
+        paymentMethod:
+          payment.paymentMethod,
+
+        paidAt:
+          paymentStatus === "PAID"
+            ? payment.settlementTime
+            : undefined,
+
+        expiredAt:
+          paymentStatus === "EXPIRED"
+            ? payment.expiryTime
+            : undefined,
       });
 
       break;

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-} from "react";
+import { useEffect, useRef } from "react";
 
 import {
   BadgeCheck,
@@ -27,7 +24,7 @@ interface Props {
   status: PaymentResultStatus;
   amount: number;
   orderId: string;
-  paymentType: "DONATION" | "URGENT_TASK" | null;
+  paymentType: "DONATION" | "URGENT_TASK" | "SERVICE_LISTING" | null;
   taskId?: string | null;
   onClose: () => void;
   onHistory: () => void;
@@ -158,132 +155,93 @@ const CONFETTI_PARTICLES = [
 ] as const;
 
 function SuccessCelebration() {
-  const containerRef =
-    useRef<HTMLDivElement>(
-      null,
-    );
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const iconRef =
-    useRef<SVGSVGElement>(
-      null,
-    );
+  const iconRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    const container =
-      containerRef.current;
+    const container = containerRef.current;
 
-    const icon =
-      iconRef.current;
+    const icon = iconRef.current;
 
-    if (
-      !container ||
-      !icon
-    ) {
+    if (!container || !icon) {
       return;
     }
 
-    const particles =
-      Array.from(
-        container.querySelectorAll<HTMLElement>(
-          "[data-payment-confetti]",
-        ),
-      );
-
-    const reduceMotion =
-      window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-
-    if (reduceMotion) {
-      particles.forEach(
-        (particle) => {
-          particle.style.display =
-            "none";
-        },
-      );
-
-      return;
-    }
-
-    const animations: Animation[] =
-      [];
-
-    const iconAnimation =
-      icon.animate(
-        [
-          {
-            transform:
-              "rotate(-8deg) scale(1)",
-          },
-          {
-            transform:
-              "rotate(10deg) scale(1.12)",
-            offset: 0.07,
-          },
-          {
-            transform:
-              "rotate(-5deg) scale(1.04)",
-            offset: 0.14,
-          },
-          {
-            transform:
-              "rotate(7deg) scale(1.1)",
-            offset: 0.21,
-          },
-          {
-            transform:
-              "rotate(-3deg) scale(1)",
-            offset: 0.3,
-          },
-          {
-            transform:
-              "rotate(-8deg) scale(1)",
-            offset: 1,
-          },
-        ],
-        {
-          duration: 2800,
-          iterations: Infinity,
-          easing:
-            "ease-in-out",
-        },
-      );
-
-    animations.push(
-      iconAnimation,
+    const particles = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-payment-confetti]"),
     );
 
-    particles.forEach(
-      (
-        particle,
-        index,
-      ) => {
-        const config =
-          CONFETTI_PARTICLES[
-            index
-          ];
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-        if (!config) {
-          return;
-        }
+    if (reduceMotion) {
+      particles.forEach((particle) => {
+        particle.style.display = "none";
+      });
 
-        const animation =
-          particle.animate(
-            [
-              {
-                opacity: 0,
-                transform:
-                  "translate(-50%, -50%) scale(0.4) rotate(0deg)",
-              },
-              {
-                opacity: 1,
-                transform:
-                  "translate(-50%, -50%) scale(0.8) rotate(20deg)",
-                offset: 0.1,
-              },
-              {
-                opacity: 1,
-                transform: `
+      return;
+    }
+
+    const animations: Animation[] = [];
+
+    const iconAnimation = icon.animate(
+      [
+        {
+          transform: "rotate(-8deg) scale(1)",
+        },
+        {
+          transform: "rotate(10deg) scale(1.12)",
+          offset: 0.07,
+        },
+        {
+          transform: "rotate(-5deg) scale(1.04)",
+          offset: 0.14,
+        },
+        {
+          transform: "rotate(7deg) scale(1.1)",
+          offset: 0.21,
+        },
+        {
+          transform: "rotate(-3deg) scale(1)",
+          offset: 0.3,
+        },
+        {
+          transform: "rotate(-8deg) scale(1)",
+          offset: 1,
+        },
+      ],
+      {
+        duration: 2800,
+        iterations: Infinity,
+        easing: "ease-in-out",
+      },
+    );
+
+    animations.push(iconAnimation);
+
+    particles.forEach((particle, index) => {
+      const config = CONFETTI_PARTICLES[index];
+
+      if (!config) {
+        return;
+      }
+
+      const animation = particle.animate(
+        [
+          {
+            opacity: 0,
+            transform: "translate(-50%, -50%) scale(0.4) rotate(0deg)",
+          },
+          {
+            opacity: 1,
+            transform: "translate(-50%, -50%) scale(0.8) rotate(20deg)",
+            offset: 0.1,
+          },
+          {
+            opacity: 1,
+            transform: `
                   translate(
                     ${config.x}px,
                     ${config.y}px
@@ -291,11 +249,11 @@ function SuccessCelebration() {
                   scale(1)
                   rotate(${config.rotate}deg)
                 `,
-                offset: 0.32,
-              },
-              {
-                opacity: 0,
-                transform: `
+            offset: 0.32,
+          },
+          {
+            opacity: 0,
+            transform: `
                   translate(
                     ${config.x * 1.08}px,
                     ${config.y + 13}px
@@ -303,11 +261,11 @@ function SuccessCelebration() {
                   scale(0.9)
                   rotate(${config.rotate + 70}deg)
                 `,
-                offset: 0.46,
-              },
-              {
-                opacity: 0,
-                transform: `
+            offset: 0.46,
+          },
+          {
+            opacity: 0,
+            transform: `
                   translate(
                     ${config.x * 1.08}px,
                     ${config.y + 13}px
@@ -315,32 +273,24 @@ function SuccessCelebration() {
                   scale(0.9)
                   rotate(${config.rotate + 70}deg)
                 `,
-                offset: 1,
-              },
-            ],
-            {
-              duration: 2800,
-              iterations:
-                Infinity,
-              easing:
-                "ease-out",
-              delay:
-                index * 18,
-            },
-          );
-
-        animations.push(
-          animation,
-        );
-      },
-    );
-
-    return () => {
-      animations.forEach(
-        (animation) => {
-          animation.cancel();
+            offset: 1,
+          },
+        ],
+        {
+          duration: 2800,
+          iterations: Infinity,
+          easing: "ease-out",
+          delay: index * 18,
         },
       );
+
+      animations.push(animation);
+    });
+
+    return () => {
+      animations.forEach((animation) => {
+        animation.cancel();
+      });
     };
   }, []);
 
@@ -390,22 +340,17 @@ function SuccessCelebration() {
           "
           strokeWidth={2}
           style={{
-            transformOrigin:
-              "25% 75%",
+            transformOrigin: "25% 75%",
           }}
         />
       </div>
 
       {/* CONFETTI */}
-      {CONFETTI_PARTICLES.map(
-        (
-          particle,
-          index,
-        ) => (
-          <span
-            key={index}
-            data-payment-confetti
-            className={`
+      {CONFETTI_PARTICLES.map((particle, index) => (
+        <span
+          key={index}
+          data-payment-confetti
+          className={`
               absolute
               left-1/2
               top-1/2
@@ -415,9 +360,8 @@ function SuccessCelebration() {
               opacity-0
               ${particle.className}
             `}
-          />
-        ),
-      )}
+        />
+      ))}
     </div>
   );
 }
@@ -442,19 +386,29 @@ export default function PaymentResultDialog({
 
   const isUrgentTask = paymentType === "URGENT_TASK";
 
+  const isServiceListing = paymentType === "SERVICE_LISTING";
+
   const paymentLabel = isUrgentTask
     ? "Prioritas Task"
-    : paymentType === "DONATION"
-      ? "Dukungan HelpMe"
-      : "Pembayaran";
+    : isServiceListing
+      ? "Publikasi Jasa"
+      : paymentType === "DONATION"
+        ? "Dukungan HelpMe"
+        : "Pembayaran";
 
   const amountLabel = isUrgentTask
     ? "Biaya prioritas"
-    : paymentType === "DONATION"
-      ? "Nominal dukungan"
-      : "Nominal pembayaran";
+    : isServiceListing
+      ? "Biaya publikasi jasa"
+      : paymentType === "DONATION"
+        ? "Nominal dukungan"
+        : "Nominal pembayaran";
 
-  const PaymentIcon = isUrgentTask ? Zap : HeartHandshake;
+  const PaymentIcon = isUrgentTask
+    ? Zap
+    : isServiceListing
+      ? ReceiptText
+      : HeartHandshake;
 
   const showViewTaskButton = status === "SUCCESS" && isUrgentTask && !!taskId;
 
@@ -597,8 +551,7 @@ export default function PaymentResultDialog({
               </div>
             )}
 
-            <div
-              className="mt-4 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <span
                 className={`
                   inline-flex
@@ -720,8 +673,7 @@ export default function PaymentResultDialog({
               sm:mx-6
             "
           >
-            <div
-              className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <div
                 className="
                   flex
@@ -738,15 +690,10 @@ export default function PaymentResultDialog({
                 <ReceiptText className="h-4 w-4" strokeWidth={2} />
               </div>
 
-              <div
-                className="min-w-0 flex-1">
-                <p
-                  className="text-[10px] text-slate-400">
-                  Jenis transaksi
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-slate-400">Jenis transaksi</p>
 
-                <p
-                  className="mt-0.5 text-xs font-bold text-slate-800">
+                <p className="mt-0.5 text-xs font-bold text-slate-800">
                   {paymentLabel}
                 </p>
               </div>
@@ -768,12 +715,9 @@ export default function PaymentResultDialog({
               </span>
             </div>
 
-            <div
-              className="my-4 border-t border-dashed border-slate-200"
-            />
+            <div className="my-4 border-t border-dashed border-slate-200" />
 
-            <div
-              className="flex items-start gap-3">
+            <div className="flex items-start gap-3">
               <div
                 className="
                   flex
@@ -790,12 +734,8 @@ export default function PaymentResultDialog({
                 <FileText className="h-4 w-4" strokeWidth={2} />
               </div>
 
-              <div
-                className="min-w-0 flex-1">
-                <p
-                  className="text-[10px] text-slate-400">
-                  Order ID
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-slate-400">Order ID</p>
 
                 <div
                   className="

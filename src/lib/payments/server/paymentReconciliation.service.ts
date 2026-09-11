@@ -20,6 +20,10 @@ import { handleDonationPayment } from "./handlers/donation.handler";
 
 import { handleUrgentTaskPayment } from "./handlers/urgent-task.handler";
 
+import {
+  handleServiceListingPayment,
+} from "./handlers/service-listing.handler";
+
 import type { MidtransStatusResponse } from "./midtrans.types";
 
 import type { PaymentStatusSnapshot } from "./paymentStatus.repository";
@@ -51,6 +55,13 @@ async function dispatchPaymentStatus(
 
     case "URGENT_TASK":
       await handleUrgentTaskPayment(payload);
+
+      return;
+
+    case "SERVICE_LISTING":
+      await handleServiceListingPayment(
+        payload,
+      );
 
       return;
   }

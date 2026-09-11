@@ -1,6 +1,4 @@
-export type PendingPaymentType =
-  | "DONATION"
-  | "URGENT_TASK";
+export type PendingPaymentType = "DONATION" | "URGENT_TASK" | "SERVICE_LISTING";
 
 export interface PendingPaymentSummary {
   id: string;

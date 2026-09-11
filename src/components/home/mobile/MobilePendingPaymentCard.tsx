@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  ArrowRight,
-  Clock3,
-  Heart,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Clock3, Heart, ReceiptText, Zap } from "lucide-react";
 
-import type {
-  PendingPaymentSummary,
-} from "@/features/payments/types/pendingPayment";
+import type { PendingPaymentSummary } from "@/features/payments/types/pendingPayment";
 
 interface Props {
   payment: PendingPaymentSummary;
@@ -19,12 +12,8 @@ interface Props {
   onResume: () => void;
 }
 
-function formatRupiah(
-  amount: number,
-) {
-  return new Intl.NumberFormat(
-    "id-ID",
-  ).format(amount);
+function formatRupiah(amount: number) {
+  return new Intl.NumberFormat("id-ID").format(amount);
 }
 
 export default function MobilePendingPaymentCard({
@@ -32,14 +21,17 @@ export default function MobilePendingPaymentCard({
   loading,
   onResume,
 }: Props) {
-  const donation =
-    payment.paymentType ===
-    "DONATION";
+  const donation = payment.paymentType === "DONATION";
 
-  const PaymentIcon =
-    donation
-      ? Heart
-      : Zap;
+  const serviceListing = payment.paymentType === "SERVICE_LISTING";
+
+  const PaymentIcon = donation ? Heart : serviceListing ? ReceiptText : Zap;
+
+  const paymentLabel = donation
+    ? "Dukungan HelpMe"
+    : serviceListing
+      ? "Publikasi Jasa"
+      : "Prioritas Task";
 
   return (
     <section
@@ -94,10 +86,7 @@ export default function MobilePendingPaymentCard({
               text-white
             "
           >
-            <Clock3
-              className="h-5 w-5"
-              strokeWidth={2}
-            />
+            <Clock3 className="h-5 w-5" strokeWidth={2} />
           </div>
 
           <div
@@ -116,10 +105,7 @@ export default function MobilePendingPaymentCard({
                 text-amber-700
               "
             >
-              <Clock3
-                className="h-3 w-3"
-              />
-
+              <Clock3 className="h-3 w-3" />
               Menunggu pembayaran
             </div>
 
@@ -146,9 +132,7 @@ export default function MobilePendingPaymentCard({
                   text-slate-900
                 "
               >
-                {donation
-                  ? "Dukungan HelpMe"
-                  : "Prioritas Task"}
+                {paymentLabel}
               </p>
             </div>
 
@@ -162,9 +146,7 @@ export default function MobilePendingPaymentCard({
               "
             >
               Rp
-              {formatRupiah(
-                payment.amount,
-              )}
+              {formatRupiah(payment.amount)}
             </p>
 
             <p
@@ -175,9 +157,7 @@ export default function MobilePendingPaymentCard({
                 text-slate-500
               "
             >
-              Transaksi ini belum
-              selesai, Kamu dapat
-              melanjutkan pembayaran.
+              Transaksi ini belum selesai, Kamu dapat melanjutkan pembayaran.
             </p>
           </div>
         </div>
@@ -201,9 +181,7 @@ export default function MobilePendingPaymentCard({
               text-amber-700
             "
           >
-            {loading
-              ? "Membuka pembayaran..."
-              : "Lanjutkan pembayaran"}
+            {loading ? "Membuka pembayaran..." : "Lanjutkan pembayaran"}
           </span>
 
           <ArrowRight

@@ -1,18 +1,13 @@
-import {
-  adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-export type PendingPaymentType =
-  | "DONATION"
-  | "URGENT_TASK";
+export type PendingPaymentType = "DONATION" | "URGENT_TASK" | "SERVICE_LISTING";
 
 export interface PendingPaymentSummary {
   id: string;
 
   orderId: string;
 
-  paymentType:
-    PendingPaymentType;
+  paymentType: PendingPaymentType;
 
   amount: number;
 
@@ -24,8 +19,7 @@ export interface PendingPaymentSummary {
 export interface ResumablePayment {
   orderId: string;
 
-  paymentType:
-    PendingPaymentType;
+  paymentType: PendingPaymentType;
 
   amount: number;
 
@@ -35,8 +29,7 @@ export interface ResumablePayment {
 export async function getLatestPendingPayment(
   userId: string,
 ): Promise<PendingPaymentSummary | null> {
-  const nowIso =
-    new Date().toISOString();
+  const nowIso = new Date().toISOString();
 
   /*
    * Hanya transaksi yang:
@@ -49,41 +42,24 @@ export async function getLatestPendingPayment(
    * payment_expires_at = NULL
    * sengaja tidak dianggap resumable.
    */
-  const {
-    data: donation,
-    error: donationError,
-  } = await adminSupabase
+  const { data: donation, error: donationError } = await adminSupabase
     .from("support_donations")
-    .select(`
+    .select(
+      `
       id,
       amount,
       midtrans_order_id,
       created_at,
       payment_expires_at
-    `)
-    .eq(
-      "user_id",
-      userId,
+    `,
     )
-    .eq(
-      "payment_status",
-      "PENDING",
-    )
-    .not(
-      "payment_expires_at",
-      "is",
-      null,
-    )
-    .gt(
-      "payment_expires_at",
-      nowIso,
-    )
-    .order(
-      "created_at",
-      {
-        ascending: false,
-      },
-    )
+    .eq("user_id", userId)
+    .eq("payment_status", "PENDING")
+    .not("payment_expires_at", "is", null)
+    .gt("payment_expires_at", nowIso)
+    .order("created_at", {
+      ascending: false,
+    })
     .limit(1)
     .maybeSingle();
 
@@ -91,41 +67,24 @@ export async function getLatestPendingPayment(
     throw donationError;
   }
 
-  const {
-    data: taskPayment,
-    error: taskPaymentError,
-  } = await adminSupabase
+  const { data: taskPayment, error: taskPaymentError } = await adminSupabase
     .from("task_payments")
-    .select(`
+    .select(
+      `
       id,
       amount,
       midtrans_order_id,
       created_at,
       payment_expires_at
-    `)
-    .eq(
-      "user_id",
-      userId,
+    `,
     )
-    .eq(
-      "payment_status",
-      "PENDING",
-    )
-    .not(
-      "payment_expires_at",
-      "is",
-      null,
-    )
-    .gt(
-      "payment_expires_at",
-      nowIso,
-    )
-    .order(
-      "created_at",
-      {
-        ascending: false,
-      },
-    )
+    .eq("user_id", userId)
+    .eq("payment_status", "PENDING")
+    .not("payment_expires_at", "is", null)
+    .gt("payment_expires_at", nowIso)
+    .order("created_at", {
+      ascending: false,
+    })
     .limit(1)
     .maybeSingle();
 
@@ -133,93 +92,108 @@ export async function getLatestPendingPayment(
     throw taskPaymentError;
   }
 
-  const donationSummary:
-    PendingPaymentSummary | null =
-    donation &&
-    typeof donation.payment_expires_at ===
-      "string"
+  const { data: servicePayment, error: servicePaymentError } =
+    await adminSupabase
+      .from("service_listing_payments")
+      .select(
+        `
+      id,
+      amount,
+      midtrans_order_id,
+      created_at,
+      payment_expires_at,
+      snap_token
+    `,
+      )
+      .eq("provider_id", userId)
+      .eq("payment_status", "PENDING")
+      .not("payment_expires_at", "is", null)
+      .gt("payment_expires_at", nowIso)
+      .not("snap_token", "is", null)
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(1)
+      .maybeSingle();
+
+  if (servicePaymentError) {
+    throw servicePaymentError;
+  }
+
+  const donationSummary: PendingPaymentSummary | null =
+    donation && typeof donation.payment_expires_at === "string"
       ? {
-          id:
-            donation.id,
+          id: donation.id,
 
-          orderId:
-            donation.midtrans_order_id,
+          orderId: donation.midtrans_order_id,
 
-          paymentType:
-            "DONATION",
+          paymentType: "DONATION",
 
-          amount:
-            Number(
-              donation.amount,
-            ),
+          amount: Number(donation.amount),
 
-          createdAt:
-            donation.created_at,
+          createdAt: donation.created_at,
 
-          paymentExpiresAt:
-            donation.payment_expires_at,
+          paymentExpiresAt: donation.payment_expires_at,
         }
       : null;
 
-  const taskSummary:
-    PendingPaymentSummary | null =
-    taskPayment &&
-    typeof taskPayment.payment_expires_at ===
-      "string"
+  const taskSummary: PendingPaymentSummary | null =
+    taskPayment && typeof taskPayment.payment_expires_at === "string"
       ? {
-          id:
-            taskPayment.id,
+          id: taskPayment.id,
 
-          orderId:
-            taskPayment.midtrans_order_id,
+          orderId: taskPayment.midtrans_order_id,
 
-          paymentType:
-            "URGENT_TASK",
+          paymentType: "URGENT_TASK",
 
-          amount:
-            Number(
-              taskPayment.amount,
-            ),
+          amount: Number(taskPayment.amount),
 
-          createdAt:
-            taskPayment.created_at,
+          createdAt: taskPayment.created_at,
 
-          paymentExpiresAt:
-            taskPayment.payment_expires_at,
+          paymentExpiresAt: taskPayment.payment_expires_at,
         }
       : null;
 
-  if (
-    !donationSummary &&
-    !taskSummary
-  ) {
+  const serviceSummary: PendingPaymentSummary | null =
+    servicePayment &&
+    typeof servicePayment.payment_expires_at === "string" &&
+    typeof servicePayment.snap_token === "string" &&
+    servicePayment.snap_token.trim() !== ""
+      ? {
+          id: servicePayment.id,
+
+          orderId: servicePayment.midtrans_order_id,
+
+          paymentType: "SERVICE_LISTING",
+
+          amount: Number(servicePayment.amount),
+
+          createdAt: servicePayment.created_at,
+
+          paymentExpiresAt: servicePayment.payment_expires_at,
+        }
+      : null;
+
+  const summaries = [donationSummary, taskSummary, serviceSummary].filter(
+    (summary): summary is PendingPaymentSummary => summary !== null,
+  );
+
+  if (summaries.length === 0) {
     return null;
   }
 
-  if (!donationSummary) {
-    return taskSummary;
-  }
+  summaries.sort(
+    (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
+  );
 
-  if (!taskSummary) {
-    return donationSummary;
-  }
-
-  return Date.parse(
-    taskSummary.createdAt,
-  ) >
-    Date.parse(
-      donationSummary.createdAt,
-    )
-    ? taskSummary
-    : donationSummary;
+  return summaries[0] ?? null;
 }
 
 export async function getResumablePayment(
   userId: string,
   orderId: string,
 ): Promise<ResumablePayment | null> {
-  const nowIso =
-    new Date().toISOString();
+  const nowIso = new Date().toISOString();
 
   /*
    * Authorization + lifecycle gate:
@@ -229,36 +203,19 @@ export async function getResumablePayment(
    * - harus punya deadline
    * - deadline belum lewat
    */
-  const {
-    data: donation,
-    error: donationError,
-  } = await adminSupabase
+  const { data: donation, error: donationError } = await adminSupabase
     .from("support_donations")
-    .select(`
+    .select(
+      `
       amount,
       snap_token
-    `)
-    .eq(
-      "user_id",
-      userId,
+    `,
     )
-    .eq(
-      "midtrans_order_id",
-      orderId,
-    )
-    .eq(
-      "payment_status",
-      "PENDING",
-    )
-    .not(
-      "payment_expires_at",
-      "is",
-      null,
-    )
-    .gt(
-      "payment_expires_at",
-      nowIso,
-    )
+    .eq("user_id", userId)
+    .eq("midtrans_order_id", orderId)
+    .eq("payment_status", "PENDING")
+    .not("payment_expires_at", "is", null)
+    .gt("payment_expires_at", nowIso)
     .maybeSingle();
 
   if (donationError) {
@@ -269,49 +226,27 @@ export async function getResumablePayment(
     return {
       orderId,
 
-      paymentType:
-        "DONATION",
+      paymentType: "DONATION",
 
-      amount:
-        Number(
-          donation.amount,
-        ),
+      amount: Number(donation.amount),
 
-      snapToken:
-        donation.snap_token,
+      snapToken: donation.snap_token,
     };
   }
 
-  const {
-    data: taskPayment,
-    error: taskPaymentError,
-  } = await adminSupabase
+  const { data: taskPayment, error: taskPaymentError } = await adminSupabase
     .from("task_payments")
-    .select(`
+    .select(
+      `
       amount,
       snap_token
-    `)
-    .eq(
-      "user_id",
-      userId,
+    `,
     )
-    .eq(
-      "midtrans_order_id",
-      orderId,
-    )
-    .eq(
-      "payment_status",
-      "PENDING",
-    )
-    .not(
-      "payment_expires_at",
-      "is",
-      null,
-    )
-    .gt(
-      "payment_expires_at",
-      nowIso,
-    )
+    .eq("user_id", userId)
+    .eq("midtrans_order_id", orderId)
+    .eq("payment_status", "PENDING")
+    .not("payment_expires_at", "is", null)
+    .gt("payment_expires_at", nowIso)
     .maybeSingle();
 
   if (taskPaymentError) {
@@ -322,16 +257,48 @@ export async function getResumablePayment(
     return {
       orderId,
 
-      paymentType:
-        "URGENT_TASK",
+      paymentType: "URGENT_TASK",
 
-      amount:
-        Number(
-          taskPayment.amount,
-        ),
+      amount: Number(taskPayment.amount),
 
-      snapToken:
-        taskPayment.snap_token,
+      snapToken: taskPayment.snap_token,
+    };
+  }
+
+  const { data: servicePayment, error: servicePaymentError } =
+    await adminSupabase
+      .from("service_listing_payments")
+      .select(
+        `
+      amount,
+      snap_token
+    `,
+      )
+      .eq("provider_id", userId)
+      .eq("midtrans_order_id", orderId)
+      .eq("payment_status", "PENDING")
+      .not("payment_expires_at", "is", null)
+      .gt("payment_expires_at", nowIso)
+      .not("snap_token", "is", null)
+      .maybeSingle();
+
+  if (servicePaymentError) {
+    throw servicePaymentError;
+  }
+
+  if (
+    servicePayment &&
+    typeof servicePayment.snap_token === "string" &&
+    servicePayment.snap_token.trim() !== ""
+  ) {
+    return {
+      orderId,
+
+      paymentType: "SERVICE_LISTING",
+
+      amount: Number(servicePayment.amount),
+
+      snapToken: servicePayment.snap_token.trim(),
     };
   }
 

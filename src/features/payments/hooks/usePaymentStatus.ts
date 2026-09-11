@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type PaymentStatus =
   | "PENDING"
@@ -25,11 +20,11 @@ interface Options {
 interface PaymentStatusResponse {
   status: PaymentStatus;
 
-  paymentType:
-    | "DONATION"
-    | "URGENT_TASK";
+  paymentType: "DONATION" | "URGENT_TASK" | "SERVICE_LISTING";
 
   taskId?: string | null;
+
+  serviceListingId?: string | null;
 }
 
 interface PaymentSnapshot {
@@ -37,182 +32,119 @@ interface PaymentSnapshot {
 
   status: PaymentStatus;
 
-  paymentType:
-    | "DONATION"
-    | "URGENT_TASK"
-    | null;
+  paymentType: "DONATION" | "URGENT_TASK" | "SERVICE_LISTING" | null;
 
   taskId: string | null;
 }
 
-const INITIAL_SNAPSHOT: PaymentSnapshot =
-  {
-    orderId: "",
+const INITIAL_SNAPSHOT: PaymentSnapshot = {
+  orderId: "",
 
-    status: "PENDING",
+  status: "PENDING",
 
-    paymentType: null,
+  paymentType: null,
 
-    taskId: null,
-  };
+  taskId: null,
+};
 
 export function usePaymentStatus({
   enabled,
   orderId,
   interval = 10000,
 }: Options) {
-  const [
-    snapshot,
-    setSnapshot,
-  ] =
-    useState<PaymentSnapshot>(
-      INITIAL_SNAPSHOT,
-    );
+  const [snapshot, setSnapshot] = useState<PaymentSnapshot>(INITIAL_SNAPSHOT);
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const timerRef =
-    useRef<
-      ReturnType<
-        typeof setInterval
-      > | null
-    >(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchStatus =
-    useCallback(async () => {
-      if (!orderId) {
+  const fetchStatus = useCallback(async () => {
+    if (!orderId) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/payments/status/${orderId}`);
+
+      if (!response.ok) {
         return;
       }
 
-      setLoading(true);
+      const data = (await response.json()) as PaymentStatusResponse;
 
-      try {
-        const response =
-          await fetch(
-            `/api/payments/status/${orderId}`,
-          );
+      /*
+       * Status selalu disimpan bersama
+       * orderId yang menghasilkan status.
+       *
+       * Ini mencegah PAID transaksi lama
+       * dianggap sebagai status transaksi
+       * baru.
+       */
+      setSnapshot({
+        orderId,
 
-        if (!response.ok) {
-          return;
-        }
+        status: data.status,
 
-        const data =
-          (await response.json()) as PaymentStatusResponse;
+        paymentType: data.paymentType ?? null,
 
-        /*
-         * Status selalu disimpan bersama
-         * orderId yang menghasilkan status.
-         *
-         * Ini mencegah PAID transaksi lama
-         * dianggap sebagai status transaksi
-         * baru.
-         */
-        setSnapshot({
-          orderId,
+        taskId: data.taskId ?? null,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
 
-          status:
-            data.status,
+  const isCurrentOrder = snapshot.orderId === orderId;
 
-          paymentType:
-            data.paymentType ??
-            null,
+  const status: PaymentStatus = isCurrentOrder ? snapshot.status : "PENDING";
 
-          taskId:
-            data.taskId ??
-            null,
-        });
-      } finally {
-        setLoading(false);
-      }
-    }, [orderId]);
+  const paymentType = isCurrentOrder ? snapshot.paymentType : null;
 
-  const isCurrentOrder =
-    snapshot.orderId ===
-    orderId;
-
-  const status:
-    PaymentStatus =
-    isCurrentOrder
-      ? snapshot.status
-      : "PENDING";
-
-  const paymentType =
-    isCurrentOrder
-      ? snapshot.paymentType
-      : null;
-
-  const taskId =
-    isCurrentOrder
-      ? snapshot.taskId
-      : null;
+  const taskId = isCurrentOrder ? snapshot.taskId : null;
 
   useEffect(() => {
-    if (
-      !enabled ||
-      !orderId
-    ) {
+    if (!enabled || !orderId) {
       return;
     }
 
     let cancelled = false;
 
-    const run =
-      async () => {
-        if (cancelled) {
-          return;
-        }
+    const run = async () => {
+      if (cancelled) {
+        return;
+      }
 
-        await fetchStatus();
-      };
+      await fetchStatus();
+    };
 
     void run();
 
-    timerRef.current =
-      setInterval(() => {
-        void run();
-      }, interval);
+    timerRef.current = setInterval(() => {
+      void run();
+    }, interval);
 
     return () => {
       cancelled = true;
 
-      if (
-        timerRef.current
-      ) {
-        clearInterval(
-          timerRef.current,
-        );
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
 
-        timerRef.current =
-          null;
+        timerRef.current = null;
       }
     };
-  }, [
-    enabled,
-    orderId,
-    interval,
-    fetchStatus,
-  ]);
+  }, [enabled, orderId, interval, fetchStatus]);
 
   useEffect(() => {
-    if (
-      status ===
-      "PENDING"
-    ) {
+    if (status === "PENDING") {
       return;
     }
 
-    if (
-      timerRef.current
-    ) {
-      clearInterval(
-        timerRef.current,
-      );
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
 
-      timerRef.current =
-        null;
+      timerRef.current = null;
     }
   }, [status]);
 
