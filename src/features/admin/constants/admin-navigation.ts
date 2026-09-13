@@ -1,6 +1,8 @@
 import {
+  BriefcaseBusiness,
   ClipboardList,
   Flag,
+  Handshake,
   Home,
   Image,
   Megaphone,
@@ -78,6 +80,37 @@ export const AdminNavigation: AdminNavigationItem[] = [
   },
 
   {
+    id: "services",
+
+    label: "Jasa",
+
+    description: "Kelola seluruh listing jasa",
+
+    href: "/admin/services",
+
+    icon: BriefcaseBusiness,
+
+    enabled: true,
+
+    showOnDashboard: true,
+  },
+
+  {
+    id: "service-requests",
+
+    label: "Permintaan Jasa",
+
+    description: "Pantau seluruh permintaan jasa",
+
+    href: "/admin/service-requests",
+
+    icon: Handshake,
+
+    enabled: true,
+
+    showOnDashboard: true,
+  },
+  {
     id: "reports",
 
     label: "Reports",
@@ -128,15 +161,15 @@ export const AdminNavigation: AdminNavigationItem[] = [
   {
     id: "payments",
 
-    label: "Payments",
+    label: "Payments Jasa",
 
-    description: "Kelola transaksi",
+    description: "Pantau pembayaran publikasi jasa",
 
     href: "/admin/payments",
 
     icon: Wallet,
 
-    enabled: false,
+    enabled: true,
 
     showOnDashboard: true,
   },

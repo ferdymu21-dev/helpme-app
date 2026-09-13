@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import {
   ArrowRight,
+  BriefcaseBusiness,
   CheckCircle2,
   Clock3,
   Eye,
@@ -17,18 +18,22 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabase/client";
-
 import { REPORT_REASONS } from "@/features/reports/constants/report-reasons";
 
 interface RelatedUser {
   id: string;
-  full_name: string;
+  full_name: string | null;
 }
 
 interface RelatedTask {
   id: string;
   title: string;
+  status: string;
+}
+interface RelatedServiceListing {
+  id: string;
+  title: string;
+  category: string;
   status: string;
 }
 
@@ -41,19 +46,15 @@ interface Report {
   admin_notes: string | null;
   task_id: string | null;
 
+  service_listing_id: string | null;
+
   reporter: RelatedUser | null;
 
   reported_user: RelatedUser | null;
 
   task: RelatedTask | null;
-}
 
-function getSingleRelation<T>(value: T | T[] | null | undefined): T | null {
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return value ?? null;
+  service_listing: RelatedServiceListing | null;
 }
 
 type StatusFilter = "ALL" | "PENDING" | "REVIEWED" | "RESOLVED" | "REJECTED";
@@ -169,61 +170,22 @@ export default function ReportsPage() {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("reports")
-        .select(
-          `
-                id,
-                reason,
-                description,
-                status,
-                created_at,
-                admin_notes,
-                task_id,
-                reporter:users!reports_reporter_id_fkey (
-                  id,
-                  full_name
-                ),
-                reported_user:users!reports_reported_user_id_fkey (
-                  id,
-                  full_name
-                ),
-                task:tasks (
-                  id,
-                  title,
-                  status
-                )
-              `,
-        )
-        .order("created_at", {
-          ascending: false,
-        });
+      const response = await fetch("/api/admin/reports", {
+        method: "GET",
+        cache: "no-store",
+      });
 
-      if (error) {
-        console.error(error);
-
-        return;
+      if (!response.ok) {
+        throw new Error("Gagal memuat laporan admin.");
       }
 
-      const normalizedReports: Report[] = (data ?? []).map((item) => ({
-        id: item.id,
-        reason: item.reason,
-        description: item.description,
-        status: item.status,
-        created_at: item.created_at,
-        admin_notes: item.admin_notes,
-        task_id: item.task_id,
+      const data: Report[] = await response.json();
 
-        reporter: getSingleRelation<RelatedUser>(item.reporter),
-
-        reported_user: getSingleRelation<RelatedUser>(item.reported_user),
-
-        task: getSingleRelation<RelatedTask>(item.task),
-      }));
-
-      setReports(normalizedReports);
+      setReports(data);
     } catch (error) {
       console.error(error);
+
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -272,6 +234,7 @@ export default function ReportsPage() {
         report.reporter?.full_name || "",
         report.reported_user?.full_name || "",
         report.task?.title || "",
+        report.service_listing?.title || "",
       ]
         .join(" ")
         .toLowerCase();
@@ -640,6 +603,10 @@ export default function ReportsPage() {
             {filteredReports.map((report) => {
               const isTaskReport = Boolean(report.task_id || report.task);
 
+              const isServiceListingReport = Boolean(
+                report.service_listing_id || report.service_listing,
+              );
+
               return (
                 <article
                   key={report.id}
@@ -706,11 +673,17 @@ export default function ReportsPage() {
                         >
                           {isTaskReport ? (
                             <ClipboardList className="h-3.5 w-3.5" />
+                          ) : isServiceListingReport ? (
+                            <BriefcaseBusiness className="h-3.5 w-3.5" />
                           ) : (
                             <UserRound className="h-3.5 w-3.5" />
                           )}
 
-                          {isTaskReport ? "Laporan Task" : "Laporan Pengguna"}
+                          {isTaskReport
+                            ? "Laporan Task"
+                            : isServiceListingReport
+                              ? "Laporan Jasa"
+                              : "Laporan Pengguna"}
                         </span>
 
                         <span
@@ -782,6 +755,13 @@ export default function ReportsPage() {
                           <span>
                             <strong className="text-slate-700">Task:</strong>{" "}
                             {report.task.title}
+                          </span>
+                        )}
+
+                        {report.service_listing && (
+                          <span>
+                            <strong className="text-slate-700">Jasa:</strong>{" "}
+                            {report.service_listing.title}
                           </span>
                         )}
 

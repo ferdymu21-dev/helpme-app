@@ -15,6 +15,8 @@ import { ServiceMode } from "./constants/service-mode";
 
 import type { ProviderServiceListingMedia } from "./types/service-listing-media.types";
 
+import ServiceListingReportAction from "./components/ServiceListingReportAction";
+
 import type { PublicServiceListingDetail } from "./types/service-listing-read.types";
 
 interface ServiceListingDetailPageUIProps {
@@ -423,7 +425,7 @@ export default function ServiceListingDetailPageUI({
                     <span className="font-bold text-slate-950">
                       {providerRating.toFixed(1)}
                     </span>{" "}
-                    · {providerTotalReviews} review
+                    Â· {providerTotalReviews} review
                   </p>
                 ) : (
                   <p className="text-sm text-slate-500">Belum ada rating</p>
@@ -450,6 +452,11 @@ export default function ServiceListingDetailPageUI({
                 Jelaskan kebutuhan Anda kepada Provider. Kesepakatan dan
                 pembayaran tidak dibuat otomatis.
               </p>
+
+              <ServiceListingReportAction
+                serviceListingId={listing.id}
+                serviceTitle={listing.title}
+              />
 
               <div className="mt-5 border-t border-slate-100 pt-4">
                 <p className="flex items-start gap-2 text-xs leading-5 text-slate-500">

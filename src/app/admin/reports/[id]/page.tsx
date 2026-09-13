@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Link from "next/link";
 
@@ -13,6 +9,7 @@ import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Ban,
+  BriefcaseBusiness,
   CheckCircle2,
   ClipboardList,
   Clock3,
@@ -33,18 +30,12 @@ import {
 
 import { removeTask } from "@/features/admin/services/task-moderation.service";
 
-import { updateReportStatus } from "@/features/admin/services/report-admin.service";
-
 import { REPORT_REASONS } from "@/features/reports/constants/report-reasons";
-
-import { supabase } from "@/lib/supabase/client";
 
 interface ReportUser {
   id: string;
-  full_name: string;
-  verification_status:
-    | string
-    | null;
+  full_name: string | null;
+  verification_status: string | null;
 }
 
 interface ReportTask {
@@ -53,24 +44,38 @@ interface ReportTask {
   status: string;
   budget: number | null;
 }
+interface ReportServiceListing {
+  id: string;
+
+  provider_id: string;
+
+  title: string;
+  category: string;
+
+  status: string;
+
+  blocked_at: string | null;
+  blocked_reason: string | null;
+
+  expires_at: string | null;
+}
 
 interface Report {
   id: string;
 
   reporter_id: string;
 
-  reported_user_id: string;
+  reported_user_id: string | null;
+
+  task_id: string | null;
+
+  service_listing_id: string | null;
 
   reason: string;
 
   description: string | null;
 
-  status:
-    | "PENDING"
-    | "REVIEWED"
-    | "RESOLVED"
-    | "REJECTED"
-    | string;
+  status: "PENDING" | "REVIEWED" | "RESOLVED" | "REJECTED" | string;
 
   admin_notes: string | null;
 
@@ -78,37 +83,18 @@ interface Report {
 
   reporter: ReportUser | null;
 
-  reported_user:
-    | ReportUser
-    | null;
+  reported_user: ReportUser | null;
 
   task: ReportTask | null;
+
+  service_listing: ReportServiceListing | null;
 }
 
-function getSingleRelation<T>(
-  value: T | T[] | null | undefined,
-): T | null {
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return value ?? null;
+function getReasonLabel(reason: string) {
+  return REPORT_REASONS.find((item) => item.value === reason)?.label || reason;
 }
 
-function getReasonLabel(
-  reason: string,
-) {
-  return (
-    REPORT_REASONS.find(
-      (item) =>
-        item.value === reason,
-    )?.label || reason
-  );
-}
-
-function getStatusLabel(
-  status: string,
-) {
+function getStatusLabel(status: string) {
   switch (status) {
     case "PENDING":
       return "Perlu Ditinjau";
@@ -127,9 +113,7 @@ function getStatusLabel(
   }
 }
 
-function getStatusColor(
-  status: string,
-) {
+function getStatusColor(status: string) {
   switch (status) {
     case "PENDING":
       return `
@@ -171,317 +155,271 @@ function getStatusColor(
 export default function ReportDetailPage() {
   const params = useParams();
 
-  const reportId =
-    Array.isArray(params.id)
-      ? params.id[0]
-      : params.id;
+  const reportId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const [report, setReport] =
-    useState<Report | null>(null);
+  const [report, setReport] = useState<Report | null>(null);
 
-  const [
-    adminNotes,
-    setAdminNotes,
-  ] = useState("");
+  const [adminNotes, setAdminNotes] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    processingStatus,
-    setProcessingStatus,
-  ] = useState<string | null>(
-    null,
-  );
+  const [processingStatus, setProcessingStatus] = useState<string | null>(null);
 
-  const [
-    moderationAction,
-    setModerationAction,
-  ] = useState<string | null>(
-    null,
-  );
+  const [moderationAction, setModerationAction] = useState<string | null>(null);
 
-  const loadReport =
-    useCallback(async () => {
-      if (!reportId) {
+  const loadReport = useCallback(async () => {
+    if (!reportId) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `/api/admin/reports/${encodeURIComponent(reportId)}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      );
+
+      if (!response.ok) {
+        setReport(null);
+
         return;
       }
 
-      try {
-        setLoading(true);
+      const reportData: Report = await response.json();
 
-        const { data, error } =
-          await supabase
-            .from("reports")
-            .select(
-              `
-                id,
-                reporter_id,
-                reported_user_id,
-                reason,
-                description,
-                status,
-                admin_notes,
-                created_at,
-                reporter:users!reports_reporter_id_fkey (
-                  id,
-                  full_name,
-                  verification_status
-                ),
-                reported_user:users!reports_reported_user_id_fkey (
-                  id,
-                  full_name,
-                  verification_status
-                ),
-                task:tasks (
-                  id,
-                  title,
-                  status,
-                  budget
-                )
-              `,
-            )
-            .eq(
-              "id",
-              reportId,
-            )
-            .single();
+      setReport(reportData);
 
-        if (error) {
-          console.error(error);
+      setAdminNotes(reportData.admin_notes || "");
+    } catch (error) {
+      console.error(error);
 
-          setReport(null);
-
-          return;
-        }
-
-        const reportData: Report = {
-  id: data.id,
-
-  reporter_id:
-    data.reporter_id,
-
-  reported_user_id:
-    data.reported_user_id,
-
-  reason: data.reason,
-
-  description:
-    data.description,
-
-  status: data.status,
-
-  admin_notes:
-    data.admin_notes,
-
-  created_at:
-    data.created_at,
-
-  reporter:
-    getSingleRelation<ReportUser>(
-      data.reporter,
-    ),
-
-  reported_user:
-    getSingleRelation<ReportUser>(
-      data.reported_user,
-    ),
-
-  task:
-    getSingleRelation<ReportTask>(
-      data.task,
-    ),
-};
-
-setReport(reportData);
-
-setAdminNotes(
-  reportData.admin_notes || "",
-);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }, [reportId]);
+      setReport(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [reportId]);
 
   useEffect(() => {
-  const timer = window.setTimeout(() => {
-    void loadReport();
-  }, 0);
+    const timer = window.setTimeout(() => {
+      void loadReport();
+    }, 0);
 
-  return () => {
-    window.clearTimeout(timer);
-  };
-}, [loadReport]);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [loadReport]);
 
   async function handleUpdateStatus(
-    status:
-      | "REVIEWED"
-      | "RESOLVED"
-      | "REJECTED",
+    status: "REVIEWED" | "RESOLVED" | "REJECTED",
   ) {
     if (!report) {
       return;
     }
 
     try {
-      setProcessingStatus(
-        status,
+      setProcessingStatus(status);
+      const response = await fetch(
+        `/api/admin/reports/${encodeURIComponent(report.id)}`,
+        {
+          method: "PATCH",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            status,
+            adminNotes,
+          }),
+        },
       );
 
-      await updateReportStatus(
-        report.id,
-        status,
-        adminNotes,
-      );
+      if (!response.ok) {
+        throw new Error("Gagal memperbarui status laporan.");
+      }
 
-      alert(
-        "Status laporan berhasil diperbarui",
-      );
+      alert("Status laporan berhasil diperbarui");
 
       await loadReport();
     } catch (error) {
       console.error(error);
 
-      alert(
-        "Gagal memperbarui laporan",
-      );
+      alert("Gagal memperbarui laporan");
     } finally {
-      setProcessingStatus(
-        null,
-      );
+      setProcessingStatus(null);
     }
   }
 
   async function handleRemoveTask() {
-    const taskId =
-      report?.task?.id;
+    const taskId = report?.task?.id;
 
     if (!taskId) {
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        "Hapus task ini dari platform? Tindakan ini tidak dapat dianggap sebagai sekadar perubahan status laporan.",
-      );
+    const confirmed = window.confirm(
+      "Hapus task ini dari platform? Tindakan ini tidak dapat dianggap sebagai sekadar perubahan status laporan.",
+    );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      setModerationAction(
-        "REMOVE_TASK",
-      );
+      setModerationAction("REMOVE_TASK");
 
       await removeTask(taskId);
 
-      alert(
-        "Task berhasil dihapus",
+      alert("Task berhasil dihapus");
+
+      await loadReport();
+    } catch (error) {
+      console.error(error);
+
+      alert("Gagal menghapus task");
+    } finally {
+      setModerationAction(null);
+    }
+  }
+
+  async function handleSuspendUser(days: number) {
+    const userId = report?.reported_user?.id;
+
+    if (!userId || !report) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Suspend pengguna selama ${days} hari?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setModerationAction(`SUSPEND_${days}`);
+
+      await suspendUser(userId, days, report.reason);
+
+      alert(`Pengguna berhasil disuspend ${days} hari`);
+    } catch (error) {
+      console.error(error);
+
+      alert("Gagal suspend pengguna");
+    } finally {
+      setModerationAction(null);
+    }
+  }
+
+  async function handleBanUser() {
+    const userId = report?.reported_user?.id;
+
+    if (!userId) {
+      return;
+    }
+
+    const confirmed = window.confirm("Ban pengguna secara permanen?");
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setModerationAction("BAN");
+
+      await banUser(userId);
+
+      alert("Pengguna berhasil dibanned");
+    } catch (error) {
+      console.error(error);
+
+      alert("Gagal ban pengguna");
+    } finally {
+      setModerationAction(null);
+    }
+  }
+
+  async function handleModerateServiceListing(action: "BLOCK" | "UNBLOCK") {
+    const listing = report?.service_listing;
+
+    if (!listing) {
+      return;
+    }
+
+    let reason: string | undefined;
+
+    if (action === "BLOCK") {
+      const suggestedReason =
+        adminNotes.trim() || getReasonLabel(report.reason);
+
+      const input = window.prompt(
+        "Masukkan alasan pemblokiran jasa:",
+        suggestedReason,
+      );
+
+      if (input === null || !input.trim()) {
+        return;
+      }
+
+      reason = input.trim();
+    } else {
+      const confirmed = window.confirm("Buka blokir jasa ini?");
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    try {
+      setModerationAction(
+        action === "BLOCK"
+          ? "BLOCK_SERVICE_LISTING"
+          : "UNBLOCK_SERVICE_LISTING",
+      );
+
+      const response = await fetch(
+        `/api/admin/services/${encodeURIComponent(listing.id)}/moderation`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            action,
+
+            ...(reason
+              ? {
+                  reason,
+                }
+              : {}),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Gagal memoderasi jasa.");
+      }
+
+      window.alert(
+        action === "BLOCK"
+          ? "Jasa berhasil diblokir."
+          : "Blokir jasa berhasil dibuka.",
       );
 
       await loadReport();
     } catch (error) {
       console.error(error);
 
-      alert(
-        "Gagal menghapus task",
-      );
+      window.alert("Gagal memoderasi jasa.");
     } finally {
-      setModerationAction(
-        null,
-      );
+      setModerationAction(null);
     }
   }
-
-  async function handleSuspendUser(
-    days: number,
-  ) {
-    const userId =
-      report?.reported_user?.id;
-
-    if (!userId || !report) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        `Suspend pengguna selama ${days} hari?`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      setModerationAction(
-        `SUSPEND_${days}`,
-      );
-
-      await suspendUser(
-        userId,
-        days,
-        report.reason,
-      );
-
-      alert(
-        `Pengguna berhasil disuspend ${days} hari`,
-      );
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        "Gagal suspend pengguna",
-      );
-    } finally {
-      setModerationAction(
-        null,
-      );
-    }
-  }
-
-  async function handleBanUser() {
-    const userId =
-      report?.reported_user?.id;
-
-    if (!userId) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        "Ban pengguna secara permanen?",
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      setModerationAction(
-        "BAN",
-      );
-
-      await banUser(userId);
-
-      alert(
-        "Pengguna berhasil dibanned",
-      );
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        "Gagal ban pengguna",
-      );
-    } finally {
-      setModerationAction(
-        null,
-      );
-    }
-  }
-
   if (loading) {
     return (
       <div
@@ -511,9 +449,7 @@ setAdminNotes(
           text-center
         "
       >
-        <h2 className="font-bold text-slate-900">
-          Laporan tidak ditemukan
-        </h2>
+        <h2 className="font-bold text-slate-900">Laporan tidak ditemukan</h2>
 
         <Link
           href="/admin/reports"
@@ -531,14 +467,13 @@ setAdminNotes(
     );
   }
 
-  const isTaskReport =
-    Boolean(report.task);
+  const isTaskReport = Boolean(report.task);
 
-  const statusBusy =
-    processingStatus !== null;
+  const isServiceListingReport = Boolean(report.service_listing);
 
-  const moderationBusy =
-    moderationAction !== null;
+  const statusBusy = processingStatus !== null;
+
+  const moderationBusy = moderationAction !== null;
 
   return (
     <div
@@ -564,7 +499,6 @@ setAdminNotes(
           "
         >
           <ArrowLeft className="h-4 w-4" />
-
           Kembali ke daftar laporan
         </Link>
 
@@ -614,13 +548,17 @@ setAdminNotes(
               >
                 {isTaskReport ? (
                   <ClipboardList className="h-3.5 w-3.5" />
+                ) : isServiceListingReport ? (
+                  <BriefcaseBusiness className="h-3.5 w-3.5" />
                 ) : (
                   <UserRound className="h-3.5 w-3.5" />
                 )}
 
                 {isTaskReport
                   ? "Laporan Task"
-                  : "Laporan Pengguna"}
+                  : isServiceListingReport
+                    ? "Laporan Jasa"
+                    : "Laporan Pengguna"}
               </span>
 
               <span
@@ -632,14 +570,10 @@ setAdminNotes(
                   py-1.5
                   text-xs
                   font-bold
-                  ${getStatusColor(
-                    report.status,
-                  )}
+                  ${getStatusColor(report.status)}
                 `}
               >
-                {getStatusLabel(
-                  report.status,
-                )}
+                {getStatusLabel(report.status)}
               </span>
             </div>
 
@@ -652,9 +586,7 @@ setAdminNotes(
                 text-slate-900
               "
             >
-              {getReasonLabel(
-                report.reason,
-              )}
+              {getReasonLabel(report.reason)}
             </h1>
 
             <p
@@ -687,11 +619,7 @@ setAdminNotes(
           >
             <Clock3 className="h-4 w-4" />
 
-            {new Date(
-              report.created_at,
-            ).toLocaleString(
-              "id-ID",
-            )}
+            {new Date(report.created_at).toLocaleString("id-ID")}
           </div>
         </div>
       </section>
@@ -806,19 +734,14 @@ setAdminNotes(
                   text-slate-500
                 "
               >
-                Tulis hasil pemeriksaan sebelum menentukan status
-                laporan.
+                Tulis hasil pemeriksaan sebelum menentukan status laporan.
               </p>
             </div>
 
             <textarea
               value={adminNotes}
               disabled={statusBusy}
-              onChange={(event) =>
-                setAdminNotes(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setAdminNotes(event.target.value)}
               placeholder="Contoh: laporan telah diperiksa, bukti dan konteks task telah ditinjau..."
               className="
                 mt-5
@@ -878,8 +801,8 @@ setAdminNotes(
                   text-slate-500
                 "
               >
-                Status menunjukkan progres penanganan laporan, bukan
-                tindakan moderasi terhadap akun atau task.
+                Status menunjukkan progres penanganan laporan, bukan tindakan
+                moderasi terhadap akun atau task.
               </p>
 
               <div
@@ -893,82 +816,46 @@ setAdminNotes(
                 <StatusButton
                   label="Mulai Tinjau"
                   icon={Clock3}
-                  active={
-                    report.status ===
-                    "REVIEWED"
-                  }
-                  loading={
-                    processingStatus ===
-                    "REVIEWED"
-                  }
-                  disabled={
-                    statusBusy
-                  }
+                  active={report.status === "REVIEWED"}
+                  loading={processingStatus === "REVIEWED"}
+                  disabled={statusBusy}
                   className="
                     border-blue-200
                     bg-blue-50
                     text-blue-700
                     hover:bg-blue-100
                   "
-                  onClick={() =>
-                    handleUpdateStatus(
-                      "REVIEWED",
-                    )
-                  }
+                  onClick={() => handleUpdateStatus("REVIEWED")}
                 />
 
                 <StatusButton
                   label="Selesaikan"
                   icon={CheckCircle2}
-                  active={
-                    report.status ===
-                    "RESOLVED"
-                  }
-                  loading={
-                    processingStatus ===
-                    "RESOLVED"
-                  }
-                  disabled={
-                    statusBusy
-                  }
+                  active={report.status === "RESOLVED"}
+                  loading={processingStatus === "RESOLVED"}
+                  disabled={statusBusy}
                   className="
                     border-emerald-200
                     bg-emerald-50
                     text-emerald-700
                     hover:bg-emerald-100
                   "
-                  onClick={() =>
-                    handleUpdateStatus(
-                      "RESOLVED",
-                    )
-                  }
+                  onClick={() => handleUpdateStatus("RESOLVED")}
                 />
 
                 <StatusButton
                   label="Tolak Laporan"
                   icon={XCircle}
-                  active={
-                    report.status ===
-                    "REJECTED"
-                  }
-                  loading={
-                    processingStatus ===
-                    "REJECTED"
-                  }
-                  disabled={
-                    statusBusy
-                  }
+                  active={report.status === "REJECTED"}
+                  loading={processingStatus === "REJECTED"}
+                  disabled={statusBusy}
                   className="
                     border-red-200
                     bg-red-50
                     text-red-700
                     hover:bg-red-100
                   "
-                  onClick={() =>
-                    handleUpdateStatus(
-                      "REJECTED",
-                    )
-                  }
+                  onClick={() => handleUpdateStatus("REJECTED")}
                 />
               </div>
             </div>
@@ -1003,12 +890,7 @@ setAdminNotes(
                 space-y-5
               "
             >
-              <UserInfo
-                label="Pelapor"
-                user={
-                  report.reporter
-                }
-              />
+              <UserInfo label="Pelapor" user={report.reporter} />
 
               <div
                 className="
@@ -1019,14 +901,55 @@ setAdminNotes(
 
               <UserInfo
                 label="Pengguna Dilaporkan"
-                user={
-                  report.reported_user
-                }
+                user={report.reported_user}
                 showProfileLink
               />
             </div>
           </section>
 
+          {/* SERVICE LISTING */}
+          {report.service_listing && (
+            <section
+              className="
+                rounded-3xl
+                border
+                border-slate-200
+                bg-white
+                p-6
+                shadow-sm
+              "
+            >
+              <div className="flex items-center gap-3">
+                <BriefcaseBusiness className="h-5 w-5 text-violet-600" />
+
+                <h2 className="font-black text-slate-900">Jasa Dilaporkan</h2>
+              </div>
+
+              <h3 className="mt-5 font-bold text-slate-900">
+                {report.service_listing.title}
+              </h3>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+                  {report.service_listing.category}
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {report.service_listing.status}
+                </span>
+              </div>
+
+              {report.service_listing.blocked_reason && (
+                <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-xs leading-5 text-red-700">
+                  Alasan blokir: {report.service_listing.blocked_reason}
+                </p>
+              )}
+
+              <p className="mt-4 break-all font-mono text-[11px] text-slate-400">
+                {report.service_listing.id}
+              </p>
+            </section>
+          )}
           {/* TASK */}
           {report.task && (
             <section
@@ -1096,8 +1019,7 @@ setAdminNotes(
                   {report.task.status}
                 </span>
 
-                {report.task.budget !==
-                  null && (
+                {report.task.budget !== null && (
                   <span
                     className="
                       rounded-full
@@ -1109,10 +1031,7 @@ setAdminNotes(
                       text-emerald-700
                     "
                   >
-                    Rp{" "}
-                    {report.task.budget.toLocaleString(
-                      "id-ID",
-                    )}
+                    Rp {report.task.budget.toLocaleString("id-ID")}
                   </span>
                 )}
               </div>
@@ -1131,7 +1050,6 @@ setAdminNotes(
                 "
               >
                 Buka detail task
-
                 <ExternalLink className="h-4 w-4" />
               </Link>
             </section>
@@ -1186,9 +1104,8 @@ setAdminNotes(
                 text-red-700
               "
             >
-              Gunakan tindakan berikut hanya setelah laporan diperiksa.
-              Moderasi akun atau task terpisah dari perubahan status
-              laporan.
+              Gunakan tindakan berikut hanya setelah laporan diperiksa. Moderasi
+              akun, task, atau jasa terpisah dari perubahan status laporan.
             </p>
           </div>
         </div>
@@ -1234,12 +1151,8 @@ setAdminNotes(
 
               <button
                 type="button"
-                disabled={
-                  moderationBusy
-                }
-                onClick={
-                  handleRemoveTask
-                }
+                disabled={moderationBusy}
+                onClick={handleRemoveTask}
                 className="
                   mt-4
                   inline-flex
@@ -1258,18 +1171,106 @@ setAdminNotes(
                   disabled:opacity-50
                 "
               >
-                {moderationAction ===
-                "REMOVE_TASK" ? (
+                {moderationAction === "REMOVE_TASK" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Trash2 className="h-4 w-4" />
                 )}
-
                 Hapus Task
               </button>
             </div>
           )}
 
+          {/* SERVICE LISTING MODERATION */}
+          {report.service_listing && (
+            <div
+              className="
+                rounded-2xl
+                border
+                border-red-100
+                bg-white
+                p-5
+              "
+            >
+              <h3 className="font-black text-slate-900">Moderasi Jasa</h3>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Blokir jasa yang melanggar aturan tanpa mengubah lifecycle
+                pembayaran atau permintaan jasa.
+              </p>
+
+              <div className="mt-4">
+                {report.service_listing.status === "BLOCKED" ? (
+                  <button
+                    type="button"
+                    disabled={moderationBusy}
+                    onClick={() => handleModerateServiceListing("UNBLOCK")}
+                    className="
+                      inline-flex
+                      h-11
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-xl
+                      border
+                      border-emerald-200
+                      bg-emerald-50
+                      px-4
+                      text-sm
+                      font-bold
+                      text-emerald-700
+                      transition
+                      hover:bg-emerald-100
+                      disabled:opacity-50
+                    "
+                  >
+                    {moderationAction === "UNBLOCK_SERVICE_LISTING" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4" />
+                    )}
+                    Buka Blokir Jasa
+                  </button>
+                ) : ["ACTIVE", "PAUSED", "EXPIRED"].includes(
+                    report.service_listing.status,
+                  ) ? (
+                  <button
+                    type="button"
+                    disabled={moderationBusy}
+                    onClick={() => handleModerateServiceListing("BLOCK")}
+                    className="
+                      inline-flex
+                      h-11
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-xl
+                      bg-red-600
+                      px-4
+                      text-sm
+                      font-bold
+                      text-white
+                      transition
+                      hover:bg-red-700
+                      disabled:opacity-50
+                    "
+                  >
+                    {moderationAction === "BLOCK_SERVICE_LISTING" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Ban className="h-4 w-4" />
+                    )}
+                    Blokir Jasa
+                  </button>
+                ) : (
+                  <p className="text-xs leading-5 text-slate-500">
+                    Status jasa saat ini tidak dapat diblokir melalui moderation
+                    authority.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
           {/* USER MODERATION */}
           <div
             className="
@@ -1309,20 +1310,13 @@ setAdminNotes(
                 gap-2
               "
             >
-              {[3, 7, 30].map(
-                (days) => (
-                  <button
-                    key={days}
-                    type="button"
-                    disabled={
-                      moderationBusy
-                    }
-                    onClick={() =>
-                      handleSuspendUser(
-                        days,
-                      )
-                    }
-                    className="
+              {[3, 7, 30].map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  disabled={moderationBusy}
+                  onClick={() => handleSuspendUser(days)}
+                  className="
                       h-10
                       rounded-xl
                       border
@@ -1336,23 +1330,17 @@ setAdminNotes(
                       hover:bg-amber-100
                       disabled:opacity-50
                     "
-                  >
-                    {moderationAction ===
-                    `SUSPEND_${days}`
-                      ? "Memproses..."
-                      : `Suspend ${days} Hari`}
-                  </button>
-                ),
-              )}
+                >
+                  {moderationAction === `SUSPEND_${days}`
+                    ? "Memproses..."
+                    : `Suspend ${days} Hari`}
+                </button>
+              ))}
 
               <button
                 type="button"
-                disabled={
-                  moderationBusy
-                }
-                onClick={
-                  handleBanUser
-                }
+                disabled={moderationBusy}
+                onClick={handleBanUser}
                 className="
                   inline-flex
                   h-10
@@ -1369,13 +1357,11 @@ setAdminNotes(
                   disabled:opacity-50
                 "
               >
-                {moderationAction ===
-                "BAN" ? (
+                {moderationAction === "BAN" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <Ban className="h-3.5 w-3.5" />
                 )}
-
                 Ban Permanen
               </button>
             </div>
@@ -1450,12 +1436,10 @@ function UserInfo({
                 text-slate-900
               "
             >
-              {user?.full_name ||
-                "Tidak diketahui"}
+              {user?.full_name || "Tidak diketahui"}
             </p>
 
-            {user?.verification_status ===
-              "VERIFIED" && (
+            {user?.verification_status === "VERIFIED" && (
               <span
                 className="
                   rounded-full
@@ -1472,11 +1456,10 @@ function UserInfo({
             )}
           </div>
 
-          {showProfileLink &&
-            user?.id && (
-              <Link
-                href={`/users/${user.id}`}
-                className="
+          {showProfileLink && user?.id && (
+            <Link
+              href={`/users/${user.id}`}
+              className="
                   mt-1
                   inline-flex
                   items-center
@@ -1485,12 +1468,11 @@ function UserInfo({
                   font-semibold
                   text-indigo-600
                 "
-              >
-                Buka profil
-
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            )}
+            >
+              Buka profil
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          )}
         </div>
       </div>
     </div>
@@ -1523,9 +1505,7 @@ function StatusButton({
   return (
     <button
       type="button"
-      disabled={
-        disabled || active
-      }
+      disabled={disabled || active}
       onClick={onClick}
       className={`
         flex
@@ -1551,9 +1531,7 @@ function StatusButton({
         <Icon className="h-4 w-4" />
       )}
 
-      {active
-        ? "Status Saat Ini"
-        : label}
+      {active ? "Status Saat Ini" : label}
     </button>
   );
 }
