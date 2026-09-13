@@ -11,6 +11,7 @@ import {
   Award,
   CheckCircle2,
   ChevronRight,
+  BriefcaseBusiness,
   ClipboardList,
   CreditCard,
   Flag,
@@ -61,6 +62,12 @@ interface Props {
 
 const ACTIVITY_MENU = [
   {
+    label: "Jasa Saya",
+    description: "Kelola jasa yang Anda tawarkan",
+    href: "/my-services",
+    icon: BriefcaseBusiness,
+  },
+  {
     label: "Riwayat Task",
     description: "Lihat task yang pernah Anda jalankan",
     href: "/history",
@@ -100,11 +107,7 @@ export default function MobileProfileView({
         bg-slate-50
         lg:hidden
 
-        ${
-          isPublicProfile
-            ? "pb-6"
-            : "pb-32"
-        }
+        ${isPublicProfile ? "pb-6" : "pb-32"}
       `}
     >
       <div className="px-5 pt-5">
@@ -132,10 +135,7 @@ export default function MobileProfileView({
               active:scale-95
             "
           >
-            <ArrowLeft
-              className="h-5 w-5"
-              strokeWidth={2.2}
-            />
+            <ArrowLeft className="h-5 w-5" strokeWidth={2.2} />
           </button>
 
           <div className="min-w-0 flex-1">
@@ -147,9 +147,7 @@ export default function MobileProfileView({
                 text-slate-900
               "
             >
-              {isPublicProfile
-                ? "Profil Pengguna"
-                : "Profil Saya"}
+              {isPublicProfile ? "Profil Pengguna" : "Profil Saya"}
             </h1>
 
             <p className="mt-0.5 text-xs text-slate-500">
@@ -180,10 +178,7 @@ export default function MobileProfileView({
                 active:scale-95
               "
             >
-              <Pencil
-                className="h-4.5 w-4.5"
-                strokeWidth={2.2}
-              />
+              <Pencil className="h-4.5 w-4.5" strokeWidth={2.2} />
             </Link>
           )}
         </header>
@@ -259,8 +254,7 @@ export default function MobileProfileView({
               </h2>
 
               {profile.username && (
-                <p
-                  className="mt-1 text-sm font-medium text-slate-500">
+                <p className="mt-1 text-sm font-medium text-slate-500">
                   {profile.username}
                 </p>
               )}
@@ -281,10 +275,7 @@ export default function MobileProfileView({
                     text-slate-600
                   "
                 >
-                  <MapPin
-                    className="h-3.5 w-3.5"
-                    strokeWidth={2}
-                  />
+                  <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
 
                   {profile.location}
                 </div>
@@ -307,9 +298,7 @@ export default function MobileProfileView({
               {isPublicProfile && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowReportModal(true)
-                  }
+                  onClick={() => setShowReportModal(true)}
                   className="
                     mt-5
                     inline-flex
@@ -330,11 +319,7 @@ export default function MobileProfileView({
                     active:scale-[0.98]
                   "
                 >
-                  <Flag
-                    className="h-3.5 w-3.5"
-                    strokeWidth={2}
-                  />
-
+                  <Flag className="h-3.5 w-3.5" strokeWidth={2} />
                   Laporkan Pengguna
                 </button>
               )}
@@ -441,10 +426,7 @@ export default function MobileProfileView({
         {profile.badges.length > 0 && (
           <section className="mt-5">
             <div className="flex items-center gap-2">
-              <Award
-                className="h-4 w-4 text-indigo-600"
-                strokeWidth={2.1}
-              />
+              <Award className="h-4 w-4 text-indigo-600" strokeWidth={2.1} />
 
               <h2
                 className="
@@ -497,37 +479,37 @@ export default function MobileProfileView({
         )}
 
         {/* OWNER MENU */}
-{!isPublicProfile && (
-  <>
-    {/* ACTIVITY */}
-    <section className="mt-6">
-      <div className="px-1">
-        <p
-          className="
+        {!isPublicProfile && (
+          <>
+            {/* ACTIVITY */}
+            <section className="mt-6">
+              <div className="px-1">
+                <p
+                  className="
             text-xs
             font-black
             tracking-wide
             text-slate-500
             uppercase
           "
-        >
-          Aktivitas
-        </p>
+                >
+                  Aktivitas
+                </p>
 
-        <p
-          className="
+                <p
+                  className="
             mt-1
             text-[11px]
             leading-5
             text-slate-400
           "
-        >
-          Pantau task, transaksi, dan ulasan akun Anda.
-        </p>
-      </div>
+                >
+                  Kelola jasa, task, transaksi, dan ulasan akun Anda.
+                </p>
+              </div>
 
-      <div
-        className="
+              <div
+                className="
           mt-3
           overflow-hidden
           rounded-3xl
@@ -536,18 +518,17 @@ export default function MobileProfileView({
           bg-white
           shadow-[0_8px_24px_rgba(15,23,42,0.035)]
         "
-      >
-        {ACTIVITY_MENU.map((item, index) => {
-          const Icon = item.icon;
+              >
+                {ACTIVITY_MENU.map((item, index) => {
+                  const Icon = item.icon;
 
-          const isLast =
-            index === ACTIVITY_MENU.length - 1;
+                  const isLast = index === ACTIVITY_MENU.length - 1;
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`
                 flex
                 items-center
                 gap-3
@@ -556,15 +537,11 @@ export default function MobileProfileView({
                 transition
                 active:bg-slate-50
 
-                ${
-                  !isLast
-                    ? "border-b border-slate-100"
-                    : ""
-                }
+                ${!isLast ? "border-b border-slate-100" : ""}
               `}
-            >
-              <div
-                className="
+                    >
+                      <div
+                        className="
                   flex
                   h-10
                   w-10
@@ -575,81 +552,78 @@ export default function MobileProfileView({
                   bg-indigo-50
                   text-indigo-600
                 "
-              >
-                <Icon
-                  className="h-4.5 w-4.5"
-                  strokeWidth={2}
-                />
-              </div>
+                      >
+                        <Icon className="h-4.5 w-4.5" strokeWidth={2} />
+                      </div>
 
-              <div className="min-w-0 flex-1">
-                <p
-                  className="
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="
                     text-sm
                     font-bold
                     text-slate-800
                   "
-                >
-                  {item.label}
-                </p>
+                        >
+                          {item.label}
+                        </p>
 
-                <p
-                  className="
+                        <p
+                          className="
                     mt-0.5
                     truncate
                     text-[10px]
                     text-slate-400
                   "
-                >
-                  {item.description}
-                </p>
-              </div>
+                        >
+                          {item.description}
+                        </p>
+                      </div>
 
-              <ChevronRight
-                className="
+                      <ChevronRight
+                        className="
                   h-4
                   w-4
                   shrink-0
                   text-slate-300
                 "
-                strokeWidth={2}
-              />
-            </Link>
-          );
-        })}
-      </div>
-    </section>
+                        strokeWidth={2}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
 
-    {/* ACCOUNT */}
-    <section className="mt-6">
-      <div className="px-1">
-        <p
-          className="
+            {/* ACCOUNT */}
+            <section className="mt-6">
+              <div className="px-1">
+                <p
+                  className="
             text-xs
             font-black
             tracking-wide
             text-slate-500
             uppercase
           "
-        >
-          Akun
-        </p>
+                >
+                  Akun
+                </p>
 
-        <p
-          className="
+                <p
+                  className="
             mt-1
             text-[11px]
             leading-5
             text-slate-400
           "
-        >
-          Kelola identitas, keamanan, dan pengaturan akun.
-        </p>
-      </div>
+                >
+                  Kelola identitas, keamanan, dan pengaturan akun.
+                </p>
+              </div>
 
-      <Link
-        href="/settings"
-        className="
+              <Link
+                href="/settings"
+                className="
           mt-3
           flex
           items-center
@@ -664,9 +638,9 @@ export default function MobileProfileView({
           transition
           active:bg-slate-50
         "
-      >
-        <div
-          className="
+              >
+                <div
+                  className="
             flex
             h-10
             w-10
@@ -677,59 +651,52 @@ export default function MobileProfileView({
             bg-slate-100
             text-slate-600
           "
-        >
-          <Settings
-            className="h-4.5 w-4.5"
-            strokeWidth={2}
-          />
-        </div>
+                >
+                  <Settings className="h-4.5 w-4.5" strokeWidth={2} />
+                </div>
 
-        <div className="min-w-0 flex-1">
-          <p
-            className="
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="
               text-sm
               font-bold
               text-slate-800
             "
-          >
-            Pengaturan
-          </p>
+                  >
+                    Pengaturan
+                  </p>
 
-          <p
-            className="
+                  <p
+                    className="
               mt-0.5
               text-[10px]
               leading-4
               text-slate-400
             "
-          >
-            Edit profil, verifikasi, kata sandi, dan keamanan akun
-          </p>
-        </div>
+                  >
+                    Edit profil, verifikasi, kata sandi, dan keamanan akun
+                  </p>
+                </div>
 
-        <ChevronRight
-          className="
+                <ChevronRight
+                  className="
             h-4
             w-4
             shrink-0
             text-slate-300
           "
-          strokeWidth={2}
-        />
-      </Link>
-    </section>
-  </>
-)}
+                  strokeWidth={2}
+                />
+              </Link>
+            </section>
+          </>
+        )}
       </div>
 
       <ReportUserModal
         open={showReportModal}
-        onClose={() =>
-          setShowReportModal(false)
-        }
-        reportedUserId={
-          profileUserId || ""
-        }
+        onClose={() => setShowReportModal(false)}
+        reportedUserId={profileUserId || ""}
       />
 
       <MobileBottomNavbar />

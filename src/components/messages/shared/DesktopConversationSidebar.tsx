@@ -76,16 +76,16 @@ export default function DesktopConversationSidebar({
 
     existingGroup.conversations.push(conversation);
 
-const currentTimestamp = getConversationTimestamp(conversation);
+    const currentTimestamp = getConversationTimestamp(conversation);
 
-const latestTimestamp = getConversationTimestamp(
-  existingGroup.latestConversation,
-);
+    const latestTimestamp = getConversationTimestamp(
+      existingGroup.latestConversation,
+    );
 
-if (currentTimestamp > latestTimestamp) {
-  existingGroup.latestConversation = conversation;
-  existingGroup.unreadCount = unreadCount;
-}
+    if (currentTimestamp > latestTimestamp) {
+      existingGroup.latestConversation = conversation;
+      existingGroup.unreadCount = unreadCount;
+    }
   }
 
   const groupedConversations = Array.from(groupedMap.values()).sort(
@@ -394,7 +394,8 @@ if (currentTimestamp > latestTimestamp) {
                           gap-2
                         "
                     >
-                      {conversation.tasks?.title ? (
+                      {conversation.service_request_id ||
+                      conversation.tasks?.title ? (
                         <p
                           className="
                               min-w-0
@@ -403,7 +404,9 @@ if (currentTimestamp > latestTimestamp) {
                               text-slate-400
                             "
                         >
-                          {conversation.tasks.title}
+                          {conversation.service_request_id
+                            ? "Permintaan Jasa"
+                            : conversation.tasks?.title}
                         </p>
                       ) : (
                         <span />

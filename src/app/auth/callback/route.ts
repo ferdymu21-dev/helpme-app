@@ -1,78 +1,47 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
-import {
-  createServerSupabaseClient,
-} from "@/lib/supabase/server";
+import { getSafeAuthRedirect } from "@/features/auth/utils/safe-auth-redirect";
 
-function getRedirectOrigin(
-  requestUrl: URL,
-) {
-  if (
-    process.env.NODE_ENV ===
-    "development"
-  ) {
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+function getRedirectOrigin(requestUrl: URL) {
+  if (process.env.NODE_ENV === "development") {
     return requestUrl.origin;
   }
 
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ??
-    requestUrl.origin
-  );
+  return process.env.NEXT_PUBLIC_APP_URL ?? requestUrl.origin;
 }
 
-export async function GET(
-  request: Request,
-) {
-  const requestUrl =
-    new URL(request.url);
+function createLoginRedirectUrl(origin: string, nextPath: string): URL {
+  const loginUrl = new URL("/login", origin);
 
-  const origin =
-    getRedirectOrigin(
-      requestUrl,
-    );
+  loginUrl.searchParams.set("next", nextPath);
 
-  const code =
-    requestUrl.searchParams.get(
-      "code",
-    );
+  return loginUrl;
+}
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+
+  const origin = getRedirectOrigin(requestUrl);
+
+  const nextPath = getSafeAuthRedirect(requestUrl.searchParams.get("next"));
+
+  const code = requestUrl.searchParams.get("code");
 
   if (!code) {
-    return NextResponse.redirect(
-      new URL(
-        "/login",
-        origin,
-      ),
-    );
+    return NextResponse.redirect(createLoginRedirectUrl(origin, nextPath));
   }
 
-  const supabase =
-    await createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
-  const {
-    error,
-  } =
-    await supabase.auth.exchangeCodeForSession(
-      code,
-    );
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    console.error(
-      "OAuth callback exchange failed:",
-      error.message,
-    );
+    console.error("OAuth callback exchange failed:", error.message);
 
-    return NextResponse.redirect(
-      new URL(
-        "/login",
-        origin,
-      ),
-    );
+    return NextResponse.redirect(createLoginRedirectUrl(origin, nextPath));
   }
 
-  return NextResponse.redirect(
-    new URL(
-      "/home",
-      origin,
-    ),
-  );
+  return NextResponse.redirect(new URL(nextPath, origin));
 }

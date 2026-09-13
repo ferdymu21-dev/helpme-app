@@ -19,6 +19,25 @@ export const NotificationTypeCategoryMap = {
   [NotificationType.TASK_CANCELLED]: NotificationCategory.TASK,
 
   /* =========================
+       SERVICE
+    ========================= */
+  [NotificationType.SERVICE_LISTING_EXPIRED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_REQUEST_CREATED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_REQUEST_NEGOTIATING]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_REQUEST_DECLINED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_REQUEST_CANCELLED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_AGREEMENT_PROPOSED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_AGREEMENT_APPROVED]: NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_AGREEMENT_REJECTED]: NotificationCategory.SERVICE,
+
+  /* =========================
        REVIEW
     ========================= */
   [NotificationType.NEW_REVIEW]: NotificationCategory.REVIEW,

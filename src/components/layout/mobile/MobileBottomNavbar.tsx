@@ -30,10 +30,15 @@ const menus = [
   },
 
   {
-    href: "/tasks/create",
-    label: "Create",
+    href: "/my-services",
+    label: "Jasa Saya",
     icon: (
-      <Image src="/icons/create-icon.svg" alt="Create" width={28} height={28} />
+      <Image
+        src="/icons/create-icon.svg"
+        alt="Jasa Saya"
+        width={28}
+        height={28}
+      />
     ),
     primary: true,
   },
@@ -192,7 +197,10 @@ export default function MobileBottomNavbar() {
     >
       <div className="grid grid-cols-5 gap-2">
         {menus.map((menu) => {
-          const active = pathname === menu.href;
+          const active =
+            pathname === menu.href ||
+            (menu.href === "/my-services" &&
+              pathname.startsWith("/my-services/"));
 
           return (
             <Link

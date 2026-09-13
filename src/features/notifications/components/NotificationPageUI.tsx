@@ -35,7 +35,6 @@ export default function NotificationPageUI({
   onLoadMore,
   onMarkAllRead,
   onRead,
-  
 }: Props) {
   const [activeFilter, setActiveFilter] = useState<NotificationCategoryValue>(
     NotificationCategory.ALL,
@@ -65,6 +64,10 @@ export default function NotificationPageUI({
 
   const taskCount = notifications.filter(
     (notification) => notification.category === NotificationCategory.TASK,
+  ).length;
+
+  const serviceCount = notifications.filter(
+    (notification) => notification.category === NotificationCategory.SERVICE,
   ).length;
 
   const paymentCount = notifications.filter(
@@ -99,6 +102,7 @@ export default function NotificationPageUI({
           onChange={setActiveFilter}
           total={notifications.length}
           task={taskCount}
+          service={serviceCount}
           payment={paymentCount}
           review={reviewCount}
           info={infoCount}

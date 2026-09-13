@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useParams } from "next/navigation";
 
@@ -14,6 +10,11 @@ import DesktopChatRoomView from "@/components/messages/desktop/DesktopChatRoomVi
 import { supabase } from "@/lib/supabase/client";
 
 import type { Conversation } from "@/features/messages/types/conversation.types";
+
+import {
+  markServiceRequestConversationReadService,
+  sendServiceRequestMessageService,
+} from "@/features/service-requests/services/service-request-chat.service";
 
 interface Message {
   id: string;
@@ -31,59 +32,30 @@ interface ChatUser {
 export default function ChatRoomPage() {
   const params = useParams();
 
-  const conversationId =
-    params.id as string;
+  const conversationId = params.id as string;
 
-  const bottomRef =
-    useRef<HTMLDivElement | null>(
-      null,
-    );
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const [
-    messages,
-    setMessages,
-  ] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  const [
-    conversations,
-    setConversations,
-  ] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    sending,
-    setSending,
-  ] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const [
-    message,
-    setMessage,
-  ] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [
-    currentUserId,
-    setCurrentUserId,
-  ] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
 
-  const [
-    otherUser,
-    setOtherUser,
-  ] =
-    useState<ChatUser | null>(
-      null,
-    );
+  const [otherUser, setOtherUser] = useState<ChatUser | null>(null);
 
   /* =========================
        SEND MESSAGE
   ========================= */
 
   async function handleSendMessage() {
-    const trimmedMessage =
-      message.trim();
+    const trimmedMessage = message.trim();
 
     if (!trimmedMessage) {
       return;
@@ -94,161 +66,112 @@ export default function ChatRoomPage() {
 
       const {
         data: { user },
-      } =
-        await supabase.auth.getUser();
+      } = await supabase.auth.getUser();
 
       if (!user) {
         return;
       }
 
-      /* =========================
-           INSERT MESSAGE
-      ========================= */
-
-      const { error } =
-        await supabase
-          .from("messages")
-          .insert({
-            conversation_id:
-              conversationId,
-
-            sender_id:
-              user.id,
-
-            content:
-              trimmedMessage,
-          });
-
-      if (error) {
-        throw error;
-      }
-
-      /* =========================
-           GET CONVERSATION
-      ========================= */
-      const {
-        data: conversation,
-        error:
-          conversationError,
-      } = await supabase
+      /*
+       * Resolve the conversation context first.
+       *
+       * Task:
+       *   task_id != null
+       *   keeps the existing browser mutation path.
+       *
+       * Service Request:
+       *   task_id == null
+       *   must use the trusted atomic RPC.
+       */
+      const { data: conversation, error: conversationError } = await supabase
         .from("conversations")
         .select("*")
-        .eq(
-          "id",
-          conversationId,
-        )
+        .eq("id", conversationId)
         .single();
 
-      if (
-        conversationError ||
-        !conversation
-      ) {
-        console.error(
-          conversationError,
-        );
-
-        return;
+      if (conversationError || !conversation) {
+        throw conversationError ?? new Error("Percakapan tidak ditemukan.");
       }
 
-      /* =========================
-           UPDATE CONVERSATION
-      ========================= */
+      const isServiceConversation = conversation.task_id === null;
 
-      const isOwner =
-        user.id ===
-        conversation.owner_id;
+      if (isServiceConversation) {
+        await sendServiceRequestMessageService(conversationId, trimmedMessage);
+      } else {
+        /*
+         * Existing Task Chat path.
+         */
+        const { error: messageError } = await supabase.from("messages").insert({
+          conversation_id: conversationId,
 
-      const {
-        error: updateError,
-      } = await supabase
-        .from("conversations")
-        .update({
-          last_message:
-            trimmedMessage,
+          sender_id: user.id,
 
-          last_message_at:
-            new Date().toISOString(),
+          content: trimmedMessage,
+        });
 
-          owner_unread_count:
-            isOwner
-              ? conversation.owner_unread_count ||
-                0
-              : (conversation.owner_unread_count ||
-                  0) + 1,
+        if (messageError) {
+          throw messageError;
+        }
 
-          helper_unread_count:
-            isOwner
-              ? (conversation.helper_unread_count ||
-                  0) + 1
-              : conversation.helper_unread_count ||
-                0,
-        })
-        .eq(
-          "id",
-          conversationId,
-        );
+        const isOwner = user.id === conversation.owner_id;
 
-      if (updateError) {
-        console.error(
-          "UPDATE CONVERSATION ERROR:",
-          updateError,
-        );
+        const { error: updateError } = await supabase
+          .from("conversations")
+          .update({
+            last_message: trimmedMessage,
 
-        alert(
-          JSON.stringify(
-            updateError,
-          ),
-        );
+            last_message_at: new Date().toISOString(),
+
+            owner_unread_count: isOwner
+              ? conversation.owner_unread_count || 0
+              : (conversation.owner_unread_count || 0) + 1,
+
+            helper_unread_count: isOwner
+              ? (conversation.helper_unread_count || 0) + 1
+              : conversation.helper_unread_count || 0,
+          })
+          .eq("id", conversationId);
+
+        if (updateError) {
+          console.error("UPDATE CONVERSATION ERROR:", updateError);
+
+          alert(JSON.stringify(updateError));
+        }
       }
 
       /*
-       * Update sidebar langsung
-       * setelah kita mengirim pesan.
+       * Optimistic sender-side sidebar update.
        *
-       * Tidak perlu query ulang.
+       * Service conversation metadata itself remains
+       * database-authoritative through the RPC.
        */
-      setConversations(
-        (previous) =>
-          previous
-            .map(
-              (conversation) =>
-                conversation.id ===
-                conversationId
-                  ? {
-                      ...conversation,
+      setConversations((previous) =>
+        previous
+          .map((conversation) =>
+            conversation.id === conversationId
+              ? {
+                  ...conversation,
 
-                      last_message:
-                        trimmedMessage,
+                  last_message: trimmedMessage,
 
-                      last_message_at:
-                        new Date().toISOString(),
-                    }
-                  : conversation,
-            )
-            .sort(
-              (a, b) =>
-                new Date(
-                  b.last_message_at ||
-                    b.created_at,
-                ).getTime() -
-                new Date(
-                  a.last_message_at ||
-                    a.created_at,
-                ).getTime(),
-            ),
+                  last_message_at: new Date().toISOString(),
+                }
+              : conversation,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.last_message_at || b.created_at).getTime() -
+              new Date(a.last_message_at || a.created_at).getTime(),
+          ),
       );
 
       setMessage("");
     } catch (error) {
-      console.error(
-        "SEND MESSAGE ERROR:",
-        error,
-      );
+      console.error("SEND MESSAGE ERROR:", error);
     } finally {
       setSending(false);
     }
   }
-
   /* =========================
        INITIAL LOAD + REALTIME
   ========================= */
@@ -260,16 +183,10 @@ export default function ChatRoomPage() {
          LOAD CONVERSATIONS
     ========================= */
 
-    async function loadConversations(
-      userId: string,
-    ) {
+    async function loadConversations(userId: string) {
       try {
         /* OWNER */
-        const {
-          data:
-            ownerConversations,
-          error: ownerError,
-        } = await supabase
+        const { data: ownerConversations, error: ownerError } = await supabase
           .from("conversations")
           .select(
             `
@@ -284,21 +201,14 @@ export default function ChatRoomPage() {
               )
             `,
           )
-          .eq(
-            "owner_id",
-            userId,
-          );
+          .eq("owner_id", userId);
 
         if (ownerError) {
           throw ownerError;
         }
 
         /* HELPER */
-        const {
-          data:
-            helperConversations,
-          error: helperError,
-        } = await supabase
+        const { data: helperConversations, error: helperError } = await supabase
           .from("conversations")
           .select(
             `
@@ -313,10 +223,7 @@ export default function ChatRoomPage() {
               )
             `,
           )
-          .eq(
-            "helper_id",
-            userId,
-          );
+          .eq("helper_id", userId);
 
         if (helperError) {
           throw helperError;
@@ -327,38 +234,21 @@ export default function ChatRoomPage() {
         }
 
         const merged = [
-          ...(
-            ownerConversations ||
-            []
-          ),
+          ...(ownerConversations || []),
 
-          ...(
-            helperConversations ||
-            []
-          ),
+          ...(helperConversations || []),
         ];
 
         merged.sort(
           (a, b) =>
-            new Date(
-              b.last_message_at ||
-                b.created_at,
-            ).getTime() -
-            new Date(
-              a.last_message_at ||
-                a.created_at,
-            ).getTime(),
+            new Date(b.last_message_at || b.created_at).getTime() -
+            new Date(a.last_message_at || a.created_at).getTime(),
         );
 
-        setConversations(
-          merged,
-        );
+        setConversations(merged);
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "LOAD CONVERSATIONS ERROR:",
-            error,
-          );
+          console.error("LOAD CONVERSATIONS ERROR:", error);
         }
       }
     }
@@ -370,27 +260,19 @@ export default function ChatRoomPage() {
     async function loadUser() {
       const {
         data: { user },
-      } =
-        await supabase.auth.getUser();
+      } = await supabase.auth.getUser();
 
-      if (
-        !user ||
-        cancelled
-      ) {
+      if (!user || cancelled) {
         return;
       }
 
-      setCurrentUserId(
-        user.id,
-      );
+      setCurrentUserId(user.id);
 
       /*
        * Load sidebar conversation
        * untuk Desktop.
        */
-      await loadConversations(
-        user.id,
-      );
+      await loadConversations(user.id);
 
       if (cancelled) {
         return;
@@ -400,10 +282,7 @@ export default function ChatRoomPage() {
        * Load room yang sedang
        * aktif.
        */
-      const {
-        data: conversation,
-        error,
-      } = await supabase
+      const { data: conversation, error } = await supabase
         .from("conversations")
         .select(
           `
@@ -420,31 +299,21 @@ export default function ChatRoomPage() {
             )
           `,
         )
-        .eq(
-          "id",
-          conversationId,
-        )
+        .eq("id", conversationId)
         .single();
 
       if (error) {
-        console.error(
-          "LOAD CONVERSATION ERROR:",
-          error,
-        );
+        console.error("LOAD CONVERSATION ERROR:", error);
 
         return;
       }
 
-      if (
-        !conversation ||
-        cancelled
-      ) {
+      if (!conversation || cancelled) {
         return;
       }
 
       const other =
-        user.id ===
-        conversation.owner_id
+        user.id === conversation.owner_id
           ? conversation.helper
           : conversation.owner;
 
@@ -457,13 +326,9 @@ export default function ChatRoomPage() {
       setOtherUser({
         id: other.id,
 
-        full_name:
-          other.full_name ||
-          "User",
+        full_name: other.full_name || "User",
 
-        avatar_url:
-          other.avatar_url ||
-          undefined,
+        avatar_url: other.avatar_url || undefined,
       });
     }
 
@@ -473,22 +338,13 @@ export default function ChatRoomPage() {
 
     async function loadMessages() {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
+        const { data, error } = await supabase
           .from("messages")
           .select("*")
-          .eq(
-            "conversation_id",
-            conversationId,
-          )
-          .order(
-            "created_at",
-            {
-              ascending: true,
-            },
-          );
+          .eq("conversation_id", conversationId)
+          .order("created_at", {
+            ascending: true,
+          });
 
         if (error) {
           throw error;
@@ -498,9 +354,7 @@ export default function ChatRoomPage() {
           return;
         }
 
-        setMessages(
-          data || [],
-        );
+        setMessages(data || []);
 
         /* =========================
              RESET UNREAD COUNT
@@ -508,65 +362,50 @@ export default function ChatRoomPage() {
 
         const {
           data: { user },
-        } =
-          await supabase.auth.getUser();
+        } = await supabase.auth.getUser();
 
-        if (
-          !user ||
-          cancelled
-        ) {
+        if (!user || cancelled) {
           return;
         }
 
-        const {
-          data: conversation,
-          error:
-            conversationError,
-        } = await supabase
+        const { data: conversation, error: conversationError } = await supabase
           .from("conversations")
           .select("*")
-          .eq(
-            "id",
-            conversationId,
-          )
+          .eq("id", conversationId)
           .single();
 
-        if (
-          conversationError ||
-          !conversation ||
-          cancelled
-        ) {
+        if (conversationError || !conversation || cancelled) {
           return;
         }
 
-        const isOwner =
-          user.id ===
-          conversation.owner_id;
+        const isOwner = user.id === conversation.owner_id;
 
-        const { error: unreadUpdateError } =
-  isOwner
-    ? await supabase
-        .from("conversations")
-        .update({
-          owner_unread_count: 0,
-        })
-        .eq(
-          "id",
-          conversationId,
-        )
-    : await supabase
-        .from("conversations")
-        .update({
-          helper_unread_count: 0,
-        })
-        .eq(
-          "id",
-          conversationId,
-        );
+        const isServiceConversation = conversation.task_id === null;
 
-if (unreadUpdateError) {
-  throw unreadUpdateError;
-}
+        if (isServiceConversation) {
+          await markServiceRequestConversationReadService(conversationId);
+        } else {
+          /*
+           * Existing Task Chat unread path.
+           */
+          const { error: unreadUpdateError } = isOwner
+            ? await supabase
+                .from("conversations")
+                .update({
+                  owner_unread_count: 0,
+                })
+                .eq("id", conversationId)
+            : await supabase
+                .from("conversations")
+                .update({
+                  helper_unread_count: 0,
+                })
+                .eq("id", conversationId);
+
+          if (unreadUpdateError) {
+            throw unreadUpdateError;
+          }
+        }
 
         /*
          * Badge unread room aktif
@@ -574,40 +413,25 @@ if (unreadUpdateError) {
          * di sidebar lokal.
          */
         if (!cancelled) {
-          setConversations(
-            (previous) =>
-              previous.map(
-                (item) => {
-                  if (
-                    item.id !==
-                    conversationId
-                  ) {
-                    return item;
-                  }
+          setConversations((previous) =>
+            previous.map((item) => {
+              if (item.id !== conversationId) {
+                return item;
+              }
 
-                  return {
-                    ...item,
+              return {
+                ...item,
 
-                    owner_unread_count:
-                      isOwner
-                        ? 0
-                        : item.owner_unread_count,
+                owner_unread_count: isOwner ? 0 : item.owner_unread_count,
 
-                    helper_unread_count:
-                      isOwner
-                        ? item.helper_unread_count
-                        : 0,
-                  };
-                },
-              ),
+                helper_unread_count: isOwner ? item.helper_unread_count : 0,
+              };
+            }),
           );
         }
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "LOAD MESSAGES ERROR:",
-            error,
-          );
+          console.error("LOAD MESSAGES ERROR:", error);
         }
       } finally {
         if (!cancelled) {
@@ -620,10 +444,7 @@ if (unreadUpdateError) {
          REALTIME CHANNEL
     ========================= */
 
-    const channel =
-      supabase.channel(
-        `chat-${conversationId}`,
-      );
+    const channel = supabase.channel(`chat-${conversationId}`);
 
     channel.on(
       "postgres_changes",
@@ -631,58 +452,40 @@ if (unreadUpdateError) {
         event: "INSERT",
         schema: "public",
         table: "messages",
-        filter:
-          `conversation_id=eq.${conversationId}`,
+        filter: `conversation_id=eq.${conversationId}`,
       },
       (payload) => {
         if (cancelled) {
           return;
         }
 
-        const newMessage =
-          payload.new as Message;
+        const newMessage = payload.new as Message;
 
-        setMessages(
-          (previous) => [
-            ...previous,
-            newMessage,
-          ],
-        );
+        setMessages((previous) => [...previous, newMessage]);
 
         /*
          * Update preview sidebar
          * tanpa membuat realtime
          * subscription kedua.
          */
-        setConversations(
-          (previous) =>
-            previous
-              .map(
-                (conversation) =>
-                  conversation.id ===
-                  conversationId
-                    ? {
-                        ...conversation,
+        setConversations((previous) =>
+          previous
+            .map((conversation) =>
+              conversation.id === conversationId
+                ? {
+                    ...conversation,
 
-                        last_message:
-                          newMessage.content,
+                    last_message: newMessage.content,
 
-                        last_message_at:
-                          newMessage.created_at,
-                      }
-                    : conversation,
-              )
-              .sort(
-                (a, b) =>
-                  new Date(
-                    b.last_message_at ||
-                      b.created_at,
-                  ).getTime() -
-                  new Date(
-                    a.last_message_at ||
-                      a.created_at,
-                  ).getTime(),
-              ),
+                    last_message_at: newMessage.created_at,
+                  }
+                : conversation,
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.last_message_at || b.created_at).getTime() -
+                new Date(a.last_message_at || a.created_at).getTime(),
+            ),
         );
       },
     );
@@ -714,9 +517,7 @@ if (unreadUpdateError) {
     return () => {
       cancelled = true;
 
-      void supabase.removeChannel(
-        channel,
-      );
+      void supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
@@ -725,11 +526,9 @@ if (unreadUpdateError) {
   ========================= */
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView(
-      {
-        behavior: "smooth",
-      },
-    );
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages]);
 
   return (
@@ -738,40 +537,28 @@ if (unreadUpdateError) {
       <MobileChatRoomView
         loading={loading}
         messages={messages}
-        currentUserId={
-          currentUserId
-        }
+        currentUserId={currentUserId}
         otherUser={otherUser}
         message={message}
         sending={sending}
         bottomRef={bottomRef}
         setMessage={setMessage}
-        handleSendMessage={
-          handleSendMessage
-        }
+        handleSendMessage={handleSendMessage}
       />
 
       {/* DESKTOP */}
       <DesktopChatRoomView
         loading={loading}
         messages={messages}
-        conversations={
-          conversations
-        }
-        conversationId={
-          conversationId
-        }
-        currentUserId={
-          currentUserId
-        }
+        conversations={conversations}
+        conversationId={conversationId}
+        currentUserId={currentUserId}
         otherUser={otherUser}
         message={message}
         sending={sending}
         bottomRef={bottomRef}
         setMessage={setMessage}
-        handleSendMessage={
-          handleSendMessage
-        }
+        handleSendMessage={handleSendMessage}
       />
     </>
   );

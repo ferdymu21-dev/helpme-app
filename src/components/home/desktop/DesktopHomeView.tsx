@@ -14,6 +14,12 @@ import DesktopTaskFeed from "@/components/home/desktop/DesktopTaskFeed";
 
 import DesktopSidebar from "@/components/layout/desktop/DesktopSidebar";
 
+import HomeFeedSelector, {
+  type HomeFeedValue,
+} from "@/components/home/HomeFeedSelector";
+
+import ServiceHomeFeed from "@/features/service-listings/ServiceHomeFeed";
+
 interface Props {
   tasks: NearbyTask[];
 
@@ -46,6 +52,10 @@ interface Props {
   onOpenSupport: () => void;
 
   onResumePayment: () => void;
+
+  activeFeed: HomeFeedValue;
+
+  onFeedChange: (feed: HomeFeedValue) => void;
 }
 
 export default function DesktopHomeView({
@@ -65,12 +75,12 @@ export default function DesktopHomeView({
   resumePaymentLoading,
   onOpenSupport,
   onResumePayment,
+  activeFeed,
+  onFeedChange,
 }: Props) {
   return (
     <div className="hidden lg:block">
-      <DesktopSidebar
-        onOpenSupport={onOpenSupport}
-      />
+      <DesktopSidebar onOpenSupport={onOpenSupport} />
 
       <main className="min-h-screen bg-slate-50 pl-70">
         <DesktopHomeHeader
@@ -84,19 +94,25 @@ export default function DesktopHomeView({
 
         <DesktopAdsBanner />
 
-        <DesktopTaskFeed
-          tasks={tasks}
-          loadingTasks={loadingTasks}
-          locationError={locationError}
-          activeCategory={activeCategory}
-          searchValue={searchValue}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onCategoryChange={onCategoryChange}
-          onSearchChange={onSearchChange}
-          onPreviousPage={onPreviousPage}
-          onNextPage={onNextPage}
-        />
+        <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
+
+        {activeFeed === "tasks" ? (
+          <DesktopTaskFeed
+            tasks={tasks}
+            loadingTasks={loadingTasks}
+            locationError={locationError}
+            activeCategory={activeCategory}
+            searchValue={searchValue}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onCategoryChange={onCategoryChange}
+            onSearchChange={onSearchChange}
+            onPreviousPage={onPreviousPage}
+            onNextPage={onNextPage}
+          />
+        ) : (
+          <ServiceHomeFeed variant="DESKTOP" />
+        )}
       </main>
     </div>
   );

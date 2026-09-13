@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 
+import { getSafeAuthRedirect } from "../utils/safe-auth-redirect";
+
 interface RegisterPayload {
   full_name: string;
   email: string;
@@ -20,16 +22,15 @@ export async function register({
   email,
   password,
 }: RegisterPayload) {
-  const { data, error } =
-    await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name,
-        },
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name,
       },
-    });
+    },
+  });
 
   if (error) {
     throw error;
@@ -42,15 +43,11 @@ export async function register({
    LOGIN
 ========================= */
 
-export async function login({
-  email,
-  password,
-}: LoginPayload) {
-  const { data, error } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+export async function login({ email, password }: LoginPayload) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
   if (error) {
     throw error;
@@ -64,8 +61,7 @@ export async function login({
 ========================= */
 
 export async function logout() {
-  const { error } =
-    await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
 
   if (error) {
     throw error;
@@ -76,20 +72,19 @@ export async function logout() {
    GOOGLE OAUTH
 ========================= */
 
-export async function signInWithGoogle() {
-  const redirectTo =
-    `${window.location.origin}/auth/callback`;
+export async function signInWithGoogle(nextPath?: string | null) {
+  const safeNextPath = getSafeAuthRedirect(nextPath);
 
-  const {
-    data,
-    error,
-  } =
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-      },
-    });
+  const callbackUrl = new URL("/auth/callback", window.location.origin);
+
+  callbackUrl.searchParams.set("next", safeNextPath);
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: callbackUrl.toString(),
+    },
+  });
 
   if (error) {
     throw error;

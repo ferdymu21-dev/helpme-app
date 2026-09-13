@@ -1,7 +1,9 @@
 export interface Conversation {
   id: string;
 
-  task_id: string;
+  task_id: string | null;
+
+  service_request_id: string | null;
 
   owner_id: string;
 
@@ -17,9 +19,9 @@ export interface Conversation {
 
   helper_unread_count: number;
 
-  tasks: {
+  tasks?: {
     title: string;
-  };
+  } | null;
 
   owner: {
     full_name: string;

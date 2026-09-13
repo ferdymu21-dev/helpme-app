@@ -1,37 +1,23 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  LoaderCircle,
-} from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
-import {
-  FcGoogle,
-} from "react-icons/fc";
+import { FcGoogle } from "react-icons/fc";
 
-import {
-  signInWithGoogle,
-} from "../services/auth.service";
+import { signInWithGoogle } from "../services/auth.service";
+
+import { getSafeAuthRedirect } from "../utils/safe-auth-redirect";
 
 interface GoogleAuthButtonProps {
   label: string;
 }
 
-export default function GoogleAuthButton({
-  label,
-}: GoogleAuthButtonProps) {
-  const [
-    loading,
-    setLoading,
-  ] = useState(false);
+export default function GoogleAuthButton({ label }: GoogleAuthButtonProps) {
+  const [loading, setLoading] = useState(false);
 
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleGoogleAuth() {
     if (loading) return;
@@ -41,12 +27,13 @@ export default function GoogleAuthButton({
     try {
       setLoading(true);
 
-      await signInWithGoogle();
+      const nextPath = getSafeAuthRedirect(
+        new URLSearchParams(window.location.search).get("next"),
+      );
+
+      await signInWithGoogle(nextPath);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "";
+      const message = error instanceof Error ? error.message : "";
 
       console.error(error);
 
@@ -102,15 +89,10 @@ export default function GoogleAuthButton({
             aria-hidden="true"
           />
         ) : (
-          <FcGoogle
-            className="h-5 w-5"
-            aria-hidden="true"
-          />
+          <FcGoogle className="h-5 w-5" aria-hidden="true" />
         )}
 
-        {loading
-          ? "Menghubungkan..."
-          : label}
+        {loading ? "Menghubungkan..." : label}
       </button>
 
       {errorMessage && (

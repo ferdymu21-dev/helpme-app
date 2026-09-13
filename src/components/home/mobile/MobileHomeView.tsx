@@ -12,6 +12,12 @@ import MobileQuickActions from "@/components/home/mobile/MobileQuickActions";
 
 import MobileTaskFeed from "@/components/home/mobile/MobileTaskFeed";
 
+import HomeFeedSelector, {
+  type HomeFeedValue,
+} from "@/components/home/HomeFeedSelector";
+
+import ServiceHomeFeed from "@/features/service-listings/ServiceHomeFeed";
+
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import MobilePendingPaymentCard from "@/components/home/mobile/MobilePendingPaymentCard";
@@ -50,6 +56,10 @@ interface Props {
   onOpenSupport: () => void;
 
   onResumePayment: () => void;
+
+  activeFeed: HomeFeedValue;
+
+  onFeedChange: (feed: HomeFeedValue) => void;
 }
 
 export default function MobileHomeView({
@@ -69,6 +79,8 @@ export default function MobileHomeView({
   resumePaymentLoading,
   onOpenSupport,
   onResumePayment,
+  activeFeed,
+  onFeedChange,
 }: Props) {
   return (
     <div className="min-h-screen bg-slate-50 pb-32 lg:hidden">
@@ -76,9 +88,7 @@ export default function MobileHomeView({
 
       {pendingPaymentLoading ? (
         <div className="px-4 pt-4">
-          <div
-            className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white"
-          />
+          <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
         </div>
       ) : pendingPayment ? (
         <MobilePendingPaymentCard
@@ -94,19 +104,25 @@ export default function MobileHomeView({
 
       <MobileAdsBanner />
 
-      <MobileTaskFeed
-        tasks={tasks}
-        loadingTasks={loadingTasks}
-        locationError={locationError}
-        activeCategory={activeCategory}
-        searchValue={searchValue}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onCategoryChange={onCategoryChange}
-        onSearchChange={onSearchChange}
-        onPreviousPage={onPreviousPage}
-        onNextPage={onNextPage}
-      />
+      <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
+
+      {activeFeed === "tasks" ? (
+        <MobileTaskFeed
+          tasks={tasks}
+          loadingTasks={loadingTasks}
+          locationError={locationError}
+          activeCategory={activeCategory}
+          searchValue={searchValue}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onCategoryChange={onCategoryChange}
+          onSearchChange={onSearchChange}
+          onPreviousPage={onPreviousPage}
+          onNextPage={onNextPage}
+        />
+      ) : (
+        <ServiceHomeFeed variant="MOBILE" />
+      )}
 
       <MobileBottomNavbar />
     </div>

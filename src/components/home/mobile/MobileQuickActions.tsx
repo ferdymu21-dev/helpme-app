@@ -1,10 +1,6 @@
 import Link from "next/link";
 
-import {
-  ArrowUpRight,
-  ClipboardList,
-  Plus,
-} from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, Plus } from "lucide-react";
 
 export default function MobileQuickActions() {
   return (
@@ -101,10 +97,7 @@ export default function MobileQuickActions() {
                   bg-white/15
                 "
               >
-                <Plus
-                  className="h-4 w-4"
-                  strokeWidth={2.4}
-                />
+                <Plus className="h-4 w-4" strokeWidth={2.4} />
               </div>
 
               <ArrowUpRight
@@ -135,16 +128,15 @@ export default function MobileQuickActions() {
                   text-indigo-100
                 "
               >
-                Buat task dan temukan
-                helper.
+                Buat task dan temukan helper.
               </p>
             </div>
           </div>
         </Link>
 
-        {/* MY TASKS */}
+        {/* OFFER SERVICE */}
         <Link
-          href="/my-tasks"
+          href="/my-services/new"
           className="
             group
             relative
@@ -201,10 +193,7 @@ export default function MobileQuickActions() {
                   text-amber-600
                 "
               >
-                <ClipboardList
-                  className="h-4 w-4"
-                  strokeWidth={2}
-                />
+                <BriefcaseBusiness className="h-4 w-4" strokeWidth={2} />
               </div>
 
               <ArrowUpRight
@@ -225,7 +214,7 @@ export default function MobileQuickActions() {
                   text-slate-900
                 "
               >
-                Task Saya
+                Tawarkan Jasa
               </h3>
 
               <p
@@ -236,8 +225,7 @@ export default function MobileQuickActions() {
                   text-slate-500
                 "
               >
-                Pantau task dan pelamar
-                Anda.
+                Tawarkan keahlian Anda dan dapatkan penghasilan.
               </p>
             </div>
           </div>

@@ -2,115 +2,102 @@
 
 import clsx from "clsx";
 
-import {
-    NotificationCategory,
-} from "../constants/notification-category";
+import { NotificationCategory } from "../constants/notification-category";
 
-import type {
-    NotificationCategoryValue,
-} from "../constants/notification-category";
+import type { NotificationCategoryValue } from "../constants/notification-category";
 
 interface Props {
+  value: NotificationCategoryValue;
 
-    value: NotificationCategoryValue;
+  onChange: (value: NotificationCategoryValue) => void;
 
-    onChange: (
-        value: NotificationCategoryValue
-    ) => void;
+  total: number;
 
-    total: number;
+  task: number;
 
-    task: number;
+  service: number;
 
-    payment: number;
+  payment: number;
 
-    review: number;
+  review: number;
 
-    info: number;
+  info: number;
 
-    system: number;
-
+  system: number;
 }
 
 export default function NotificationFilterTabs({
+  value,
 
-    value,
+  onChange,
 
-    onChange,
+  total,
 
-    total,
+  task,
 
-    task,
+  service,
 
-    payment,
+  payment,
 
-    review,
+  review,
 
-    info,
+  info,
 
-    system,
-
+  system,
 }: Props) {
+  const tabs = [
+    {
+      key: NotificationCategory.ALL,
+      label: `Semua (${total})`,
+    },
 
-    const tabs = [
+    {
+      key: NotificationCategory.TASK,
+      label: `Task (${task})`,
+    },
 
-        {
-            key: NotificationCategory.ALL,
-            label: `Semua (${total})`,
-        },
+    {
+      key: NotificationCategory.SERVICE,
+      label: `Jasa (${service})`,
+    },
 
-        {
-            key: NotificationCategory.TASK,
-            label: `Task (${task})`,
-        },
+    {
+      key: NotificationCategory.PAYMENT,
+      label: `Pembayaran (${payment})`,
+    },
 
-        {
-            key: NotificationCategory.PAYMENT,
-            label: `Pembayaran (${payment})`,
-        },
+    {
+      key: NotificationCategory.REVIEW,
+      label: `Review (${review})`,
+    },
 
-        {
-            key: NotificationCategory.REVIEW,
-            label: `Review (${review})`,
-        },
+    {
+      key: NotificationCategory.INFO,
+      label: `Info (${info})`,
+    },
 
-        {
-            key: NotificationCategory.INFO,
-            label: `Info (${info})`,
-        },
+    {
+      key: NotificationCategory.SYSTEM,
+      label: `System (${system})`,
+    },
+  ] as const;
 
-        {
-            key: NotificationCategory.SYSTEM,
-            label: `System (${system})`,
-        },
-
-    ] as const;
-
-    return (
-
-        <div
-            className="
+  return (
+    <div
+      className="
                 mt-6
                 flex
                 gap-2
                 overflow-x-auto
                 pb-1
             "
-        >
-
-            {tabs.map((tab) => (
-
-                <button
-
-                    key={tab.key}
-
-                    onClick={() =>
-                        onChange(tab.key)
-                    }
-
-                    className={clsx(
-
-                        `
+    >
+      {tabs.map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          className={clsx(
+            `
                         whitespace-nowrap
                         rounded-xl
                         px-5
@@ -120,31 +107,21 @@ export default function NotificationFilterTabs({
                         transition
                         `,
 
-                        value === tab.key
-
-                            ? `
+            value === tab.key
+              ? `
                                 bg-indigo-600
                                 text-white
                               `
-
-                            : `
+              : `
                                 bg-slate-100
                                 text-slate-600
                                 hover:bg-slate-200
-                              `
-
-                    )}
-
-                >
-
-                    {tab.label}
-
-                </button>
-
-            ))}
-
-        </div>
-
-    );
-
+                              `,
+          )}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
 }

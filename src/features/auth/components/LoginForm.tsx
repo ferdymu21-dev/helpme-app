@@ -17,6 +17,8 @@ import {
 
 import { useAuthStore } from "@/store/auth.store";
 
+import { getSafeAuthRedirect } from "../utils/safe-auth-redirect";
+
 import { login } from "../services/auth.service";
 
 export default function LoginForm() {
@@ -63,7 +65,11 @@ export default function LoginForm() {
        */
       setAuthUser(authData.user);
 
-      router.replace("/home");
+      const nextPath = getSafeAuthRedirect(
+        new URLSearchParams(window.location.search).get("next"),
+      );
+
+      router.replace(nextPath);
 
       router.refresh();
     } catch (error: unknown) {

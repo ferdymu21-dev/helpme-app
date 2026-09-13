@@ -7,6 +7,7 @@ import {
   CreditCard,
   Camera,
   CircleCheck,
+  Clock3,
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
@@ -31,6 +32,12 @@ function getBadgeConfig(category: string) {
       return {
         badge: "Task",
         badgeColor: "text-blue-700",
+      };
+
+    case NotificationCategory.SERVICE:
+      return {
+        badge: "Jasa",
+        badgeColor: "text-violet-700",
       };
 
     case NotificationCategory.PAYMENT:
@@ -123,6 +130,42 @@ export function getNotificationConfig(
     /* =========================
            REVIEW
         ========================= */
+
+    case "SERVICE_LISTING_EXPIRED":
+      return {
+        icon: Clock3,
+        iconColor: "text-amber-600",
+        backgroundColor: "bg-amber-100",
+        ...badge,
+      };
+
+    case "SERVICE_REQUEST_CREATED":
+    case "SERVICE_REQUEST_NEGOTIATING":
+    case "SERVICE_AGREEMENT_PROPOSED":
+      return {
+        icon: Handshake,
+        iconColor: "text-violet-600",
+        backgroundColor: "bg-violet-100",
+        ...badge,
+      };
+
+    case "SERVICE_REQUEST_DECLINED":
+    case "SERVICE_REQUEST_CANCELLED":
+    case "SERVICE_AGREEMENT_REJECTED":
+      return {
+        icon: CircleX,
+        iconColor: "text-rose-600",
+        backgroundColor: "bg-rose-100",
+        ...badge,
+      };
+
+    case "SERVICE_AGREEMENT_APPROVED":
+      return {
+        icon: CircleCheck,
+        iconColor: "text-emerald-600",
+        backgroundColor: "bg-emerald-100",
+        ...badge,
+      };
 
     case "NEW_REVIEW":
       return {

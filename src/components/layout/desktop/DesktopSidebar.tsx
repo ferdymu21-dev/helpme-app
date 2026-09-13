@@ -4,10 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -21,15 +18,21 @@ const menus = [
     icon: "/icons/home-icon.svg",
   },
   {
+    label: "Cari Jasa",
+    description: "Temukan layanan dari Provider HelpMe",
+    href: "/services",
+    icon: "/icons/semua.svg",
+  },
+  {
     label: "Task Saya",
     description: "Kelola task yang Anda buat",
     href: "/my-tasks",
     icon: "/icons/tasks-icon.svg",
   },
   {
-    label: "Buat Task",
-    description: "Cari helper untuk kebutuhan Anda",
-    href: "/tasks/create",
+    label: "Jasa Saya",
+    description: "Kelola jasa yang Anda tawarkan",
+    href: "/my-services",
     icon: "/icons/create-icon.svg",
     primary: true,
   },
@@ -51,27 +54,19 @@ interface Props {
   onOpenSupport?: () => void;
 }
 
-export default function DesktopSidebar({
-  onOpenSupport,
-}: Props) {
-  const [hasUnread, setHasUnread] =
-    useState(false);
+export default function DesktopSidebar({ onOpenSupport }: Props) {
+  const [hasUnread, setHasUnread] = useState(false);
 
-  const [userProfile, setUserProfile] =
-    useState<{
-      full_name: string;
-      avatar_url?: string;
-    } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    full_name: string;
+    avatar_url?: string;
+  } | null>(null);
 
   const pathname = usePathname();
 
-  const userId = useAuthStore(
-    (state) =>
-      state.user?.id ??
-      null,
-  );
+  const userId = useAuthStore((state) => state.user?.id ?? null);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!userId) {
       return;
     }
@@ -80,10 +75,7 @@ export default function DesktopSidebar({
 
     async function loadProfile() {
       try {
-        const {
-          data: profile,
-          error,
-        } = await supabase
+        const { data: profile, error } = await supabase
           .from("users")
           .select(
             `
@@ -91,51 +83,29 @@ export default function DesktopSidebar({
               avatar_url
             `,
           )
-          .eq(
-            "id",
-            userId,
-          )
+          .eq("id", userId)
           .single();
 
-        if (
-          cancelled ||
-          error
-        ) {
-          if (
-            error &&
-            !cancelled
-          ) {
-            console.error(
-              "Gagal memuat profile sidebar:",
-              error,
-            );
+        if (cancelled || error) {
+          if (error && !cancelled) {
+            console.error("Gagal memuat profile sidebar:", error);
           }
 
           return;
         }
 
-        setUserProfile(
-          profile,
-        );
+        setUserProfile(profile);
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "Gagal memuat profile sidebar:",
-            error,
-          );
+          console.error("Gagal memuat profile sidebar:", error);
         }
       }
     }
 
     async function loadUnread() {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("conversations")
-          .select(
-            `
+        const { data, error } = await supabase.from("conversations").select(
+          `
               id,
               owner_id,
               helper_id,
@@ -144,111 +114,62 @@ export default function DesktopSidebar({
               last_message_at,
               created_at
             `,
-          );
+        );
 
-        if (
-          cancelled ||
-          error ||
-          !data
-        ) {
-          if (
-            error &&
-            !cancelled
-          ) {
-            console.error(
-              "Gagal memuat unread sidebar:",
-              error,
-            );
+        if (cancelled || error || !data) {
+          if (error && !cancelled) {
+            console.error("Gagal memuat unread sidebar:", error);
           }
 
           return;
         }
 
-        const latestByOtherUser =
-          new Map<
-            string,
-            (typeof data)[number]
-          >();
+        const latestByOtherUser = new Map<string, (typeof data)[number]>();
 
-        for (
-          const conversation of data
-        ) {
-          const isOwner =
-            conversation.owner_id ===
-            userId;
+        for (const conversation of data) {
+          const isOwner = conversation.owner_id === userId;
 
-          const otherUserId =
-            isOwner
-              ? conversation.helper_id
-              : conversation.owner_id;
+          const otherUserId = isOwner
+            ? conversation.helper_id
+            : conversation.owner_id;
 
-          const existing =
-            latestByOtherUser.get(
-              otherUserId,
-            );
+          const existing = latestByOtherUser.get(otherUserId);
 
           if (!existing) {
-            latestByOtherUser.set(
-              otherUserId,
-              conversation,
-            );
+            latestByOtherUser.set(otherUserId, conversation);
 
             continue;
           }
 
-          const currentTimestamp =
-            new Date(
-              conversation.last_message_at ||
-                conversation.created_at,
-            ).getTime();
+          const currentTimestamp = new Date(
+            conversation.last_message_at || conversation.created_at,
+          ).getTime();
 
-          const existingTimestamp =
-            new Date(
-              existing.last_message_at ||
-                existing.created_at,
-            ).getTime();
+          const existingTimestamp = new Date(
+            existing.last_message_at || existing.created_at,
+          ).getTime();
 
-          if (
-            currentTimestamp >
-            existingTimestamp
-          ) {
-            latestByOtherUser.set(
-              otherUserId,
-              conversation,
-            );
+          if (currentTimestamp > existingTimestamp) {
+            latestByOtherUser.set(otherUserId, conversation);
           }
         }
 
-        const hasUnreadMessage =
-          Array.from(
-            latestByOtherUser.values(),
-          ).some(
-            (
-              conversation,
-            ) => {
-              const isOwner =
-                conversation.owner_id ===
-                userId;
+        const hasUnreadMessage = Array.from(latestByOtherUser.values()).some(
+          (conversation) => {
+            const isOwner = conversation.owner_id === userId;
 
-              return isOwner
-                ? (conversation.owner_unread_count ||
-                    0) > 0
-                : (conversation.helper_unread_count ||
-                    0) > 0;
-            },
-          );
+            return isOwner
+              ? (conversation.owner_unread_count || 0) > 0
+              : (conversation.helper_unread_count || 0) > 0;
+          },
+        );
 
         if (!cancelled) {
-          setHasUnread(
-            hasUnreadMessage,
-          );
+          setHasUnread(hasUnreadMessage);
         }
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "Gagal memuat unread sidebar:",
-            error,
-          );
+          console.error("Gagal memuat unread sidebar:", error);
         }
       }
     }
@@ -257,10 +178,7 @@ export default function DesktopSidebar({
 
     void loadUnread();
 
-    const channel =
-      supabase.channel(
-        `sidebar-unread-${userId}`,
-      );
+    const channel = supabase.channel(`sidebar-unread-${userId}`);
 
     channel.on(
       "postgres_changes",
@@ -279,32 +197,20 @@ export default function DesktopSidebar({
     return () => {
       cancelled = true;
 
-      void supabase.removeChannel(
-        channel,
-      );
+      void supabase.removeChannel(channel);
     };
   }, [userId]);
 
-  function isMenuActive(
-    href: string,
-  ) {
+  function isMenuActive(href: string) {
     if (href === "/home") {
       return pathname === href;
     }
 
-    return (
-      pathname === href ||
-      pathname.startsWith(
-        `${href}/`,
-      )
-    );
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
 
   const userInitial =
-    userProfile?.full_name
-      ?.trim()
-      .charAt(0)
-      .toUpperCase() || "U";
+    userProfile?.full_name?.trim().charAt(0).toUpperCase() || "U";
 
   return (
     <aside
@@ -349,9 +255,7 @@ export default function DesktopSidebar({
           />
         </Link>
 
-        <p
-          className="mt-2 text-center text-[10px] font-medium tracking-wide text-slate-400">
-        </p>
+        <p className="mt-2 text-center text-[10px] font-medium tracking-wide text-slate-400"></p>
       </div>
 
       {/* NAVIGATION */}
@@ -380,10 +284,7 @@ export default function DesktopSidebar({
 
         <nav className="space-y-1.5">
           {menus.map((menu) => {
-            const active =
-              isMenuActive(
-                menu.href,
-              );
+            const active = isMenuActive(menu.href);
 
             return (
               <Link
@@ -475,11 +376,9 @@ export default function DesktopSidebar({
                     "
                   />
 
-                  {menu.href ===
-                    "/messages" &&
-                    hasUnread && (
-                      <span
-                        className="
+                  {menu.href === "/messages" && hasUnread && (
+                    <span
+                      className="
                           absolute
                           right-1
                           top-1
@@ -490,8 +389,8 @@ export default function DesktopSidebar({
                           ring-2
                           ring-white
                         "
-                      />
-                    )}
+                    />
+                  )}
                 </div>
 
                 {/* CONTENT */}
@@ -526,11 +425,9 @@ export default function DesktopSidebar({
                       {menu.label}
                     </p>
 
-                    {menu.href ===
-                      "/messages" &&
-                      hasUnread && (
-                        <span
-                          className="
+                    {menu.href === "/messages" && hasUnread && (
+                      <span
+                        className="
                             rounded-full
                             bg-red-50
                             px-1.5
@@ -541,10 +438,10 @@ export default function DesktopSidebar({
                             tracking-wide
                             text-red-600
                           "
-                        >
-                          Baru
-                        </span>
-                      )}
+                      >
+                        Baru
+                      </span>
+                    )}
                   </div>
 
                   <p
@@ -578,9 +475,7 @@ export default function DesktopSidebar({
         {/* SUPPORT */}
         <button
           type="button"
-          onClick={() =>
-            onOpenSupport?.()
-          }
+          onClick={() => onOpenSupport?.()}
           className="
             flex
             w-full
@@ -656,10 +551,7 @@ export default function DesktopSidebar({
             transition-all
 
             ${
-              pathname === "/profile" ||
-              pathname.startsWith(
-                "/profile/",
-              )
+              pathname === "/profile" || pathname.startsWith("/profile/")
                 ? `
                   border-indigo-100
                   bg-indigo-50
@@ -675,12 +567,8 @@ export default function DesktopSidebar({
         >
           {userProfile?.avatar_url ? (
             <img
-              src={
-                userProfile.avatar_url
-              }
-              alt={
-                userProfile.full_name
-              }
+              src={userProfile.avatar_url}
+              alt={userProfile.full_name}
               className="
                 h-10
                 w-10
@@ -725,8 +613,7 @@ export default function DesktopSidebar({
                 text-slate-800
               "
             >
-              {userProfile?.full_name ||
-                "Profil Saya"}
+              {userProfile?.full_name || "Profil Saya"}
             </p>
 
             <p

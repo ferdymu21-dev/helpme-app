@@ -1,16 +1,12 @@
-"use client";
+﻿"use client";
 
-import {
-  useEffect,
-} from "react";
+import { useEffect } from "react";
 
-import {
-  useRouter,
-} from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import {
-  useAuthStore,
-} from "@/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
+
+import { getSafeAuthRedirect } from "../utils/safe-auth-redirect";
 
 export default function ProtectedLayout({
   children,
@@ -19,20 +15,19 @@ export default function ProtectedLayout({
 }) {
   const router = useRouter();
 
-  const {
-    user,
-    loading,
-  } = useAuthStore();
+  const pathname = usePathname();
+
+  const { user, loading } = useAuthStore();
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/login");
+      const nextPath = getSafeAuthRedirect(
+        `${pathname}${window.location.search}`,
+      );
+
+      router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
     }
-  }, [
-    user,
-    loading,
-    router,
-  ]);
+  }, [user, loading, pathname, router]);
 
   if (loading) {
     return (

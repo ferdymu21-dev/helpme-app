@@ -1,11 +1,6 @@
 import Link from "next/link";
 
-import {
-  ArrowUpRight,
-  ClipboardList,
-  Plus,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, Plus, Sparkles } from "lucide-react";
 
 export default function DesktopQuickActions() {
   return (
@@ -76,9 +71,8 @@ export default function DesktopQuickActions() {
                 text-slate-500
               "
             >
-              Buat permintaan bantuan
-              atau kelola task yang sudah
-              Anda buat.
+              Butuh bantuan atau ingin menawarkan keahlian? Pilih tindakan yang
+              Anda perlukan.
             </p>
           </div>
         </div>
@@ -162,10 +156,7 @@ export default function DesktopQuickActions() {
                     backdrop-blur
                   "
                 >
-                  <Plus
-                    className="h-5 w-5"
-                    strokeWidth={2.4}
-                  />
+                  <Plus className="h-5 w-5" strokeWidth={2.4} />
                 </div>
 
                 <h3
@@ -188,9 +179,8 @@ export default function DesktopQuickActions() {
                     text-indigo-100
                   "
                 >
-                  Buat task dan temukan
-                  helper yang cocok untuk
-                  membantu kebutuhan Anda.
+                  Buat task dan temukan helper yang cocok untuk membantu
+                  kebutuhan Anda.
                 </p>
               </div>
 
@@ -211,17 +201,14 @@ export default function DesktopQuickActions() {
                   group-hover:-translate-y-1
                 "
               >
-                <ArrowUpRight
-                  className="h-4 w-4"
-                  strokeWidth={2.2}
-                />
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
               </div>
             </div>
           </Link>
 
-          {/* MY TASK */}
+          {/* OFFER SERVICE */}
           <Link
-            href="/my-tasks"
+            href="/my-services/new"
             className="
               group
               relative
@@ -275,10 +262,7 @@ export default function DesktopQuickActions() {
                     text-amber-600
                   "
                 >
-                  <ClipboardList
-                    className="h-5 w-5"
-                    strokeWidth={2}
-                  />
+                  <BriefcaseBusiness className="h-5 w-5" strokeWidth={2} />
                 </div>
 
                 <h3
@@ -290,7 +274,7 @@ export default function DesktopQuickActions() {
                     text-slate-950
                   "
                 >
-                  Task Saya
+                  Tawarkan Jasa
                 </h3>
 
                 <p
@@ -302,9 +286,7 @@ export default function DesktopQuickActions() {
                     text-slate-500
                   "
                 >
-                  Pantau task, lihat
-                  pelamar, dan pilih
-                  helper dari satu tempat.
+                  Tawarkan keahlian Anda dan dapatkan penghasilan.
                 </p>
               </div>
 
@@ -329,10 +311,7 @@ export default function DesktopQuickActions() {
                   group-hover:text-indigo-600
                 "
               >
-                <ArrowUpRight
-                  className="h-4 w-4"
-                  strokeWidth={2.2}
-                />
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
               </div>
             </div>
           </Link>

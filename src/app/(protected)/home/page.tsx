@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { supabase } from "@/lib/supabase/client";
 
 import { getTasks } from "@/features/tasks/services/client/task.client";
 
 import type { NearbyTask } from "@/features/tasks/types/nearby-task";
+
+import type { HomeFeedValue } from "@/components/home/HomeFeedSelector";
 
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
@@ -47,8 +49,13 @@ function getLocationErrorMessage(error: GeolocationPositionError) {
   }
 }
 
-export default function HomePage() {
+function HomePageContent() {
   const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  const activeFeed: HomeFeedValue =
+    searchParams.get("feed") === "services" ? "services" : "tasks";
 
   const [viewport, setViewport] = useState<HomeViewport | null>(null);
 
@@ -115,12 +122,11 @@ export default function HomePage() {
    GET HELPER LOCATION
   ========================= */
   useEffect(() => {
+    if (activeFeed !== "tasks" || !locating) {
+      return;
+    }
+
     if (!navigator.geolocation) {
-      /*
-       * Gunakan callback browser agar
-       * state tidak diubah secara sinkron
-       * langsung dari body effect.
-       */
       const timeoutId = window.setTimeout(() => {
         setLocationError("Browser ini tidak mendukung akses lokasi.");
 
@@ -132,8 +138,14 @@ export default function HomePage() {
       };
     }
 
+    let cancelled = false;
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (cancelled) {
+          return;
+        }
+
         setCoordinates({
           latitude: position.coords.latitude,
 
@@ -146,6 +158,10 @@ export default function HomePage() {
       },
 
       (error) => {
+        if (cancelled) {
+          return;
+        }
+
         setCoordinates(null);
 
         setLocationError(getLocationErrorMessage(error));
@@ -155,11 +171,17 @@ export default function HomePage() {
 
       {
         enableHighAccuracy: true,
+
         timeout: 10_000,
+
         maximumAge: 60_000,
       },
     );
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeFeed, locating]);
 
   useEffect(() => {
     return () => {
@@ -177,7 +199,7 @@ export default function HomePage() {
   const queryCategory = urgentOnly ? "Semua" : activeCategory;
 
   useEffect(() => {
-    if (!coordinates) {
+    if (activeFeed !== "tasks" || !coordinates) {
       return;
     }
 
@@ -235,13 +257,20 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [coordinates, currentPage, queryCategory, searchQuery, urgentOnly]);
+  }, [
+    activeFeed,
+    coordinates,
+    currentPage,
+    queryCategory,
+    searchQuery,
+    urgentOnly,
+  ]);
 
   /* =========================
    REALTIME TASKS
   ========================= */
   useEffect(() => {
-    if (!coordinates) {
+    if (activeFeed !== "tasks" || !coordinates) {
       return;
     }
 
@@ -308,7 +337,14 @@ export default function HomePage() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [coordinates, currentPage, queryCategory, searchQuery, urgentOnly]);
+  }, [
+    activeFeed,
+    coordinates,
+    currentPage,
+    queryCategory,
+    searchQuery,
+    urgentOnly,
+  ]);
 
   /* =========================
      CATEGORY
@@ -346,6 +382,20 @@ export default function HomePage() {
 
       setSearchQuery(nextSearch);
     }, 350);
+  }
+
+  function handleFeedChange(feed: HomeFeedValue) {
+    if (feed === activeFeed) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("feed", feed);
+
+    router.replace(`/home?${params.toString()}`, {
+      scroll: false,
+    });
   }
 
   /* =========================
@@ -408,7 +458,7 @@ export default function HomePage() {
      LOCATION LOADING
   ========================= */
 
-  if (locating) {
+  if (activeFeed === "tasks" && locating) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-50">
         Mengambil lokasi kamu...
@@ -417,6 +467,10 @@ export default function HomePage() {
   }
 
   const feedProps = {
+    activeFeed,
+
+    onFeedChange: handleFeedChange,
+
     tasks,
 
     loadingTasks,
@@ -520,5 +574,29 @@ export default function HomePage() {
         />
       )}
     </>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <main
+          className="
+            flex
+            min-h-screen
+            items-center
+            justify-center
+            bg-slate-50
+            text-sm
+            text-slate-500
+          "
+        >
+          Menyiapkan Home...
+        </main>
+      }
+    >
+      <HomePageContent />
+    </Suspense>
   );
 }
