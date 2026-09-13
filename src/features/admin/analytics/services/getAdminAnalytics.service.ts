@@ -16,117 +16,58 @@ import type {
   AnalyticsRatingValue,
 } from "../types/admin-analytics.types";
 
-const JAKARTA_TIME_ZONE =
-  "Asia/Jakarta";
+const JAKARTA_TIME_ZONE = "Asia/Jakarta";
 
-const SUCCESSFUL_TASK_STATUSES =
-  new Set([
-    "COMPLETED",
-    "REVIEWED",
-  ]);
+const SUCCESSFUL_TASK_STATUSES = new Set(["COMPLETED", "REVIEWED"]);
 
-const FINALIZED_TASK_STATUSES =
-  new Set([
-    "COMPLETED",
-    "REVIEWED",
-    "CANCELLED",
-    "EXPIRED",
-  ]);
+const FINALIZED_TASK_STATUSES = new Set([
+  "COMPLETED",
+  "REVIEWED",
+  "CANCELLED",
+  "EXPIRED",
+]);
 
-function percentage(
-  value: number,
-  total: number,
-) {
+function percentage(value: number, total: number) {
   if (total <= 0) {
     return 0;
   }
 
-  return Math.round(
-    (value / total) *
-      1000,
-  ) / 10;
+  return Math.round((value / total) * 1000) / 10;
 }
 
-function decimal(
-  value: number,
-  precision = 2,
-) {
-  const multiplier =
-    10 ** precision;
+function decimal(value: number, precision = 2) {
+  const multiplier = 10 ** precision;
 
+  return Math.round(value * multiplier) / multiplier;
+}
+
+function countTaskStatus(tasks: AnalyticsTaskRow[], status: string) {
+  return tasks.filter((task) => task.status === status).length;
+}
+
+function isRatingValue(value: number): value is AnalyticsRatingValue {
   return (
-    Math.round(
-      value * multiplier,
-    ) / multiplier
+    value === 1 || value === 2 || value === 3 || value === 4 || value === 5
   );
 }
 
-function countTaskStatus(
-  tasks: AnalyticsTaskRow[],
-  status: string,
-) {
-  return tasks.filter(
-    (task) =>
-      task.status === status,
-  ).length;
-}
+const jakartaDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: JAKARTA_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
-function isRatingValue(
-  value: number,
-): value is AnalyticsRatingValue {
-  return (
-    value === 1 ||
-    value === 2 ||
-    value === 3 ||
-    value === 4 ||
-    value === 5
-  );
-}
+function getJakartaDateParts(value: Date) {
+  const parts = jakartaDateFormatter.formatToParts(value);
 
-const jakartaDateFormatter =
-  new Intl.DateTimeFormat(
-    "en-US",
-    {
-      timeZone:
-        JAKARTA_TIME_ZONE,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    },
-  );
+  const year = parts.find((part) => part.type === "year")?.value;
 
-function getJakartaDateParts(
-  value: Date,
-) {
-  const parts =
-    jakartaDateFormatter.formatToParts(
-      value,
-    );
+  const month = parts.find((part) => part.type === "month")?.value;
 
-  const year =
-    parts.find(
-      (part) =>
-        part.type === "year",
-    )?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
 
-  const month =
-    parts.find(
-      (part) =>
-        part.type ===
-        "month",
-    )?.value;
-
-  const day =
-    parts.find(
-      (part) =>
-        part.type === "day",
-    )?.value;
-
-  if (
-    !year ||
-    !month ||
-    !day
-  ) {
+  if (!year || !month || !day) {
     return null;
   }
 
@@ -137,28 +78,18 @@ function getJakartaDateParts(
   };
 }
 
-function getJakartaDateKey(
-  value: string | null,
-) {
+function getJakartaDateKey(value: string | null) {
   if (!value) {
     return null;
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
 
-  const parts =
-    getJakartaDateParts(
-      date,
-    );
+  const parts = getJakartaDateParts(date);
 
   if (!parts) {
     return null;
@@ -168,77 +99,38 @@ function getJakartaDateKey(
 }
 
 function getLast7JakartaDays() {
-  const now =
-    new Date();
+  const now = new Date();
 
-  const currentParts =
-    getJakartaDateParts(
-      now,
-    );
+  const currentParts = getJakartaDateParts(now);
 
   if (!currentParts) {
     return [];
   }
 
-  const baseDate =
-    new Date(
-      Date.UTC(
-        Number(
-          currentParts.year,
-        ),
-        Number(
-          currentParts.month,
-        ) - 1,
-        Number(
-          currentParts.day,
-        ),
-        12,
-        0,
-        0,
-      ),
-    );
+  const baseDate = new Date(
+    Date.UTC(
+      Number(currentParts.year),
+      Number(currentParts.month) - 1,
+      Number(currentParts.day),
+      12,
+      0,
+      0,
+    ),
+  );
 
   const days: {
     date: string;
     day: string;
   }[] = [];
 
-  for (
-    let offset = 6;
-    offset >= 0;
-    offset -= 1
-  ) {
-    const date =
-      new Date(
-        baseDate.getTime() -
-          offset *
-            24 *
-            60 *
-            60 *
-            1000,
-      );
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const date = new Date(baseDate.getTime() - offset * 24 * 60 * 60 * 1000);
 
-    const year =
-      String(
-        date.getUTCFullYear(),
-      );
+    const year = String(date.getUTCFullYear());
 
-    const month =
-      String(
-        date.getUTCMonth() +
-          1,
-      ).padStart(
-        2,
-        "0",
-      );
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
 
-    const day =
-      String(
-        date.getUTCDate(),
-      ).padStart(
-        2,
-        "0",
-      );
+    const day = String(date.getUTCDate()).padStart(2, "0");
 
     days.push({
       date: `${year}-${month}-${day}`,
@@ -249,19 +141,12 @@ function getLast7JakartaDays() {
   return days;
 }
 
-function incrementDateCount(
-  map: Map<string, number>,
-  date: string | null,
-) {
+function incrementDateCount(map: Map<string, number>, date: string | null) {
   if (!date) {
     return;
   }
 
-  map.set(
-    date,
-    (map.get(date) ??
-      0) + 1,
-  );
+  map.set(date, (map.get(date) ?? 0) + 1);
 }
 
 export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse> {
@@ -272,9 +157,11 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
     tasks,
     applications,
     reviews,
+    serviceListings,
+    serviceRequests,
+    servicePayments,
     reports,
-  } =
-    await getAdminAnalyticsRepository();
+  } = await getAdminAnalyticsRepository();
 
   /*
    * ======================================================
@@ -282,40 +169,21 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const totalUsers =
-    users.length;
+  const totalUsers = users.length;
 
-  const verifiedUsers =
-    users.filter(
-      (user) =>
-        user.verification_status ===
-        "VERIFIED",
-    ).length;
+  const verifiedUsers = users.filter(
+    (user) => user.verification_status === "VERIFIED",
+  ).length;
 
-  const suspendedUsers =
-    users.filter(
-      (user) =>
-        user.is_suspended ===
-        true,
-    ).length;
+  const suspendedUsers = users.filter(
+    (user) => user.is_suspended === true,
+  ).length;
 
-  const bannedUsers =
-    users.filter(
-      (user) =>
-        user.is_banned ===
-        true,
-    ).length;
+  const bannedUsers = users.filter((user) => user.is_banned === true).length;
 
-  const usersById =
-    new Map(
-      users.map(
-        (user) => [
-          user.id,
-          user.full_name?.trim() ||
-            "Tanpa nama",
-        ],
-      ),
-    );
+  const usersById = new Map(
+    users.map((user) => [user.id, user.full_name?.trim() || "Tanpa nama"]),
+  );
 
   /*
    * ======================================================
@@ -326,118 +194,49 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * karena itu merupakan moderation outcome.
    */
 
-  const totalTasks =
-    tasks.length;
+  const totalTasks = tasks.length;
 
-  const marketplaceTasks =
-    tasks.filter(
-      (task) =>
-        task.status !==
-        "REMOVED",
-    );
+  const marketplaceTasks = tasks.filter((task) => task.status !== "REMOVED");
 
-  const marketplaceTaskIds =
-    new Set(
-      marketplaceTasks.map(
-        (task) => task.id,
-      ),
-    );
+  const marketplaceTaskIds = new Set(marketplaceTasks.map((task) => task.id));
 
-  const openTasks =
-    countTaskStatus(
-      tasks,
-      "OPEN",
-    );
+  const openTasks = countTaskStatus(tasks, "OPEN");
 
-  const acceptedTasks =
-    countTaskStatus(
-      tasks,
-      "ACCEPTED",
-    );
+  const acceptedTasks = countTaskStatus(tasks, "ACCEPTED");
 
-  const onProgressTasks =
-    countTaskStatus(
-      tasks,
-      "ON_PROGRESS",
-    );
+  const onProgressTasks = countTaskStatus(tasks, "ON_PROGRESS");
 
-  const waitingConfirmationTasks =
-    countTaskStatus(
-      tasks,
-      "WAITING_CONFIRMATION",
-    );
+  const waitingConfirmationTasks = countTaskStatus(
+    tasks,
+    "WAITING_CONFIRMATION",
+  );
 
-  const completedTasks =
-    countTaskStatus(
-      tasks,
-      "COMPLETED",
-    );
+  const completedTasks = countTaskStatus(tasks, "COMPLETED");
 
-  const reviewedTasks =
-    countTaskStatus(
-      tasks,
-      "REVIEWED",
-    );
+  const reviewedTasks = countTaskStatus(tasks, "REVIEWED");
 
-  const cancelledTasks =
-    countTaskStatus(
-      tasks,
-      "CANCELLED",
-    );
+  const cancelledTasks = countTaskStatus(tasks, "CANCELLED");
 
-  const expiredTasks =
-    countTaskStatus(
-      tasks,
-      "EXPIRED",
-    );
+  const expiredTasks = countTaskStatus(tasks, "EXPIRED");
 
-  const removedTasks =
-    countTaskStatus(
-      tasks,
-      "REMOVED",
-    );
+  const removedTasks = countTaskStatus(tasks, "REMOVED");
 
   const inProgressTasks =
-    acceptedTasks +
-    onProgressTasks +
-    waitingConfirmationTasks;
+    acceptedTasks + onProgressTasks + waitingConfirmationTasks;
 
-  const successfulTasks =
-    completedTasks +
-    reviewedTasks;
+  const successfulTasks = completedTasks + reviewedTasks;
 
-  const finalizedTasks =
-    marketplaceTasks.filter(
-      (task) =>
-        task.status !== null &&
-        FINALIZED_TASK_STATUSES.has(
-          task.status,
-        ),
-    ).length;
+  const finalizedTasks = marketplaceTasks.filter(
+    (task) => task.status !== null && FINALIZED_TASK_STATUSES.has(task.status),
+  ).length;
 
-  const completionRate =
-    percentage(
-      successfulTasks,
-      finalizedTasks,
-    );
+  const completionRate = percentage(successfulTasks, finalizedTasks);
 
-  const expiryRate =
-    percentage(
-      expiredTasks,
-      finalizedTasks,
-    );
+  const expiryRate = percentage(expiredTasks, finalizedTasks);
 
-  const cancellationRate =
-    percentage(
-      cancelledTasks,
-      finalizedTasks,
-    );
+  const cancellationRate = percentage(cancelledTasks, finalizedTasks);
 
-  const completedShare =
-    percentage(
-      successfulTasks,
-      marketplaceTasks.length,
-    );
+  const completedShare = percentage(successfulTasks, marketplaceTasks.length);
 
   /*
    * ======================================================
@@ -445,100 +244,62 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const marketplaceApplications =
-    applications.filter(
-      (application) =>
-        marketplaceTaskIds.has(
-          application.task_id,
-        ),
-    );
+  const marketplaceApplications = applications.filter((application) =>
+    marketplaceTaskIds.has(application.task_id),
+  );
 
-  const totalApplications =
-    marketplaceApplications.length;
+  const totalApplications = marketplaceApplications.length;
 
-  const pendingApplications =
-    marketplaceApplications.filter(
-      (application) =>
-        application.status ===
-        "PENDING",
-    ).length;
+  const pendingApplications = marketplaceApplications.filter(
+    (application) => application.status === "PENDING",
+  ).length;
 
-  const acceptedApplications =
-    marketplaceApplications.filter(
-      (application) =>
-        application.status ===
-        "ACCEPTED",
-    ).length;
+  const acceptedApplications = marketplaceApplications.filter(
+    (application) => application.status === "ACCEPTED",
+  ).length;
 
-  const rejectedApplications =
-    marketplaceApplications.filter(
-      (application) =>
-        application.status ===
-        "REJECTED",
-    ).length;
+  const rejectedApplications = marketplaceApplications.filter(
+    (application) => application.status === "REJECTED",
+  ).length;
 
-  const taskIdsWithApplications =
-    new Set(
-      marketplaceApplications.map(
-        (application) =>
-          application.task_id,
-      ),
-    );
+  const taskIdsWithApplications = new Set(
+    marketplaceApplications.map((application) => application.task_id),
+  );
 
-  const tasksWithApplications =
-    taskIdsWithApplications.size;
+  const tasksWithApplications = taskIdsWithApplications.size;
 
   const tasksWithoutApplications =
-    marketplaceTasks.length -
-    tasksWithApplications;
+    marketplaceTasks.length - tasksWithApplications;
 
-  const uniqueApplicants =
-    new Set(
-      marketplaceApplications.map(
-        (application) =>
-          application.helper_id,
-      ),
-    ).size;
+  const uniqueApplicants = new Set(
+    marketplaceApplications.map((application) => application.helper_id),
+  ).size;
 
-  const tasksWithSelectedHelper =
-    marketplaceTasks.filter(
-      (task) =>
-        task.selected_helper_id !==
-        null,
-    ).length;
+  const tasksWithSelectedHelper = marketplaceTasks.filter(
+    (task) => task.selected_helper_id !== null,
+  ).length;
 
   const tasksWithoutSelectedHelper =
-    marketplaceTasks.length -
-    tasksWithSelectedHelper;
+    marketplaceTasks.length - tasksWithSelectedHelper;
 
-  const applicationCoverageRate =
-    percentage(
-      tasksWithApplications,
-      marketplaceTasks.length,
-    );
+  const applicationCoverageRate = percentage(
+    tasksWithApplications,
+    marketplaceTasks.length,
+  );
 
-  const helperSelectionRate =
-    percentage(
-      tasksWithSelectedHelper,
-      marketplaceTasks.length,
-    );
+  const helperSelectionRate = percentage(
+    tasksWithSelectedHelper,
+    marketplaceTasks.length,
+  );
 
   const averageApplicationsPerTask =
-    marketplaceTasks.length >
-    0
-      ? decimal(
-          totalApplications /
-            marketplaceTasks.length,
-        )
+    marketplaceTasks.length > 0
+      ? decimal(totalApplications / marketplaceTasks.length)
       : 0;
 
   const averageApplicationsPerCoveredTask =
-    tasksWithApplications >
-    0
-      ? decimal(
-          totalApplications /
-            tasksWithApplications,
-        )
+    tasksWithApplications > 0
+      ? decimal(totalApplications / tasksWithApplications)
       : 0;
 
   /*
@@ -547,10 +308,7 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const ratingDistribution: Record<
-    AnalyticsRatingValue,
-    number
-  > = {
+  const ratingDistribution: Record<AnalyticsRatingValue, number> = {
     1: 0,
     2: 0,
     3: 0,
@@ -560,57 +318,27 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
 
   let ratingTotal = 0;
 
-  reviews.forEach(
-    (review) => {
-      ratingTotal +=
-        review.rating;
+  reviews.forEach((review) => {
+    ratingTotal += review.rating;
 
-      if (
-        isRatingValue(
-          review.rating,
-        )
-      ) {
-        ratingDistribution[
-          review.rating
-        ] += 1;
-      }
-    },
-  );
+    if (isRatingValue(review.rating)) {
+      ratingDistribution[review.rating] += 1;
+    }
+  });
 
-  const totalReviews =
-    reviews.length;
+  const totalReviews = reviews.length;
 
   const averageRating =
-    totalReviews > 0
-      ? decimal(
-          ratingTotal /
-            totalReviews,
-        )
-      : 0;
+    totalReviews > 0 ? decimal(ratingTotal / totalReviews) : 0;
 
-  const tasksWithReviews =
-  new Set(
-    reviews.map(
-      (review) =>
-        review.task_id,
-    ),
-  ).size;
+  const tasksWithReviews = new Set(reviews.map((review) => review.task_id))
+    .size;
 
-  const uniqueReviewers =
-    new Set(
-      reviews.map(
-        (review) =>
-          review.reviewer_id,
-      ),
-    ).size;
+  const uniqueReviewers = new Set(reviews.map((review) => review.reviewer_id))
+    .size;
 
-  const uniqueReviewees =
-    new Set(
-      reviews.map(
-        (review) =>
-          review.reviewee_id,
-      ),
-    ).size;
+  const uniqueReviewees = new Set(reviews.map((review) => review.reviewee_id))
+    .size;
 
   /*
    * ======================================================
@@ -618,127 +346,155 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const totalReports =
-    reports.length;
+  const totalReports = reports.length;
 
-  const pendingReports =
-    reports.filter(
-      (report) =>
-        report.status ===
-        "PENDING",
-    ).length;
+  const pendingReports = reports.filter(
+    (report) => report.status === "PENDING",
+  ).length;
 
-  const reviewedReports =
-    reports.filter(
-      (report) =>
-        report.status ===
-        "REVIEWED",
-    ).length;
+  const reviewedReports = reports.filter(
+    (report) => report.status === "REVIEWED",
+  ).length;
 
-  const resolvedReports =
-    reports.filter(
-      (report) =>
-        report.status ===
-        "RESOLVED",
-    ).length;
+  const resolvedReports = reports.filter(
+    (report) => report.status === "RESOLVED",
+  ).length;
 
-  const rejectedReports =
-    reports.filter(
-      (report) =>
-        report.status ===
-        "REJECTED",
-    ).length;
+  const rejectedReports = reports.filter(
+    (report) => report.status === "REJECTED",
+  ).length;
 
-  const handledReports =
-    reviewedReports +
-    resolvedReports +
-    rejectedReports;
+  const handledReports = reviewedReports + resolvedReports + rejectedReports;
 
-  const handlingRate =
-    percentage(
-      handledReports,
-      totalReports,
-    );
+  const handlingRate = percentage(handledReports, totalReports);
 
   /*
    * ======================================================
-   * 7-DAY GROWTH — WIB
+   * SERVICE MARKETPLACE
    * ======================================================
    */
 
-  const userGrowthMap =
-    new Map<
-      string,
-      number
-    >();
+  const totalServiceListings = serviceListings.length;
 
-  const taskGrowthMap =
-    new Map<
-      string,
-      number
-    >();
+  const activeServiceListings = serviceListings.filter(
+    (listing) => listing.status === "ACTIVE",
+  ).length;
 
-  const reportGrowthMap =
-    new Map<
-      string,
-      number
-    >();
+  const pausedServiceListings = serviceListings.filter(
+    (listing) => listing.status === "PAUSED",
+  ).length;
 
-  users.forEach(
-    (user) => {
-      incrementDateCount(
-        userGrowthMap,
-        getJakartaDateKey(
-          user.created_at,
-        ),
-      );
-    },
+  const expiredServiceListings = serviceListings.filter(
+    (listing) => listing.status === "EXPIRED",
+  ).length;
+
+  const blockedServiceListings = serviceListings.filter(
+    (listing) => listing.status === "BLOCKED",
+  ).length;
+
+  const activeServiceRequestStatuses = new Set([
+    "PENDING_PROVIDER",
+    "NEGOTIATING",
+    "AGREEMENT_PENDING",
+    "AGREED",
+    "IN_PROGRESS",
+    "SUBMITTED",
+  ]);
+
+  const totalServiceRequests = serviceRequests.length;
+
+  const activeServiceRequests = serviceRequests.filter((request) =>
+    activeServiceRequestStatuses.has(request.status),
+  ).length;
+
+  const inProgressServiceRequests = serviceRequests.filter(
+    (request) => request.status === "IN_PROGRESS",
+  ).length;
+
+  const completedServiceRequests = serviceRequests.filter(
+    (request) => request.status === "COMPLETED",
+  ).length;
+
+  const declinedServiceRequests = serviceRequests.filter(
+    (request) => request.status === "DECLINED",
+  ).length;
+
+  const cancelledServiceRequests = serviceRequests.filter(
+    (request) => request.status === "CANCELLED",
+  ).length;
+
+  const totalServicePayments = servicePayments.length;
+
+  const creatingServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "CREATING",
+  ).length;
+
+  const pendingServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "PENDING",
+  ).length;
+
+  const paidServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "PAID",
+  ).length;
+
+  const failedServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "FAILED",
+  ).length;
+
+  const cancelledServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "CANCELLED",
+  ).length;
+
+  const expiredServicePayments = servicePayments.filter(
+    (payment) => payment.payment_status === "EXPIRED",
+  ).length;
+
+  const servicePublicationRevenue = servicePayments.reduce(
+    (total, payment) =>
+      payment.payment_status === "PAID" ? total + payment.amount : total,
+    0,
   );
 
-  tasks.forEach(
-    (task) => {
-      incrementDateCount(
-        taskGrowthMap,
-        getJakartaDateKey(
-          task.created_at,
-        ),
-      );
-    },
+  const pendingServiceListingReports = reports.filter(
+    (report) =>
+      report.service_listing_id !== null && report.status === "PENDING",
+  ).length;
+  /*
+   * ======================================================
+   * 7-DAY GROWTH â€” WIB
+   * ======================================================
+   */
+
+  const userGrowthMap = new Map<string, number>();
+
+  const taskGrowthMap = new Map<string, number>();
+
+  const reportGrowthMap = new Map<string, number>();
+
+  users.forEach((user) => {
+    incrementDateCount(userGrowthMap, getJakartaDateKey(user.created_at));
+  });
+
+  tasks.forEach((task) => {
+    incrementDateCount(taskGrowthMap, getJakartaDateKey(task.created_at));
+  });
+
+  reports.forEach((report) => {
+    incrementDateCount(reportGrowthMap, getJakartaDateKey(report.created_at));
+  });
+
+  const growth: AdminAnalyticsGrowthPoint[] = getLast7JakartaDays().map(
+    (item) => ({
+      date: item.date,
+      day: item.day,
+
+      users: userGrowthMap.get(item.date) ?? 0,
+
+      tasks: taskGrowthMap.get(item.date) ?? 0,
+
+      reports: reportGrowthMap.get(item.date) ?? 0,
+    }),
   );
-
-  reports.forEach(
-    (report) => {
-      incrementDateCount(
-        reportGrowthMap,
-        getJakartaDateKey(
-          report.created_at,
-        ),
-      );
-    },
-  );
-
-  const growth: AdminAnalyticsGrowthPoint[] =
-    getLast7JakartaDays().map(
-      (item) => ({
-        date: item.date,
-        day: item.day,
-
-        users:
-          userGrowthMap.get(
-            item.date,
-          ) ?? 0,
-
-        tasks:
-          taskGrowthMap.get(
-            item.date,
-          ) ?? 0,
-
-        reports:
-          reportGrowthMap.get(
-            item.date,
-          ) ?? 0,
-      }),
-    );
 
   /*
    * ======================================================
@@ -758,150 +514,84 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
     finalizedTasks: number;
   }
 
-  const categoryMap =
-    new Map<
-      string,
-      CategoryAccumulator
-    >();
+  const categoryMap = new Map<string, CategoryAccumulator>();
 
-  const taskCategoryById =
-    new Map<
-      string,
-      string
-    >();
+  const taskCategoryById = new Map<string, string>();
 
-  marketplaceTasks.forEach(
-    (task) => {
-      const category =
-        task.category?.trim() ||
-        "OTHER";
+  marketplaceTasks.forEach((task) => {
+    const category = task.category?.trim() || "OTHER";
 
-      taskCategoryById.set(
-        task.id,
-        category,
-      );
+    taskCategoryById.set(task.id, category);
 
-      const current =
-        categoryMap.get(
-          category,
-        ) ?? {
-          name: category,
+    const current = categoryMap.get(category) ?? {
+      name: category,
 
-          totalTasks: 0,
-          totalApplications: 0,
+      totalTasks: 0,
+      totalApplications: 0,
 
-          tasksWithApplications: 0,
+      tasksWithApplications: 0,
 
-          completedTasks: 0,
-          finalizedTasks: 0,
-        };
+      completedTasks: 0,
+      finalizedTasks: 0,
+    };
 
-      current.totalTasks +=
-        1;
+    current.totalTasks += 1;
 
-      if (
-        taskIdsWithApplications.has(
-          task.id,
-        )
-      ) {
-        current.tasksWithApplications +=
-          1;
-      }
+    if (taskIdsWithApplications.has(task.id)) {
+      current.tasksWithApplications += 1;
+    }
 
-      if (
-        task.status !== null &&
-        SUCCESSFUL_TASK_STATUSES.has(
-          task.status,
-        )
-      ) {
-        current.completedTasks +=
-          1;
-      }
+    if (task.status !== null && SUCCESSFUL_TASK_STATUSES.has(task.status)) {
+      current.completedTasks += 1;
+    }
 
-      if (
-        task.status !== null &&
-        FINALIZED_TASK_STATUSES.has(
-          task.status,
-        )
-      ) {
-        current.finalizedTasks +=
-          1;
-      }
+    if (task.status !== null && FINALIZED_TASK_STATUSES.has(task.status)) {
+      current.finalizedTasks += 1;
+    }
 
-      categoryMap.set(
-        category,
-        current,
-      );
-    },
-  );
+    categoryMap.set(category, current);
+  });
 
-  marketplaceApplications.forEach(
-    (application) => {
-      const category =
-        taskCategoryById.get(
-          application.task_id,
-        );
+  marketplaceApplications.forEach((application) => {
+    const category = taskCategoryById.get(application.task_id);
 
-      if (!category) {
-        return;
-      }
+    if (!category) {
+      return;
+    }
 
-      const current =
-        categoryMap.get(
-          category,
-        );
+    const current = categoryMap.get(category);
 
-      if (!current) {
-        return;
-      }
+    if (!current) {
+      return;
+    }
 
-      current.totalApplications +=
-        1;
-    },
-  );
+    current.totalApplications += 1;
+  });
 
-  const categories: AdminAnalyticsCategory[] =
-    Array.from(
-      categoryMap.values(),
-    )
-      .map(
-        (
-          category,
-        ) => ({
-          name:
-            category.name,
+  const categories: AdminAnalyticsCategory[] = Array.from(categoryMap.values())
+    .map((category) => ({
+      name: category.name,
 
-          totalTasks:
-            category.totalTasks,
+      totalTasks: category.totalTasks,
 
-          totalApplications:
-            category.totalApplications,
+      totalApplications: category.totalApplications,
 
-          tasksWithApplications:
-            category.tasksWithApplications,
+      tasksWithApplications: category.tasksWithApplications,
 
-          completedTasks:
-            category.completedTasks,
+      completedTasks: category.completedTasks,
 
-          coverageRate:
-            percentage(
-              category.tasksWithApplications,
-              category.totalTasks,
-            ),
+      coverageRate: percentage(
+        category.tasksWithApplications,
+        category.totalTasks,
+      ),
 
-          completionRate:
-            percentage(
-              category.completedTasks,
-              category.finalizedTasks,
-            ),
-        }),
-      )
-      .sort(
-        (a, b) =>
-          b.totalTasks -
-          a.totalTasks,
-      )
-      .slice(0, 5);
+      completionRate: percentage(
+        category.completedTasks,
+        category.finalizedTasks,
+      ),
+    }))
+    .sort((a, b) => b.totalTasks - a.totalTasks)
+    .slice(0, 5);
 
   /*
    * ======================================================
@@ -909,65 +599,37 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const helperCompletionMap =
-    new Map<
-      string,
-      number
-    >();
+  const helperCompletionMap = new Map<string, number>();
 
-  marketplaceTasks.forEach(
-    (task) => {
-      if (
-        task.status === null ||
-        !SUCCESSFUL_TASK_STATUSES.has(
-          task.status,
-        ) ||
-        !task.selected_helper_id
-      ) {
-        return;
-      }
+  marketplaceTasks.forEach((task) => {
+    if (
+      task.status === null ||
+      !SUCCESSFUL_TASK_STATUSES.has(task.status) ||
+      !task.selected_helper_id
+    ) {
+      return;
+    }
 
-      const helperId =
-        task.selected_helper_id;
+    const helperId = task.selected_helper_id;
 
-      helperCompletionMap.set(
-        helperId,
-        (
-          helperCompletionMap.get(
-            helperId,
-          ) ?? 0
-        ) + 1,
-      );
-    },
-  );
+    helperCompletionMap.set(
+      helperId,
+      (helperCompletionMap.get(helperId) ?? 0) + 1,
+    );
+  });
 
-  const topHelpers: AdminAnalyticsTopHelper[] =
-    Array.from(
-      helperCompletionMap.entries(),
-    )
-      .map(
-        ([
-          id,
-          helperCompletedTasks,
-        ]) => ({
-          id,
+  const topHelpers: AdminAnalyticsTopHelper[] = Array.from(
+    helperCompletionMap.entries(),
+  )
+    .map(([id, helperCompletedTasks]) => ({
+      id,
 
-          fullName:
-            usersById.get(
-              id,
-            ) ??
-            "Tanpa nama",
+      fullName: usersById.get(id) ?? "Tanpa nama",
 
-          completedTasks:
-            helperCompletedTasks,
-        }),
-      )
-      .sort(
-        (a, b) =>
-          b.completedTasks -
-          a.completedTasks,
-      )
-      .slice(0, 5);
+      completedTasks: helperCompletedTasks,
+    }))
+    .sort((a, b) => b.completedTasks - a.completedTasks)
+    .slice(0, 5);
 
   /*
    * ======================================================
@@ -975,61 +637,30 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    * ======================================================
    */
 
-  const reportedUserMap =
-    new Map<
-      string,
-      number
-    >();
+  const reportedUserMap = new Map<string, number>();
 
-  reports.forEach(
-    (report) => {
-      if (
-        !report.reported_user_id
-      ) {
-        return;
-      }
+  reports.forEach((report) => {
+    if (!report.reported_user_id) {
+      return;
+    }
 
-      const userId =
-        report.reported_user_id;
+    const userId = report.reported_user_id;
 
-      reportedUserMap.set(
-        userId,
-        (
-          reportedUserMap.get(
-            userId,
-          ) ?? 0
-        ) + 1,
-      );
-    },
-  );
+    reportedUserMap.set(userId, (reportedUserMap.get(userId) ?? 0) + 1);
+  });
 
-  const attentionUsers: AdminAnalyticsAttentionUser[] =
-    Array.from(
-      reportedUserMap.entries(),
-    )
-      .map(
-        ([
-          id,
-          userReports,
-        ]) => ({
-          id,
+  const attentionUsers: AdminAnalyticsAttentionUser[] = Array.from(
+    reportedUserMap.entries(),
+  )
+    .map(([id, userReports]) => ({
+      id,
 
-          fullName:
-            usersById.get(
-              id,
-            ) ??
-            "Tanpa nama",
+      fullName: usersById.get(id) ?? "Tanpa nama",
 
-          totalReports:
-            userReports,
-        }),
-      )
-      .sort(
-        (a, b) =>
-          b.totalReports -
-          a.totalReports,
-      )
-      .slice(0, 5);
+      totalReports: userReports,
+    }))
+    .sort((a, b) => b.totalReports - a.totalReports)
+    .slice(0, 5);
 
   /*
    * ======================================================
@@ -1038,26 +669,19 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
    */
 
   return {
-    generatedAt:
-      new Date().toISOString(),
+    generatedAt: new Date().toISOString(),
 
     overview: {
       totalUsers,
       verifiedUsers,
 
-      verificationRate:
-        percentage(
-          verifiedUsers,
-          totalUsers,
-        ),
+      verificationRate: percentage(verifiedUsers, totalUsers),
 
       totalTasks,
 
-      marketplaceTasks:
-        marketplaceTasks.length,
+      marketplaceTasks: marketplaceTasks.length,
 
-      completedTasks:
-        successfulTasks,
+      completedTasks: successfulTasks,
 
       completionRate,
 
@@ -1069,8 +693,7 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
     marketplace: {
       totalTasks,
 
-      marketplaceTasks:
-        marketplaceTasks.length,
+      marketplaceTasks: marketplaceTasks.length,
 
       openTasks,
       acceptedTasks,
@@ -1117,17 +740,16 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
     },
 
     quality: {
-  totalReviews,
-  averageRating,
+      totalReviews,
+      averageRating,
 
-  reviewedTasks:
-    tasksWithReviews,
+      reviewedTasks: tasksWithReviews,
 
-  uniqueReviewers,
-  uniqueReviewees,
+      uniqueReviewers,
+      uniqueReviewees,
 
-  ratingDistribution,
-},
+      ratingDistribution,
+    },
 
     moderation: {
       totalReports,
@@ -1144,6 +766,55 @@ export async function getAdminAnalyticsService(): Promise<AdminAnalyticsResponse
       bannedUsers,
     },
 
+    serviceMarketplace: {
+      listings: {
+        total: totalServiceListings,
+
+        active: activeServiceListings,
+
+        paused: pausedServiceListings,
+
+        expired: expiredServiceListings,
+
+        blocked: blockedServiceListings,
+      },
+
+      requests: {
+        total: totalServiceRequests,
+
+        active: activeServiceRequests,
+
+        inProgress: inProgressServiceRequests,
+
+        completed: completedServiceRequests,
+
+        declined: declinedServiceRequests,
+
+        cancelled: cancelledServiceRequests,
+      },
+
+      publicationPayments: {
+        total: totalServicePayments,
+
+        creating: creatingServicePayments,
+
+        pending: pendingServicePayments,
+
+        paid: paidServicePayments,
+
+        failed: failedServicePayments,
+
+        cancelled: cancelledServicePayments,
+
+        expired: expiredServicePayments,
+
+        paidRevenue: servicePublicationRevenue,
+      },
+
+      moderation: {
+        pendingListingReports: pendingServiceListingReports,
+      },
+    },
     growth,
 
     categories,

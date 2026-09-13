@@ -11,185 +11,111 @@ import {
   YAxis,
 } from "recharts";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import type {
   AdminAnalyticsResponse,
   AnalyticsRatingValue,
 } from "@/features/admin/analytics/types/admin-analytics.types";
 
-const numberFormatter =
-  new Intl.NumberFormat(
-    "id-ID",
-  );
+const numberFormatter = new Intl.NumberFormat("id-ID");
 
-const decimalFormatter =
-  new Intl.NumberFormat(
-    "id-ID",
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1,
-    },
-  );
+const decimalFormatter = new Intl.NumberFormat("id-ID", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 1,
+});
 
-const generatedAtFormatter =
-  new Intl.DateTimeFormat(
-    "id-ID",
-    {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone:
-        "Asia/Jakarta",
-    },
-  );
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+const generatedAtFormatter = new Intl.DateTimeFormat("id-ID", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Asia/Jakarta",
+});
 
-function formatNumber(
-  value: number,
-) {
-  return numberFormatter.format(
-    value,
-  );
+function formatNumber(value: number) {
+  return numberFormatter.format(value);
 }
 
-function formatPercent(
-  value: number,
-) {
-  return `${decimalFormatter.format(
-    value,
-  )}%`;
+function formatPercent(value: number) {
+  return `${decimalFormatter.format(value)}%`;
 }
 
-function formatDecimal(
-  value: number,
-) {
-  return decimalFormatter.format(
-    value,
-  );
+function formatDecimal(value: number) {
+  return decimalFormatter.format(value);
 }
 
-function formatGeneratedAt(
-  value: string,
-) {
-  const date =
-    new Date(value);
+function formatCurrency(value: number) {
+  return currencyFormatter.format(value);
+}
+function formatGeneratedAt(value: string) {
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "-";
   }
 
-  return `${generatedAtFormatter.format(
-    date,
-  )} WIB`;
+  return `${generatedAtFormatter.format(date)} WIB`;
 }
 
-function clampPercentage(
-  value: number,
-) {
-  return Math.max(
-    0,
-    Math.min(
-      value,
-      100,
-    ),
-  );
+function clampPercentage(value: number) {
+  return Math.max(0, Math.min(value, 100));
 }
 
-async function requestAnalytics(
-  signal?: AbortSignal,
-) {
-  const response =
-    await fetch(
-      "/api/admin/analytics",
-      {
-        method: "GET",
-        cache: "no-store",
-        signal,
-      },
-    );
+async function requestAnalytics(signal?: AbortSignal) {
+  const response = await fetch("/api/admin/analytics", {
+    method: "GET",
+    cache: "no-store",
+    signal,
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "Gagal mengambil data analytics.",
-    );
+    throw new Error("Gagal mengambil data analytics.");
   }
 
-  const result =
-    (await response.json()) as AdminAnalyticsResponse;
+  const result = (await response.json()) as AdminAnalyticsResponse;
 
   return result;
 }
 
 export default function AnalyticsPage() {
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    refreshing,
-    setRefreshing,
-  ] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [
-    error,
-    setError,
-  ] = useState<
-    string | null
-  >(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [
-    data,
-    setData,
-  ] =
-    useState<AdminAnalyticsResponse | null>(
-      null,
-    );
+  const [data, setData] = useState<AdminAnalyticsResponse | null>(null);
 
   useEffect(() => {
-    const controller =
-      new AbortController();
+    const controller = new AbortController();
 
-    requestAnalytics(
-      controller.signal,
-    )
+    requestAnalytics(controller.signal)
       .then((result) => {
         setData(result);
         setError(null);
       })
       .catch((requestError) => {
         if (
-          requestError instanceof
-            DOMException &&
-          requestError.name ===
-            "AbortError"
+          requestError instanceof DOMException &&
+          requestError.name === "AbortError"
         ) {
           return;
         }
 
-        console.error(
-          "Analytics error:",
-          requestError,
-        );
+        console.error("Analytics error:", requestError);
 
         setError(
-          requestError instanceof
-            Error
+          requestError instanceof Error
             ? requestError.message
             : "Terjadi kesalahan.",
         );
       })
       .finally(() => {
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       });
@@ -204,21 +130,14 @@ export default function AnalyticsPage() {
       setRefreshing(true);
       setError(null);
 
-      const result =
-        await requestAnalytics();
+      const result = await requestAnalytics();
 
       setData(result);
-    } catch (
-      requestError
-    ) {
-      console.error(
-        "Analytics refresh error:",
-        requestError,
-      );
+    } catch (requestError) {
+      console.error("Analytics refresh error:", requestError);
 
       setError(
-        requestError instanceof
-          Error
+        requestError instanceof Error
           ? requestError.message
           : "Terjadi kesalahan.",
       );
@@ -228,35 +147,19 @@ export default function AnalyticsPage() {
     }
   }
 
-  if (
-    loading &&
-    !data
-  ) {
-    return (
-      <AnalyticsLoading />
-    );
+  if (loading && !data) {
+    return <AnalyticsLoading />;
   }
 
-  if (
-    error &&
-    !data
-  ) {
-    return (
-      <AnalyticsError
-        error={error}
-        onRetry={
-          handleRefresh
-        }
-      />
-    );
+  if (error && !data) {
+    return <AnalyticsError error={error} onRetry={handleRefresh} />;
   }
 
   if (!data) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-medium text-slate-500">
-          Belum ada data
-          analytics.
+          Belum ada data analytics.
         </p>
       </div>
     );
@@ -268,14 +171,14 @@ export default function AnalyticsPage() {
     supplyDemand,
     quality,
     moderation,
+    serviceMarketplace,
     growth,
     categories,
     topHelpers,
     attentionUsers,
   } = data;
 
-  const insights =
-    buildInsights(data);
+  const insights = buildInsights(data);
 
   return (
     <div className="space-y-8">
@@ -284,8 +187,7 @@ export default function AnalyticsPage() {
       <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
-            Growth &
-            Operations
+            Growth & Operations
           </p>
 
           <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
@@ -293,11 +195,8 @@ export default function AnalyticsPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Pantau pertumbuhan,
-            kesehatan marketplace,
-            kualitas layanan, dan
-            area yang membutuhkan
-            perhatian admin.
+            Pantau pertumbuhan, kesehatan marketplace, kualitas layanan, dan
+            area yang membutuhkan perhatian admin.
           </p>
         </div>
 
@@ -308,25 +207,19 @@ export default function AnalyticsPage() {
             </p>
 
             <p className="mt-0.5 text-xs font-bold text-slate-700">
-              {formatGeneratedAt(
-                data.generatedAt,
-              )}
+              {formatGeneratedAt(data.generatedAt)}
             </p>
           </div>
 
           <button
             type="button"
-            disabled={
-              refreshing
-            }
+            disabled={refreshing}
             onClick={() => {
               void handleRefresh();
             }}
             className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {refreshing
-              ? "Memperbarui..."
-              : "Perbarui Data"}
+            {refreshing ? "Memperbarui..." : "Perbarui Data"}
           </button>
         </div>
       </header>
@@ -334,14 +227,10 @@ export default function AnalyticsPage() {
       {error && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
           <p className="text-sm font-bold text-amber-800">
-            Data terakhir tetap
-            ditampilkan, tetapi
-            pembaruan terbaru gagal.
+            Data terakhir tetap ditampilkan, tetapi pembaruan terbaru gagal.
           </p>
 
-          <p className="mt-1 text-xs text-amber-700">
-            {error}
-          </p>
+          <p className="mt-1 text-xs text-amber-700">{error}</p>
         </div>
       )}
 
@@ -357,9 +246,7 @@ export default function AnalyticsPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Pengguna"
-            value={formatNumber(
-              overview.totalUsers,
-            )}
+            value={formatNumber(overview.totalUsers)}
             description={`${formatPercent(
               overview.verificationRate,
             )} sudah terverifikasi`}
@@ -368,9 +255,7 @@ export default function AnalyticsPage() {
 
           <MetricCard
             label="Task Marketplace"
-            value={formatNumber(
-              overview.marketplaceTasks,
-            )}
+            value={formatNumber(overview.marketplaceTasks)}
             description={`${formatNumber(
               overview.totalTasks,
             )} termasuk task moderasi`}
@@ -379,9 +264,7 @@ export default function AnalyticsPage() {
 
           <MetricCard
             label="Completion Rate"
-            value={formatPercent(
-              overview.completionRate,
-            )}
+            value={formatPercent(overview.completionRate)}
             description={`${formatNumber(
               overview.completedTasks,
             )} task berhasil diselesaikan`}
@@ -390,9 +273,7 @@ export default function AnalyticsPage() {
 
           <MetricCard
             label="Application Coverage"
-            value={formatPercent(
-              overview.applicationCoverageRate,
-            )}
+            value={formatPercent(overview.applicationCoverageRate)}
             description="Task yang pernah mendapatkan pelamar"
             tone="blue"
           />
@@ -416,8 +297,7 @@ export default function AnalyticsPage() {
               </h3>
 
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Data harian, bukan
-                cumulative total.
+                Data harian, bukan cumulative total.
               </p>
             </div>
 
@@ -427,10 +307,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="h-80 w-full">
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={growth}
                 margin={{
@@ -468,12 +345,9 @@ export default function AnalyticsPage() {
 
                 <Tooltip
                   contentStyle={{
-                    borderRadius:
-                      "12px",
-                    border:
-                      "1px solid #e2e8f0",
-                    boxShadow:
-                      "0 10px 25px rgba(15, 23, 42, 0.08)",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    boxShadow: "0 10px 25px rgba(15, 23, 42, 0.08)",
                   }}
                 />
 
@@ -542,56 +416,43 @@ export default function AnalyticsPage() {
             </h3>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Snapshot seluruh
-              lifecycle task HelpMe.
+              Snapshot seluruh lifecycle task HelpMe.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <StatusCard
                 label="Terbuka"
-                value={
-                  marketplace.openTasks
-                }
+                value={marketplace.openTasks}
                 tone="blue"
               />
 
               <StatusCard
                 label="Dalam Proses"
-                value={
-                  marketplace.inProgressTasks
-                }
+                value={marketplace.inProgressTasks}
                 tone="amber"
               />
 
               <StatusCard
                 label="Berhasil"
-                value={
-                  marketplace.successfulTasks
-                }
+                value={marketplace.successfulTasks}
                 tone="emerald"
               />
 
               <StatusCard
                 label="Kedaluwarsa"
-                value={
-                  marketplace.expiredTasks
-                }
+                value={marketplace.expiredTasks}
                 tone="rose"
               />
 
               <StatusCard
                 label="Dibatalkan"
-                value={
-                  marketplace.cancelledTasks
-                }
+                value={marketplace.cancelledTasks}
                 tone="amber"
               />
 
               <StatusCard
                 label="Dihapus Admin"
-                value={
-                  marketplace.removedTasks
-                }
+                value={marketplace.removedTasks}
                 tone="slate"
               />
             </div>
@@ -599,16 +460,10 @@ export default function AnalyticsPage() {
             <div className="mt-5 rounded-xl bg-slate-50 px-4 py-3">
               <p className="text-xs leading-5 text-slate-600">
                 <span className="font-black text-slate-900">
-                  {formatNumber(
-                    marketplace.finalizedTasks,
-                  )}
+                  {formatNumber(marketplace.finalizedTasks)}
                 </span>{" "}
-                task sudah mencapai
-                outcome final.
-                Task yang sedang
-                berjalan tidak
-                dihitung sebagai
-                kegagalan.
+                task sudah mencapai outcome final. Task yang sedang berjalan
+                tidak dihitung sebagai kegagalan.
               </p>
             </div>
           </div>
@@ -619,42 +474,31 @@ export default function AnalyticsPage() {
             </h3>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Rasio dihitung dari
-              task yang sudah
-              mencapai outcome
-              final.
+              Rasio dihitung dari task yang sudah mencapai outcome final.
             </p>
 
             <div className="mt-6 space-y-6">
               <ProgressMetric
                 label="Completion Rate"
-                value={
-                  marketplace.completionRate
-                }
+                value={marketplace.completionRate}
                 tone="emerald"
               />
 
               <ProgressMetric
                 label="Expiry Rate"
-                value={
-                  marketplace.expiryRate
-                }
+                value={marketplace.expiryRate}
                 tone="rose"
               />
 
               <ProgressMetric
                 label="Cancellation Rate"
-                value={
-                  marketplace.cancellationRate
-                }
+                value={marketplace.cancellationRate}
                 tone="amber"
               />
 
               <ProgressMetric
                 label="Completed Share"
-                value={
-                  marketplace.completedShare
-                }
+                value={marketplace.completedShare}
                 tone="blue"
                 description="Share task berhasil dari seluruh task marketplace."
               />
@@ -663,6 +507,214 @@ export default function AnalyticsPage() {
         </div>
       </section>
 
+      {/* SERVICE MARKETPLACE */}
+
+      <section>
+        <SectionHeader
+          eyebrow="Jasa Marketplace"
+          title="Operasional marketplace jasa"
+          description="Pantau listing jasa, permintaan pelanggan, pembayaran publikasi, dan laporan yang membutuhkan perhatian."
+        />
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total Jasa"
+            value={formatNumber(serviceMarketplace.listings.total)}
+            description={`${formatNumber(
+              serviceMarketplace.listings.active,
+            )} listing sedang aktif`}
+            tone="indigo"
+          />
+
+          <MetricCard
+            label="Permintaan Aktif"
+            value={formatNumber(serviceMarketplace.requests.active)}
+            description={`${formatNumber(
+              serviceMarketplace.requests.total,
+            )} total permintaan jasa`}
+            tone="blue"
+          />
+
+          <MetricCard
+            label="Pembayaran Berhasil"
+            value={formatNumber(serviceMarketplace.publicationPayments.paid)}
+            description={`${formatNumber(
+              serviceMarketplace.publicationPayments.total,
+            )} total transaksi publikasi`}
+            tone="emerald"
+          />
+
+          <MetricCard
+            label="Revenue Publikasi"
+            value={formatCurrency(
+              serviceMarketplace.publicationPayments.paidRevenue,
+            )}
+            description="Hanya transaksi publikasi berstatus PAID"
+            tone="emerald"
+          />
+        </div>
+
+        <div className="mt-5 grid gap-5 xl:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-black text-slate-900">
+              Status Listing Jasa
+            </h3>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Snapshot lifecycle listing yang paling relevan untuk operasional
+              admin.
+            </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <StatusCard
+                label="Aktif"
+                value={serviceMarketplace.listings.active}
+                tone="emerald"
+              />
+
+              <StatusCard
+                label="Dijeda"
+                value={serviceMarketplace.listings.paused}
+                tone="amber"
+              />
+
+              <StatusCard
+                label="Kedaluwarsa"
+                value={serviceMarketplace.listings.expired}
+                tone="rose"
+              />
+
+              <StatusCard
+                label="Diblokir"
+                value={serviceMarketplace.listings.blocked}
+                tone="slate"
+              />
+            </div>
+
+            <div className="mt-5 rounded-xl bg-slate-50 px-4 py-3">
+              <p className="text-xs leading-5 text-slate-600">
+                Total seluruh lifecycle listing:{" "}
+                <span className="font-black text-slate-900">
+                  {formatNumber(serviceMarketplace.listings.total)}
+                </span>
+                .
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-black text-slate-900">
+              Lifecycle Permintaan Jasa
+            </h3>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Admin hanya memantau lifecycle. Tindakan participant tetap berada
+              pada Customer dan Provider.
+            </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <StatusCard
+                label="Aktif"
+                value={serviceMarketplace.requests.active}
+                tone="blue"
+              />
+
+              <StatusCard
+                label="Sedang Dikerjakan"
+                value={serviceMarketplace.requests.inProgress}
+                tone="amber"
+              />
+
+              <StatusCard
+                label="Selesai"
+                value={serviceMarketplace.requests.completed}
+                tone="emerald"
+              />
+
+              <StatusCard
+                label="Ditolak"
+                value={serviceMarketplace.requests.declined}
+                tone="rose"
+              />
+
+              <StatusCard
+                label="Dibatalkan"
+                value={serviceMarketplace.requests.cancelled}
+                tone="slate"
+              />
+
+              <StatusCard
+                label="Total"
+                value={serviceMarketplace.requests.total}
+                tone="blue"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-base font-black text-slate-900">
+              Pembayaran Publikasi & Moderasi
+            </h3>
+
+            <p className="text-xs leading-5 text-slate-500">
+              Monitoring status pembayaran bersifat read-only. Midtrans dan
+              payment lifecycle tetap menjadi authority pembayaran.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatusCard
+              label="Creating"
+              value={serviceMarketplace.publicationPayments.creating}
+              tone="slate"
+            />
+
+            <StatusCard
+              label="Pending"
+              value={serviceMarketplace.publicationPayments.pending}
+              tone="amber"
+            />
+
+            <StatusCard
+              label="Paid"
+              value={serviceMarketplace.publicationPayments.paid}
+              tone="emerald"
+            />
+
+            <StatusCard
+              label="Failed"
+              value={serviceMarketplace.publicationPayments.failed}
+              tone="rose"
+            />
+
+            <StatusCard
+              label="Cancelled"
+              value={serviceMarketplace.publicationPayments.cancelled}
+              tone="slate"
+            />
+
+            <StatusCard
+              label="Expired"
+              value={serviceMarketplace.publicationPayments.expired}
+              tone="rose"
+            />
+
+            <StatusCard
+              label="Laporan Pending"
+              value={serviceMarketplace.moderation.pendingListingReports}
+              tone="amber"
+            />
+
+            <StatusCard
+              label="Total Payment"
+              value={serviceMarketplace.publicationPayments.total}
+              tone="blue"
+            />
+          </div>
+        </div>
+      </section>
       {/* DEMAND & SUPPLY */}
 
       <section>
@@ -675,9 +727,7 @@ export default function AnalyticsPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <SmallMetric
             label="Total Aplikasi"
-            value={formatNumber(
-              supplyDemand.totalApplications,
-            )}
+            value={formatNumber(supplyDemand.totalApplications)}
             description={`${formatNumber(
               supplyDemand.uniqueApplicants,
             )} helper unik`}
@@ -685,9 +735,7 @@ export default function AnalyticsPage() {
 
           <SmallMetric
             label="Punya Pelamar"
-            value={formatNumber(
-              supplyDemand.tasksWithApplications,
-            )}
+            value={formatNumber(supplyDemand.tasksWithApplications)}
             description={`${formatPercent(
               supplyDemand.applicationCoverageRate,
             )} coverage`}
@@ -695,18 +743,14 @@ export default function AnalyticsPage() {
 
           <SmallMetric
             label="Tanpa Pelamar"
-            value={formatNumber(
-              supplyDemand.tasksWithoutApplications,
-            )}
+            value={formatNumber(supplyDemand.tasksWithoutApplications)}
             description="Task belum pernah menerima aplikasi"
             warning
           />
 
           <SmallMetric
             label="Helper Terpilih"
-            value={formatNumber(
-              supplyDemand.tasksWithSelectedHelper,
-            )}
+            value={formatNumber(supplyDemand.tasksWithSelectedHelper)}
             description={`${formatPercent(
               supplyDemand.helperSelectionRate,
             )} dari task marketplace`}
@@ -716,54 +760,37 @@ export default function AnalyticsPage() {
         <div className="mt-5 grid gap-5 xl:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-black text-slate-900">
-              Marketplace Funnel
-              Snapshot
+              Marketplace Funnel Snapshot
             </h3>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Snapshot kondisi
-              historis marketplace,
-              bukan cohort conversion
+              Snapshot kondisi historis marketplace, bukan cohort conversion
               funnel.
             </p>
 
             <div className="mt-6 space-y-5">
               <FunnelRow
                 label="Task Marketplace"
-                value={
-                  marketplace.marketplaceTasks
-                }
+                value={marketplace.marketplaceTasks}
                 percentage={100}
               />
 
               <FunnelRow
                 label="Mendapat Pelamar"
-                value={
-                  supplyDemand.tasksWithApplications
-                }
-                percentage={
-                  supplyDemand.applicationCoverageRate
-                }
+                value={supplyDemand.tasksWithApplications}
+                percentage={supplyDemand.applicationCoverageRate}
               />
 
               <FunnelRow
                 label="Helper Terpilih"
-                value={
-                  supplyDemand.tasksWithSelectedHelper
-                }
-                percentage={
-                  supplyDemand.helperSelectionRate
-                }
+                value={supplyDemand.tasksWithSelectedHelper}
+                percentage={supplyDemand.helperSelectionRate}
               />
 
               <FunnelRow
                 label="Task Berhasil"
-                value={
-                  marketplace.successfulTasks
-                }
-                percentage={
-                  marketplace.completedShare
-                }
+                value={marketplace.successfulTasks}
+                percentage={marketplace.completedShare}
               />
             </div>
           </div>
@@ -774,32 +801,25 @@ export default function AnalyticsPage() {
             </h3>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Gambaran volume dan
-              status aplikasi helper.
+              Gambaran volume dan status aplikasi helper.
             </p>
 
             <div className="mt-6 grid grid-cols-3 gap-3">
               <ApplicationStatus
                 label="Pending"
-                value={
-                  supplyDemand.pendingApplications
-                }
+                value={supplyDemand.pendingApplications}
                 tone="amber"
               />
 
               <ApplicationStatus
                 label="Diterima"
-                value={
-                  supplyDemand.acceptedApplications
-                }
+                value={supplyDemand.acceptedApplications}
                 tone="emerald"
               />
 
               <ApplicationStatus
                 label="Ditolak"
-                value={
-                  supplyDemand.rejectedApplications
-                }
+                value={supplyDemand.rejectedApplications}
                 tone="rose"
               />
             </div>
@@ -807,9 +827,7 @@ export default function AnalyticsPage() {
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <RatioCard
                 label="Rata-rata / Task"
-                value={formatDecimal(
-                  supplyDemand.averageApplicationsPerTask,
-                )}
+                value={formatDecimal(supplyDemand.averageApplicationsPerTask)}
               />
 
               <RatioCard
@@ -833,109 +851,64 @@ export default function AnalyticsPage() {
         />
 
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {categories.length ===
-          0 ? (
+          {categories.length === 0 ? (
             <EmptyState />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-190">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-200">
-                    <TableHeader>
-                      Kategori
-                    </TableHeader>
+                    <TableHeader>Kategori</TableHeader>
 
-                    <TableHeader align="right">
-                      Task
-                    </TableHeader>
+                    <TableHeader align="right">Task</TableHeader>
 
-                    <TableHeader align="right">
-                      Aplikasi
-                    </TableHeader>
+                    <TableHeader align="right">Aplikasi</TableHeader>
 
-                    <TableHeader align="right">
-                      Punya Pelamar
-                    </TableHeader>
+                    <TableHeader align="right">Punya Pelamar</TableHeader>
 
-                    <TableHeader align="right">
-                      Coverage
-                    </TableHeader>
+                    <TableHeader align="right">Coverage</TableHeader>
 
-                    <TableHeader align="right">
-                      Completed
-                    </TableHeader>
+                    <TableHeader align="right">Completed</TableHeader>
 
-                    <TableHeader align="right">
-                      Completion
-                    </TableHeader>
+                    <TableHeader align="right">Completion</TableHeader>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {categories.map(
-                    (
-                      category,
-                      index,
-                    ) => (
-                      <tr
-                        key={
-                          category.name
-                        }
-                        className="border-b border-slate-100 last:border-b-0"
-                      >
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-xs font-black text-indigo-600">
-                              {index +
-                                1}
-                            </span>
+                  {categories.map((category, index) => (
+                    <tr
+                      key={category.name}
+                      className="border-b border-slate-100 last:border-b-0"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-xs font-black text-indigo-600">
+                            {index + 1}
+                          </span>
 
-                            <p className="font-bold text-slate-800">
-                              {
-                                category.name
-                              }
-                            </p>
-                          </div>
-                        </td>
+                          <p className="font-bold text-slate-800">
+                            {category.name}
+                          </p>
+                        </div>
+                      </td>
 
-                        <TableValue>
-                          {
-                            category.totalTasks
-                          }
-                        </TableValue>
+                      <TableValue>{category.totalTasks}</TableValue>
 
-                        <TableValue>
-                          {
-                            category.totalApplications
-                          }
-                        </TableValue>
+                      <TableValue>{category.totalApplications}</TableValue>
 
-                        <TableValue>
-                          {
-                            category.tasksWithApplications
-                          }
-                        </TableValue>
+                      <TableValue>{category.tasksWithApplications}</TableValue>
 
-                        <TableValue>
-                          {formatPercent(
-                            category.coverageRate,
-                          )}
-                        </TableValue>
+                      <TableValue>
+                        {formatPercent(category.coverageRate)}
+                      </TableValue>
 
-                        <TableValue>
-                          {
-                            category.completedTasks
-                          }
-                        </TableValue>
+                      <TableValue>{category.completedTasks}</TableValue>
 
-                        <TableValue>
-                          {formatPercent(
-                            category.completionRate,
-                          )}
-                        </TableValue>
-                      </tr>
-                    ),
-                  )}
+                      <TableValue>
+                        {formatPercent(category.completionRate)}
+                      </TableValue>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -961,75 +934,36 @@ export default function AnalyticsPage() {
                 </h3>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  Berdasarkan review
-                  pengguna.
+                  Berdasarkan review pengguna.
                 </p>
               </div>
 
               <div className="text-right">
                 <p className="text-3xl font-black text-slate-950">
-                  {formatDecimal(
-                    quality.averageRating,
-                  )}
+                  {formatDecimal(quality.averageRating)}
                 </p>
 
-                <p className="text-xs font-bold text-amber-500">
-                  / 5.0
-                </p>
+                <p className="text-xs font-bold text-amber-500">/ 5.0</p>
               </div>
             </div>
 
             <div className="mt-6 space-y-3">
-              {(
-                [
-                  5,
-                  4,
-                  3,
-                  2,
-                  1,
-                ] as const
-              ).map(
-                (rating) => (
-                  <RatingRow
-                    key={rating}
-                    rating={
-                      rating
-                    }
-                    total={
-                      quality
-                        .ratingDistribution[
-                        rating
-                      ]
-                    }
-                    overall={
-                      quality.totalReviews
-                    }
-                  />
-                ),
-              )}
+              {([5, 4, 3, 2, 1] as const).map((rating) => (
+                <RatingRow
+                  key={rating}
+                  rating={rating}
+                  total={quality.ratingDistribution[rating]}
+                  overall={quality.totalReviews}
+                />
+              ))}
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-3 border-t border-slate-100 pt-5">
-              <MiniStat
-                label="Reviews"
-                value={
-                  quality.totalReviews
-                }
-              />
+              <MiniStat label="Reviews" value={quality.totalReviews} />
 
-              <MiniStat
-                label="Task Dinilai"
-                value={
-                  quality.reviewedTasks
-                }
-              />
+              <MiniStat label="Task Dinilai" value={quality.reviewedTasks} />
 
-              <MiniStat
-                label="Penerima"
-                value={
-                  quality.uniqueReviewees
-                }
-              />
+              <MiniStat label="Penerima" value={quality.uniqueReviewees} />
             </div>
           </div>
 
@@ -1039,16 +973,13 @@ export default function AnalyticsPage() {
             </h3>
 
             <p className="mt-1 text-xs text-slate-500">
-              Status penanganan
-              laporan dan akun.
+              Status penanganan laporan dan akun.
             </p>
 
             <div className="mt-6">
               <ProgressMetric
                 label="Report Handling Rate"
-                value={
-                  moderation.handlingRate
-                }
+                value={moderation.handlingRate}
                 tone="emerald"
                 description={`${formatNumber(
                   moderation.handledReports,
@@ -1061,45 +992,34 @@ export default function AnalyticsPage() {
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <ModerationStat
                 label="Pending"
-                value={
-                  moderation.pendingReports
-                }
+                value={moderation.pendingReports}
                 tone="amber"
               />
 
               <ModerationStat
                 label="Resolved"
-                value={
-                  moderation.resolvedReports
-                }
+                value={moderation.resolvedReports}
                 tone="emerald"
               />
 
               <ModerationStat
                 label="Suspended"
-                value={
-                  moderation.suspendedUsers
-                }
+                value={moderation.suspendedUsers}
                 tone="amber"
               />
 
               <ModerationStat
                 label="Banned"
-                value={
-                  moderation.bannedUsers
-                }
+                value={moderation.bannedUsers}
                 tone="rose"
               />
             </div>
 
             <div className="mt-5 rounded-xl bg-slate-50 px-4 py-3">
               <p className="text-xs leading-5 text-slate-600">
-                Verification rate
-                pengguna saat ini{" "}
+                Verification rate pengguna saat ini{" "}
                 <span className="font-black text-slate-900">
-                  {formatPercent(
-                    overview.verificationRate,
-                  )}
+                  {formatPercent(overview.verificationRate)}
                 </span>
                 .
               </p>
@@ -1122,32 +1042,18 @@ export default function AnalyticsPage() {
             title="Helper dengan Penyelesaian Terbanyak"
             description="Berdasarkan jumlah task berstatus COMPLETED atau REVIEWED."
           >
-            {topHelpers.length ===
-            0 ? (
+            {topHelpers.length === 0 ? (
               <EmptyState compact />
             ) : (
-              topHelpers.map(
-                (
-                  helper,
-                  index,
-                ) => (
-                  <RankingRow
-                    key={
-                      helper.id
-                    }
-                    rank={
-                      index + 1
-                    }
-                    name={
-                      helper.fullName
-                    }
-                    value={`${formatNumber(
-                      helper.completedTasks,
-                    )} task`}
-                    positive
-                  />
-                ),
-              )
+              topHelpers.map((helper, index) => (
+                <RankingRow
+                  key={helper.id}
+                  rank={index + 1}
+                  name={helper.fullName}
+                  value={`${formatNumber(helper.completedTasks)} task`}
+                  positive
+                />
+              ))
             )}
           </RankingPanel>
 
@@ -1155,31 +1061,17 @@ export default function AnalyticsPage() {
             title="Perlu Perhatian Admin"
             description="Akun dengan jumlah report terbanyak. Tetap lakukan pemeriksaan manual sebelum tindakan moderasi."
           >
-            {attentionUsers.length ===
-            0 ? (
+            {attentionUsers.length === 0 ? (
               <EmptyState compact />
             ) : (
-              attentionUsers.map(
-                (
-                  user,
-                  index,
-                ) => (
-                  <RankingRow
-                    key={
-                      user.id
-                    }
-                    rank={
-                      index + 1
-                    }
-                    name={
-                      user.fullName
-                    }
-                    value={`${formatNumber(
-                      user.totalReports,
-                    )} report`}
-                  />
-                ),
-              )
+              attentionUsers.map((user, index) => (
+                <RankingRow
+                  key={user.id}
+                  rank={index + 1}
+                  name={user.fullName}
+                  value={`${formatNumber(user.totalReports)} report`}
+                />
+              ))
             )}
           </RankingPanel>
         </div>
@@ -1195,24 +1087,14 @@ export default function AnalyticsPage() {
         />
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          {insights.map(
-            (insight) => (
-              <InsightCard
-                key={
-                  insight.title
-                }
-                title={
-                  insight.title
-                }
-                description={
-                  insight.description
-                }
-                tone={
-                  insight.tone
-                }
-              />
-            ),
-          )}
+          {insights.map((insight) => (
+            <InsightCard
+              key={insight.title}
+              title={insight.title}
+              description={insight.description}
+              tone={insight.tone}
+            />
+          ))}
         </div>
       </section>
     </div>
@@ -1234,9 +1116,7 @@ function SectionHeader({
         {eyebrow}
       </p>
 
-      <h2 className="mt-1 text-xl font-black text-slate-950">
-        {title}
-      </h2>
+      <h2 className="mt-1 text-xl font-black text-slate-950">{title}</h2>
 
       <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
         {description}
@@ -1245,69 +1125,49 @@ function SectionHeader({
   );
 }
 
-type Tone =
-  | "slate"
-  | "indigo"
-  | "blue"
-  | "emerald"
-  | "amber"
-  | "rose";
+type Tone = "slate" | "indigo" | "blue" | "emerald" | "amber" | "rose";
 
-function getToneClasses(
-  tone: Tone,
-) {
+function getToneClasses(tone: Tone) {
   switch (tone) {
     case "indigo":
       return {
-        value:
-          "text-indigo-600",
-        soft:
-          "bg-indigo-50 text-indigo-700",
+        value: "text-indigo-600",
+        soft: "bg-indigo-50 text-indigo-700",
         bar: "bg-indigo-500",
       };
 
     case "blue":
       return {
-        value:
-          "text-sky-600",
-        soft:
-          "bg-sky-50 text-sky-700",
+        value: "text-sky-600",
+        soft: "bg-sky-50 text-sky-700",
         bar: "bg-sky-500",
       };
 
     case "emerald":
       return {
-        value:
-          "text-emerald-600",
-        soft:
-          "bg-emerald-50 text-emerald-700",
+        value: "text-emerald-600",
+        soft: "bg-emerald-50 text-emerald-700",
         bar: "bg-emerald-500",
       };
 
     case "amber":
       return {
-        value:
-          "text-amber-600",
-        soft:
-          "bg-amber-50 text-amber-700",
+        value: "text-amber-600",
+        soft: "bg-amber-50 text-amber-700",
         bar: "bg-amber-500",
       };
 
     case "rose":
       return {
-        value:
-          "text-rose-600",
-        soft:
-          "bg-rose-50 text-rose-700",
+        value: "text-rose-600",
+        soft: "bg-rose-50 text-rose-700",
         bar: "bg-rose-500",
       };
 
     default:
       return {
-        value:
-          "text-slate-900",
-        soft:
-          "bg-slate-100 text-slate-700",
+        value: "text-slate-900",
+        soft: "bg-slate-100 text-slate-700",
         bar: "bg-slate-500",
       };
   }
@@ -1324,30 +1184,21 @@ function MetricCard({
   description: string;
   tone: Tone;
 }) {
-  const colors =
-    getToneClasses(tone);
+  const colors = getToneClasses(tone);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-bold text-slate-600">
-          {label}
-        </p>
+        <p className="text-sm font-bold text-slate-600">{label}</p>
 
-        <span
-          className={`h-2.5 w-2.5 rounded-full ${colors.bar}`}
-        />
+        <span className={`h-2.5 w-2.5 rounded-full ${colors.bar}`} />
       </div>
 
-      <p
-        className={`mt-4 text-3xl font-black tracking-tight ${colors.value}`}
-      >
+      <p className={`mt-4 text-3xl font-black tracking-tight ${colors.value}`}>
         {value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 text-xs leading-5 text-slate-500">{description}</p>
     </article>
   );
 }
@@ -1377,17 +1228,13 @@ function SmallMetric({
 
       <p
         className={`mt-3 text-3xl font-black ${
-          warning
-            ? "text-amber-700"
-            : "text-slate-950"
+          warning ? "text-amber-700" : "text-slate-950"
         }`}
       >
         {value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 text-xs leading-5 text-slate-500">{description}</p>
     </article>
   );
 }
@@ -1401,21 +1248,14 @@ function StatusCard({
   value: number;
   tone: Tone;
 }) {
-  const colors =
-    getToneClasses(tone);
+  const colors = getToneClasses(tone);
 
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-      <p className="text-xs font-bold text-slate-500">
-        {label}
-      </p>
+      <p className="text-xs font-bold text-slate-500">{label}</p>
 
-      <p
-        className={`mt-2 text-2xl font-black ${colors.value}`}
-      >
-        {formatNumber(
-          value,
-        )}
+      <p className={`mt-2 text-2xl font-black ${colors.value}`}>
+        {formatNumber(value)}
       </p>
     </div>
   );
@@ -1432,22 +1272,15 @@ function ProgressMetric({
   tone: Tone;
   description?: string;
 }) {
-  const colors =
-    getToneClasses(tone);
+  const colors = getToneClasses(tone);
 
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-bold text-slate-700">
-          {label}
-        </p>
+        <p className="text-sm font-bold text-slate-700">{label}</p>
 
-        <p
-          className={`text-sm font-black ${colors.value}`}
-        >
-          {formatPercent(
-            value,
-          )}
+        <p className={`text-sm font-black ${colors.value}`}>
+          {formatPercent(value)}
         </p>
       </div>
 
@@ -1455,17 +1288,13 @@ function ProgressMetric({
         <div
           className={`h-full rounded-full ${colors.bar}`}
           style={{
-            width: `${clampPercentage(
-              value,
-            )}%`,
+            width: `${clampPercentage(value)}%`,
           }}
         />
       </div>
 
       {description && (
-        <p className="mt-2 text-xs leading-5 text-slate-400">
-          {description}
-        </p>
+        <p className="mt-2 text-xs leading-5 text-slate-400">{description}</p>
       )}
     </div>
   );
@@ -1483,21 +1312,15 @@ function FunnelRow({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-4">
-        <p className="text-sm font-bold text-slate-700">
-          {label}
-        </p>
+        <p className="text-sm font-bold text-slate-700">{label}</p>
 
         <div className="text-right">
           <span className="text-sm font-black text-slate-900">
-            {formatNumber(
-              value,
-            )}
+            {formatNumber(value)}
           </span>
 
           <span className="ml-2 text-xs font-bold text-slate-400">
-            {formatPercent(
-              percentage,
-            )}
+            {formatPercent(percentage)}
           </span>
         </div>
       </div>
@@ -1506,9 +1329,7 @@ function FunnelRow({
         <div
           className="h-full rounded-full bg-indigo-500"
           style={{
-            width: `${clampPercentage(
-              percentage,
-            )}%`,
+            width: `${clampPercentage(percentage)}%`,
           }}
         />
       </div>
@@ -1525,42 +1346,23 @@ function ApplicationStatus({
   value: number;
   tone: Tone;
 }) {
-  const colors =
-    getToneClasses(tone);
+  const colors = getToneClasses(tone);
 
   return (
-    <div
-      className={`rounded-xl p-4 text-center ${colors.soft}`}
-    >
-      <p className="text-2xl font-black">
-        {formatNumber(
-          value,
-        )}
-      </p>
+    <div className={`rounded-xl p-4 text-center ${colors.soft}`}>
+      <p className="text-2xl font-black">{formatNumber(value)}</p>
 
-      <p className="mt-1 text-xs font-bold">
-        {label}
-      </p>
+      <p className="mt-1 text-xs font-bold">{label}</p>
     </div>
   );
 }
 
-function RatioCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function RatioCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-slate-200 p-4">
-      <p className="text-xs font-medium text-slate-500">
-        {label}
-      </p>
+      <p className="text-xs font-medium text-slate-500">{label}</p>
 
-      <p className="mt-2 text-2xl font-black text-slate-900">
-        {value}
-      </p>
+      <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
     </div>
   );
 }
@@ -1574,51 +1376,30 @@ function RatingRow({
   total: number;
   overall: number;
 }) {
-  const percentage =
-    overall > 0
-      ? (total /
-          overall) *
-        100
-      : 0;
+  const percentage = overall > 0 ? (total / overall) * 100 : 0;
 
   return (
     <div className="grid grid-cols-[48px_1fr_38px] items-center gap-3">
-      <p className="text-xs font-bold text-slate-600">
-        {rating} ★
-      </p>
+      <p className="text-xs font-bold text-slate-600">{rating} â˜…</p>
 
       <div className="h-2 overflow-hidden rounded-full bg-slate-100">
         <div
           className="h-full rounded-full bg-amber-400"
           style={{
-            width: `${clampPercentage(
-              percentage,
-            )}%`,
+            width: `${clampPercentage(percentage)}%`,
           }}
         />
       </div>
 
-      <p className="text-right text-xs font-black text-slate-700">
-        {total}
-      </p>
+      <p className="text-right text-xs font-black text-slate-700">{total}</p>
     </div>
   );
 }
 
-function MiniStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function MiniStat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <p className="text-xl font-black text-slate-900">
-        {formatNumber(
-          value,
-        )}
-      </p>
+      <p className="text-xl font-black text-slate-900">{formatNumber(value)}</p>
 
       <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">
         {label}
@@ -1636,22 +1417,13 @@ function ModerationStat({
   value: number;
   tone: Tone;
 }) {
-  const colors =
-    getToneClasses(tone);
+  const colors = getToneClasses(tone);
 
   return (
-    <div
-      className={`rounded-xl p-3 ${colors.soft}`}
-    >
-      <p className="text-xl font-black">
-        {formatNumber(
-          value,
-        )}
-      </p>
+    <div className={`rounded-xl p-3 ${colors.soft}`}>
+      <p className="text-xl font-black">{formatNumber(value)}</p>
 
-      <p className="mt-1 text-[11px] font-bold">
-        {label}
-      </p>
+      <p className="mt-1 text-[11px] font-bold">{label}</p>
     </div>
   );
 }
@@ -1666,9 +1438,7 @@ function TableHeader({
   return (
     <th
       className={`px-5 py-3 text-xs font-black uppercase tracking-wide text-slate-400 ${
-        align === "right"
-          ? "text-right"
-          : "text-left"
+        align === "right" ? "text-right" : "text-left"
       }`}
     >
       {children}
@@ -1676,11 +1446,7 @@ function TableHeader({
   );
 }
 
-function TableValue({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function TableValue({ children }: { children: React.ReactNode }) {
   return (
     <td className="px-5 py-4 text-right text-sm font-bold text-slate-700">
       {children}
@@ -1699,17 +1465,11 @@ function RankingPanel({
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-base font-black text-slate-900">
-        {title}
-      </h3>
+      <h3 className="text-base font-black text-slate-900">{title}</h3>
 
-      <p className="mt-1 text-xs leading-5 text-slate-500">
-        {description}
-      </p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
 
-      <div className="mt-5 space-y-2">
-        {children}
-      </div>
+      <div className="mt-5 space-y-2">{children}</div>
     </div>
   );
 }
@@ -1732,9 +1492,7 @@ function RankingRow({
           {rank}
         </span>
 
-        <p className="truncate text-sm font-bold text-slate-800">
-          {name}
-        </p>
+        <p className="truncate text-sm font-bold text-slate-800">{name}</p>
       </div>
 
       <span
@@ -1750,11 +1508,7 @@ function RankingRow({
   );
 }
 
-type InsightTone =
-  | "critical"
-  | "warning"
-  | "positive"
-  | "info";
+type InsightTone = "critical" | "warning" | "positive" | "info";
 
 interface Insight {
   title: string;
@@ -1762,142 +1516,91 @@ interface Insight {
   tone: InsightTone;
 }
 
-function buildInsights(
-  data: AdminAnalyticsResponse,
-): Insight[] {
-  const insights: Insight[] =
-    [];
+function buildInsights(data: AdminAnalyticsResponse): Insight[] {
+  const insights: Insight[] = [];
 
-  if (
-    data.marketplace
-      .expiryRate >= 40
-  ) {
+  if (data.marketplace.expiryRate >= 40) {
     insights.push({
-      title:
-        "Expiry task perlu menjadi prioritas",
+      title: "Expiry task perlu menjadi prioritas",
       description: `${formatPercent(
-        data.marketplace
-          .expiryRate,
+        data.marketplace.expiryRate,
       )} dari task yang sudah mencapai outcome final berakhir kedaluwarsa (${formatNumber(
-        data.marketplace
-          .expiredTasks,
+        data.marketplace.expiredTasks,
       )} task).`,
       tone: "critical",
     });
   } else {
     insights.push({
-      title:
-        "Expiry task relatif terkendali",
+      title: "Expiry task relatif terkendali",
       description: `Expiry rate saat ini ${formatPercent(
-        data.marketplace
-          .expiryRate,
+        data.marketplace.expiryRate,
       )}.`,
       tone: "positive",
     });
   }
 
-  if (
-    data.supplyDemand
-      .applicationCoverageRate <
-    70
-  ) {
+  if (data.supplyDemand.applicationCoverageRate < 70) {
     insights.push({
-      title:
-        "Coverage pelamar masih dapat ditingkatkan",
+      title: "Coverage pelamar masih dapat ditingkatkan",
       description: `${formatNumber(
-        data.supplyDemand
-          .tasksWithoutApplications,
+        data.supplyDemand.tasksWithoutApplications,
       )} task belum pernah mendapatkan pelamar. Coverage saat ini ${formatPercent(
-        data.supplyDemand
-          .applicationCoverageRate,
+        data.supplyDemand.applicationCoverageRate,
       )}.`,
       tone: "warning",
     });
   } else {
     insights.push({
-      title:
-        "Coverage pelamar cukup kuat",
+      title: "Coverage pelamar cukup kuat",
       description: `${formatPercent(
-        data.supplyDemand
-          .applicationCoverageRate,
+        data.supplyDemand.applicationCoverageRate,
       )} task sudah mendapatkan minimal satu pelamar.`,
       tone: "positive",
     });
   }
 
-  if (
-    data.moderation
-      .pendingReports > 0
-  ) {
+  if (data.moderation.pendingReports > 0) {
     insights.push({
-      title:
-        "Ada laporan menunggu tindakan",
+      title: "Ada laporan menunggu tindakan",
       description: `${formatNumber(
-        data.moderation
-          .pendingReports,
+        data.moderation.pendingReports,
       )} laporan masih berstatus pending. Handling rate saat ini ${formatPercent(
-        data.moderation
-          .handlingRate,
+        data.moderation.handlingRate,
       )}.`,
       tone: "warning",
     });
   } else {
     insights.push({
-      title:
-        "Tidak ada report pending",
+      title: "Tidak ada report pending",
       description:
         "Seluruh laporan saat ini sudah masuk proses penanganan atau memiliki outcome.",
       tone: "positive",
     });
   }
 
-  if (
-    data.quality
-      .totalReviews > 0
-  ) {
+  if (data.quality.totalReviews > 0) {
     insights.push({
-      title:
-        "Kualitas layanan mendapat sinyal positif",
+      title: "Kualitas layanan mendapat sinyal positif",
       description: `Rating rata-rata platform ${formatDecimal(
-        data.quality
-          .averageRating,
-      )}/5 dari ${formatNumber(
-        data.quality
-          .totalReviews,
-      )} review.`,
-      tone:
-        data.quality
-          .averageRating >=
-        4
-          ? "positive"
-          : "warning",
+        data.quality.averageRating,
+      )}/5 dari ${formatNumber(data.quality.totalReviews)} review.`,
+      tone: data.quality.averageRating >= 4 ? "positive" : "warning",
     });
   }
 
-  if (
-    data.overview
-      .verificationRate <
-    50
-  ) {
+  if (data.overview.verificationRate < 50) {
     insights.push({
-      title:
-        "Adopsi verifikasi masih rendah",
+      title: "Adopsi verifikasi masih rendah",
       description: `Baru ${formatPercent(
-        data.overview
-          .verificationRate,
+        data.overview.verificationRate,
       )} pengguna yang terverifikasi (${formatNumber(
-        data.overview
-          .verifiedUsers,
-      )} dari ${formatNumber(
-        data.overview
-          .totalUsers,
-      )}).`,
+        data.overview.verifiedUsers,
+      )} dari ${formatNumber(data.overview.totalUsers)}).`,
       tone: "info",
     });
   }
 
-  const leadingCategory =
-    data.categories[0];
+  const leadingCategory = data.categories[0];
 
   if (leadingCategory) {
     insights.push({
@@ -1906,85 +1609,52 @@ function buildInsights(
         leadingCategory.totalTasks,
       )} task dengan coverage pelamar ${formatPercent(
         leadingCategory.coverageRate,
-      )} dan completion rate ${formatPercent(
-        leadingCategory.completionRate,
-      )}.`,
+      )} dan completion rate ${formatPercent(leadingCategory.completionRate)}.`,
       tone: "info",
     });
   }
 
-  return insights.slice(
-    0,
-    6,
-  );
+  return insights.slice(0, 6);
 }
 
-function InsightCard({
-  title,
-  description,
-  tone,
-}: Insight) {
+function InsightCard({ title, description, tone }: Insight) {
   const classes =
     tone === "critical"
       ? "border-rose-200 bg-rose-50"
-      : tone ===
-          "warning"
+      : tone === "warning"
         ? "border-amber-200 bg-amber-50"
-        : tone ===
-            "positive"
+        : tone === "positive"
           ? "border-emerald-200 bg-emerald-50"
           : "border-indigo-200 bg-indigo-50";
 
   const dot =
     tone === "critical"
       ? "bg-rose-500"
-      : tone ===
-          "warning"
+      : tone === "warning"
         ? "bg-amber-500"
-        : tone ===
-            "positive"
+        : tone === "positive"
           ? "bg-emerald-500"
           : "bg-indigo-500";
 
   return (
-    <article
-      className={`rounded-2xl border p-5 ${classes}`}
-    >
+    <article className={`rounded-2xl border p-5 ${classes}`}>
       <div className="flex gap-3">
-        <span
-          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${dot}`}
-        />
+        <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
 
         <div>
-          <h3 className="text-sm font-black text-slate-900">
-            {title}
-          </h3>
+          <h3 className="text-sm font-black text-slate-900">{title}</h3>
 
-          <p className="mt-1 text-xs leading-5 text-slate-600">
-            {description}
-          </p>
+          <p className="mt-1 text-xs leading-5 text-slate-600">{description}</p>
         </div>
       </div>
     </article>
   );
 }
 
-function EmptyState({
-  compact = false,
-}: {
-  compact?: boolean;
-}) {
+function EmptyState({ compact = false }: { compact?: boolean }) {
   return (
-    <div
-      className={
-        compact
-          ? "py-4 text-center"
-          : "p-8 text-center"
-      }
-    >
-      <p className="text-sm font-medium text-slate-500">
-        Belum ada data.
-      </p>
+    <div className={compact ? "py-4 text-center" : "p-8 text-center"}>
+      <p className="text-sm font-medium text-slate-500">Belum ada data.</p>
     </div>
   );
 }
@@ -1995,19 +1665,9 @@ function AnalyticsLoading() {
       <div className="h-24 animate-pulse rounded-2xl bg-white" />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          1,
-          2,
-          3,
-          4,
-        ].map(
-          (item) => (
-            <div
-              key={item}
-              className="h-36 animate-pulse rounded-2xl bg-white"
-            />
-          ),
-        )}
+        {[1, 2, 3, 4].map((item) => (
+          <div key={item} className="h-36 animate-pulse rounded-2xl bg-white" />
+        ))}
       </div>
 
       <div className="h-96 animate-pulse rounded-2xl bg-white" />
@@ -2028,9 +1688,7 @@ function AnalyticsError({
         Gagal memuat analytics
       </h1>
 
-      <p className="mt-2 text-sm text-rose-700">
-        {error}
-      </p>
+      <p className="mt-2 text-sm text-rose-700">{error}</p>
 
       <button
         type="button"

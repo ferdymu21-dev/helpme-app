@@ -71,10 +71,7 @@ export interface AdminAnalyticsQuality {
   uniqueReviewers: number;
   uniqueReviewees: number;
 
-  ratingDistribution: Record<
-    AnalyticsRatingValue,
-    number
-  >;
+  ratingDistribution: Record<AnalyticsRatingValue, number>;
 }
 
 export interface AdminAnalyticsModeration {
@@ -126,6 +123,45 @@ export interface AdminAnalyticsAttentionUser {
   totalReports: number;
 }
 
+export interface AdminAnalyticsServiceMarketplace {
+  listings: {
+    total: number;
+
+    active: number;
+    paused: number;
+    expired: number;
+    blocked: number;
+  };
+
+  requests: {
+    total: number;
+
+    active: number;
+    inProgress: number;
+
+    completed: number;
+    declined: number;
+    cancelled: number;
+  };
+
+  publicationPayments: {
+    total: number;
+
+    creating: number;
+    pending: number;
+
+    paid: number;
+    failed: number;
+    cancelled: number;
+    expired: number;
+
+    paidRevenue: number;
+  };
+
+  moderation: {
+    pendingListingReports: number;
+  };
+}
 export interface AdminAnalyticsResponse {
   generatedAt: string;
 
@@ -138,6 +174,8 @@ export interface AdminAnalyticsResponse {
   quality: AdminAnalyticsQuality;
 
   moderation: AdminAnalyticsModeration;
+
+  serviceMarketplace: AdminAnalyticsServiceMarketplace;
 
   growth: AdminAnalyticsGrowthPoint[];
 
