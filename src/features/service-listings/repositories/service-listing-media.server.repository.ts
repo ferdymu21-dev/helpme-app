@@ -1,24 +1,17 @@
 import "server-only";
 
-import {
-  adminSupabase,
-} from "@/lib/supabase/admin";
+import { adminSupabase } from "@/lib/supabase/admin";
 
-import {
-  ServiceListingImageKind,
-} from "../constants/service-listing-image-kind";
+import { ServiceListingImageKind } from "../constants/service-listing-image-kind";
 
-import type {
-  ServiceListingImageKindValue,
-} from "../constants/service-listing-image-kind";
+import type { ServiceListingImageKindValue } from "../constants/service-listing-image-kind";
 
 import {
   ServiceListingMediaError,
   ServiceListingMediaErrorCode,
 } from "../errors/service-listing-media.error";
 
-const SERVICE_MEDIA_BUCKET =
-  "service-media";
+const SERVICE_MEDIA_BUCKET = "service-media";
 
 interface RepositoryErrorLike {
   code?: string | null;
@@ -29,9 +22,7 @@ interface RepositoryErrorLike {
 interface SetCoverMetadataResult {
   imageId: string;
 
-  replacedStoragePath:
-    | string
-    | null;
+  replacedStoragePath: string | null;
 }
 
 interface AddPortfolioMetadataResult {
@@ -43,18 +34,14 @@ interface AddPortfolioMetadataResult {
 interface DeleteImageMetadataResult {
   storagePath: string;
 
-  kind:
-    ServiceListingImageKindValue;
+  kind: ServiceListingImageKindValue;
 }
 
 function createRpcError(
   action: string,
-  error:
-    RepositoryErrorLike,
+  error: RepositoryErrorLike,
 ): ServiceListingMediaError {
-  switch (
-    error.code
-  ) {
+  switch (error.code) {
     case "P0002":
       return new ServiceListingMediaError(
         ServiceListingMediaErrorCode.NOT_FOUND,
@@ -90,26 +77,12 @@ function createRpcError(
   }
 }
 
-function isRecord(
-  value: unknown,
-): value is Record<string, unknown> {
-  return (
-    typeof value === "object" &&
-    value !== null
-  );
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-function readString(
-  value: unknown,
-  field: string,
-): string {
-  if (
-    !isRecord(
-      value,
-    ) ||
-    typeof value[field] !==
-      "string"
-  ) {
+function readString(value: unknown, field: string): string {
+  if (!isRecord(value) || typeof value[field] !== "string") {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
       `Response media jasa tidak valid: ${field}.`,
@@ -119,34 +92,21 @@ function readString(
   return value[field];
 }
 
-function readNullableString(
-  value: unknown,
-  field: string,
-): string | null {
-  if (
-    !isRecord(
-      value,
-    )
-  ) {
+function readNullableString(value: unknown, field: string): string | null {
+  if (!isRecord(value)) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
       "Response media jasa tidak valid.",
     );
   }
 
-  const fieldValue =
-    value[field];
+  const fieldValue = value[field];
 
-  if (
-    fieldValue === null
-  ) {
+  if (fieldValue === null) {
     return null;
   }
 
-  if (
-    typeof fieldValue !==
-      "string"
-  ) {
+  if (typeof fieldValue !== "string") {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
       `Response media jasa tidak valid: ${field}.`,
@@ -156,31 +116,17 @@ function readNullableString(
   return fieldValue;
 }
 
-function readInteger(
-  value: unknown,
-  field: string,
-): number {
-  if (
-    !isRecord(
-      value,
-    )
-  ) {
+function readInteger(value: unknown, field: string): number {
+  if (!isRecord(value)) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
       "Response media jasa tidak valid.",
     );
   }
 
-  const fieldValue =
-    value[field];
+  const fieldValue = value[field];
 
-  if (
-    typeof fieldValue !==
-      "number" ||
-    !Number.isSafeInteger(
-      fieldValue,
-    )
-  ) {
+  if (typeof fieldValue !== "number" || !Number.isSafeInteger(fieldValue)) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
       `Response media jasa tidak valid: ${field}.`,
@@ -194,17 +140,11 @@ function readImageKind(
   value: unknown,
   field: string,
 ): ServiceListingImageKindValue {
-  const kind =
-    readString(
-      value,
-      field,
-    );
+  const kind = readString(value, field);
 
   if (
-    kind !==
-      ServiceListingImageKind.COVER &&
-    kind !==
-      ServiceListingImageKind.PORTFOLIO
+    kind !== ServiceListingImageKind.COVER &&
+    kind !== ServiceListingImageKind.PORTFOLIO
   ) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.INTERNAL,
@@ -215,30 +155,37 @@ function readImageKind(
   return kind;
 }
 
+export async function assertServiceListingMediaUploadTargetRepository(
+  listingId: string,
+  providerId: string,
+): Promise<void> {
+  const { error } = await adminSupabase.rpc(
+    "assert_service_listing_media_upload_target",
+    {
+      p_listing_id: listingId,
+
+      p_provider_id: providerId,
+    },
+  );
+
+  if (error) {
+    throw createRpcError("Gagal memvalidasi target upload media jasa", error);
+  }
+}
+
 export async function uploadServiceListingMediaObject(
   storagePath: string,
   file: File,
   contentType: string,
 ): Promise<void> {
-  const {
-    error,
-  } = await adminSupabase.storage
-    .from(
-      SERVICE_MEDIA_BUCKET,
-    )
-    .upload(
-      storagePath,
-      file,
-      {
-        contentType,
-        upsert:
-          false,
-      },
-    );
+  const { error } = await adminSupabase.storage
+    .from(SERVICE_MEDIA_BUCKET)
+    .upload(storagePath, file, {
+      contentType,
+      upsert: false,
+    });
 
-  if (
-    error
-  ) {
+  if (error) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.STORAGE_FAILURE,
       `Gagal mengupload gambar jasa: ${error.message}`,
@@ -249,19 +196,11 @@ export async function uploadServiceListingMediaObject(
 export async function removeServiceListingMediaObject(
   storagePath: string,
 ): Promise<void> {
-  const {
-    error,
-  } = await adminSupabase.storage
-    .from(
-      SERVICE_MEDIA_BUCKET,
-    )
-    .remove([
-      storagePath,
-    ]);
+  const { error } = await adminSupabase.storage
+    .from(SERVICE_MEDIA_BUCKET)
+    .remove([storagePath]);
 
-  if (
-    error
-  ) {
+  if (error) {
     throw new ServiceListingMediaError(
       ServiceListingMediaErrorCode.STORAGE_FAILURE,
       `Gagal menghapus objek gambar jasa: ${error.message}`,
@@ -269,18 +208,10 @@ export async function removeServiceListingMediaObject(
   }
 }
 
-export function getServiceListingMediaPublicUrl(
-  storagePath: string,
-): string {
-  const {
-    data,
-  } = adminSupabase.storage
-    .from(
-      SERVICE_MEDIA_BUCKET,
-    )
-    .getPublicUrl(
-      storagePath,
-    );
+export function getServiceListingMediaPublicUrl(storagePath: string): string {
+  const { data } = adminSupabase.storage
+    .from(SERVICE_MEDIA_BUCKET)
+    .getPublicUrl(storagePath);
 
   return data.publicUrl;
 }
@@ -290,46 +221,24 @@ export async function setServiceListingCoverMetadataRepository(
   providerId: string,
   storagePath: string,
 ): Promise<SetCoverMetadataResult> {
-  const {
-    data,
-    error,
-  } = await adminSupabase
-    .rpc(
-      "set_service_listing_cover",
-      {
-        p_listing_id:
-          listingId,
+  const { data, error } = await adminSupabase
+    .rpc("set_service_listing_cover", {
+      p_listing_id: listingId,
 
-        p_provider_id:
-          providerId,
+      p_provider_id: providerId,
 
-        p_storage_path:
-          storagePath,
-      },
-    )
+      p_storage_path: storagePath,
+    })
     .single();
 
-  if (
-    error
-  ) {
-    throw createRpcError(
-      "Gagal menyimpan cover jasa",
-      error,
-    );
+  if (error) {
+    throw createRpcError("Gagal menyimpan cover jasa", error);
   }
 
   return {
-    imageId:
-      readString(
-        data,
-        "image_id",
-      ),
+    imageId: readString(data, "image_id"),
 
-    replacedStoragePath:
-      readNullableString(
-        data,
-        "replaced_storage_path",
-      ),
+    replacedStoragePath: readNullableString(data, "replaced_storage_path"),
   };
 }
 
@@ -338,46 +247,24 @@ export async function addServiceListingPortfolioMetadataRepository(
   providerId: string,
   storagePath: string,
 ): Promise<AddPortfolioMetadataResult> {
-  const {
-    data,
-    error,
-  } = await adminSupabase
-    .rpc(
-      "add_service_listing_portfolio_image",
-      {
-        p_listing_id:
-          listingId,
+  const { data, error } = await adminSupabase
+    .rpc("add_service_listing_portfolio_image", {
+      p_listing_id: listingId,
 
-        p_provider_id:
-          providerId,
+      p_provider_id: providerId,
 
-        p_storage_path:
-          storagePath,
-      },
-    )
+      p_storage_path: storagePath,
+    })
     .single();
 
-  if (
-    error
-  ) {
-    throw createRpcError(
-      "Gagal menyimpan portfolio jasa",
-      error,
-    );
+  if (error) {
+    throw createRpcError("Gagal menyimpan portfolio jasa", error);
   }
 
   return {
-    imageId:
-      readString(
-        data,
-        "image_id",
-      ),
+    imageId: readString(data, "image_id"),
 
-    sortOrder:
-      readInteger(
-        data,
-        "sort_order",
-      ),
+    sortOrder: readInteger(data, "sort_order"),
   };
 }
 
@@ -386,45 +273,23 @@ export async function deleteServiceListingImageMetadataRepository(
   providerId: string,
   imageId: string,
 ): Promise<DeleteImageMetadataResult> {
-  const {
-    data,
-    error,
-  } = await adminSupabase
-    .rpc(
-      "delete_service_listing_image",
-      {
-        p_listing_id:
-          listingId,
+  const { data, error } = await adminSupabase
+    .rpc("delete_service_listing_image", {
+      p_listing_id: listingId,
 
-        p_provider_id:
-          providerId,
+      p_provider_id: providerId,
 
-        p_image_id:
-          imageId,
-      },
-    )
+      p_image_id: imageId,
+    })
     .single();
 
-  if (
-    error
-  ) {
-    throw createRpcError(
-      "Gagal menghapus metadata gambar jasa",
-      error,
-    );
+  if (error) {
+    throw createRpcError("Gagal menghapus metadata gambar jasa", error);
   }
 
   return {
-    storagePath:
-      readString(
-        data,
-        "storage_path",
-      ),
+    storagePath: readString(data, "storage_path"),
 
-    kind:
-      readImageKind(
-        data,
-        "kind",
-      ),
+    kind: readImageKind(data, "kind"),
   };
 }

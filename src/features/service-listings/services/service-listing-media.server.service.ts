@@ -1,11 +1,10 @@
 import "server-only";
 
-import {
-  ServiceListingImageKind,
-} from "../constants/service-listing-image-kind";
+import { ServiceListingImageKind } from "../constants/service-listing-image-kind";
 
 import {
   addServiceListingPortfolioMetadataRepository,
+  assertServiceListingMediaUploadTargetRepository,
   deleteServiceListingImageMetadataRepository,
   getServiceListingMediaPublicUrl,
   removeServiceListingMediaObject,
@@ -27,27 +26,18 @@ import {
   validateServiceListingMediaFile,
 } from "../validators/validate-service-listing-media";
 
-async function tryRemoveStorageObject(
-  storagePath: string,
-): Promise<void> {
+async function tryRemoveStorageObject(storagePath: string): Promise<void> {
   try {
-    await removeServiceListingMediaObject(
-      storagePath,
-    );
+    await removeServiceListingMediaObject(storagePath);
   } catch (error) {
-    console.error(
-      "SERVICE LISTING MEDIA CLEANUP ERROR:",
-      error,
-    );
+    console.error("SERVICE LISTING MEDIA CLEANUP ERROR:", error);
   }
 }
 
 function buildStoragePath(
   providerId: string,
   listingId: string,
-  directory:
-    | "cover"
-    | "portfolio",
+  directory: "cover" | "portfolio",
   extension: string,
 ): string {
   return (
@@ -64,78 +54,56 @@ export async function uploadServiceListingCoverService({
   file,
 }: UploadServiceListingMediaServerInput): Promise<UploadServiceListingMediaResult> {
   const normalizedListingId =
-    validateAndNormalizeServiceListingMediaListingId(
-      listingId,
-    );
+    validateAndNormalizeServiceListingMediaListingId(listingId);
 
   const normalizedProviderId =
-    validateAndNormalizeServiceProviderId(
-      providerId,
-    );
+    validateAndNormalizeServiceProviderId(providerId);
 
-  const {
-    extension,
-    contentType,
-  } =
-    validateServiceListingMediaFile(
-      file,
-    );
+  const { extension, contentType } = validateServiceListingMediaFile(file);
 
-  const storagePath =
-    buildStoragePath(
-      normalizedProviderId,
-      normalizedListingId,
-      "cover",
-      extension,
-    );
-
-  await uploadServiceListingMediaObject(
-    storagePath,
-    file,
-    contentType,
+  await assertServiceListingMediaUploadTargetRepository(
+    normalizedListingId,
+    normalizedProviderId,
   );
+
+  const storagePath = buildStoragePath(
+    normalizedProviderId,
+    normalizedListingId,
+    "cover",
+    extension,
+  );
+
+  await uploadServiceListingMediaObject(storagePath, file, contentType);
 
   let metadata;
 
   try {
-    metadata =
-      await setServiceListingCoverMetadataRepository(
-        normalizedListingId,
-        normalizedProviderId,
-        storagePath,
-      );
-  } catch (error) {
-    await tryRemoveStorageObject(
+    metadata = await setServiceListingCoverMetadataRepository(
+      normalizedListingId,
+      normalizedProviderId,
       storagePath,
     );
+  } catch (error) {
+    await tryRemoveStorageObject(storagePath);
 
     throw error;
   }
 
   if (
     metadata.replacedStoragePath &&
-    metadata.replacedStoragePath !==
-      storagePath
+    metadata.replacedStoragePath !== storagePath
   ) {
-    await tryRemoveStorageObject(
-      metadata.replacedStoragePath,
-    );
+    await tryRemoveStorageObject(metadata.replacedStoragePath);
   }
 
   return {
-    imageId:
-      metadata.imageId,
+    imageId: metadata.imageId,
 
-    kind:
-      ServiceListingImageKind.COVER,
+    kind: ServiceListingImageKind.COVER,
 
-    sortOrder:
-      0,
+    sortOrder: 0,
 
-    publicUrl:
-      getServiceListingMediaPublicUrl(
-        storagePath,
-      ),
+    publicUrl: getServiceListingMediaPublicUrl(storagePath),
   };
 }
 
@@ -145,68 +113,49 @@ export async function uploadServiceListingPortfolioImageService({
   file,
 }: UploadServiceListingMediaServerInput): Promise<UploadServiceListingMediaResult> {
   const normalizedListingId =
-    validateAndNormalizeServiceListingMediaListingId(
-      listingId,
-    );
+    validateAndNormalizeServiceListingMediaListingId(listingId);
 
   const normalizedProviderId =
-    validateAndNormalizeServiceProviderId(
-      providerId,
-    );
+    validateAndNormalizeServiceProviderId(providerId);
 
-  const {
-    extension,
-    contentType,
-  } =
-    validateServiceListingMediaFile(
-      file,
-    );
+  const { extension, contentType } = validateServiceListingMediaFile(file);
 
-  const storagePath =
-    buildStoragePath(
-      normalizedProviderId,
-      normalizedListingId,
-      "portfolio",
-      extension,
-    );
-
-  await uploadServiceListingMediaObject(
-    storagePath,
-    file,
-    contentType,
+  await assertServiceListingMediaUploadTargetRepository(
+    normalizedListingId,
+    normalizedProviderId,
   );
+
+  const storagePath = buildStoragePath(
+    normalizedProviderId,
+    normalizedListingId,
+    "portfolio",
+    extension,
+  );
+
+  await uploadServiceListingMediaObject(storagePath, file, contentType);
 
   let metadata;
 
   try {
-    metadata =
-      await addServiceListingPortfolioMetadataRepository(
-        normalizedListingId,
-        normalizedProviderId,
-        storagePath,
-      );
-  } catch (error) {
-    await tryRemoveStorageObject(
+    metadata = await addServiceListingPortfolioMetadataRepository(
+      normalizedListingId,
+      normalizedProviderId,
       storagePath,
     );
+  } catch (error) {
+    await tryRemoveStorageObject(storagePath);
 
     throw error;
   }
 
   return {
-    imageId:
-      metadata.imageId,
+    imageId: metadata.imageId,
 
-    kind:
-      ServiceListingImageKind.PORTFOLIO,
+    kind: ServiceListingImageKind.PORTFOLIO,
 
-    sortOrder:
-      metadata.sortOrder,
+    sortOrder: metadata.sortOrder,
 
-    publicUrl:
-      getServiceListingMediaPublicUrl(
-        storagePath,
-      ),
+    publicUrl: getServiceListingMediaPublicUrl(storagePath),
   };
 }
 
@@ -216,36 +165,24 @@ export async function deleteServiceListingImageService({
   imageId,
 }: DeleteServiceListingMediaServerInput): Promise<DeleteServiceListingMediaResult> {
   const normalizedListingId =
-    validateAndNormalizeServiceListingMediaListingId(
-      listingId,
-    );
+    validateAndNormalizeServiceListingMediaListingId(listingId);
 
   const normalizedProviderId =
-    validateAndNormalizeServiceProviderId(
-      providerId,
-    );
+    validateAndNormalizeServiceProviderId(providerId);
 
-  const normalizedImageId =
-    validateAndNormalizeServiceListingImageId(
-      imageId,
-    );
+  const normalizedImageId = validateAndNormalizeServiceListingImageId(imageId);
 
-  const metadata =
-    await deleteServiceListingImageMetadataRepository(
-      normalizedListingId,
-      normalizedProviderId,
-      normalizedImageId,
-    );
-
-  await tryRemoveStorageObject(
-    metadata.storagePath,
+  const metadata = await deleteServiceListingImageMetadataRepository(
+    normalizedListingId,
+    normalizedProviderId,
+    normalizedImageId,
   );
 
-  return {
-    imageId:
-      normalizedImageId,
+  await tryRemoveStorageObject(metadata.storagePath);
 
-    kind:
-      metadata.kind,
+  return {
+    imageId: normalizedImageId,
+
+    kind: metadata.kind,
   };
 }
