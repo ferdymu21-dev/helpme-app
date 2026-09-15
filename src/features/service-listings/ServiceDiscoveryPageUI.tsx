@@ -603,6 +603,7 @@ function ServiceDiscoveryPageContent() {
                       {coverUrl ? (
                         <Image
                           src={coverUrl}
+                          unoptimized={process.env.NODE_ENV === "development"}
                           alt={listing.title}
                           fill
                           sizes="

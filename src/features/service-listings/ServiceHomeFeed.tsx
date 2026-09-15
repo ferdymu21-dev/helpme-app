@@ -369,6 +369,7 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
                     {coverUrl ? (
                       <Image
                         src={coverUrl}
+                        unoptimized={process.env.NODE_ENV === "development"}
                         alt={listing.title}
                         fill
                         sizes={
