@@ -1,6 +1,10 @@
-import {
+﻿import {
   NextResponse,
 } from "next/server";
+import {
+  ServiceListingMediaError,
+  ServiceListingMediaErrorCode,
+} from "../errors/service-listing-media.error";
 
 function hasMessage(
   error: unknown,
@@ -17,6 +21,21 @@ function hasMessage(
 export function createServiceListingPublicationErrorResponse(
   error: unknown,
 ) {
+  if (
+    error instanceof ServiceListingMediaError &&
+    error.code ===
+      ServiceListingMediaErrorCode.UNAUTHORIZED
+  ) {
+    return NextResponse.json(
+      {
+        message:
+          "Unauthorized",
+      },
+      {
+        status: 401,
+      },
+    );
+  }
   if (
     hasMessage(
       error,

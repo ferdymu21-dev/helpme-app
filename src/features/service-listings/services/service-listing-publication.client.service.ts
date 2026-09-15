@@ -1,3 +1,5 @@
+﻿import { supabase } from "@/lib/supabase/client";
+
 import type {
   CreateServiceListingPublicationResult,
   ServiceListingPublicationAction,
@@ -23,6 +25,27 @@ function isPublicationAction(
 
 function isPositiveAmount(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+async function getAccessToken(): Promise<string> {
+  const {
+    data: {
+      session,
+    },
+    error,
+  } =
+    await supabase.auth.getSession();
+
+  if (
+    error ||
+    !session
+  ) {
+    throw new Error(
+      "User belum terautentikasi.",
+    );
+  }
+
+  return session.access_token;
 }
 
 function isPublicationResult(
@@ -109,12 +132,20 @@ export async function requestServiceListingPublicationClient(
     throw new Error("ID jasa tidak valid.");
   }
 
+  const accessToken =
+    await getAccessToken();
+
   const response = await fetch(
     `/api/service-listings/${encodeURIComponent(
       normalizedListingId,
     )}/publication`,
     {
       method: "POST",
+
+      headers: {
+        Authorization:
+          `Bearer ${accessToken}`,
+      },
 
       cache: "no-store",
     },
