@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -18,6 +18,13 @@ import {
 import { getServiceRequestAgreementsService } from "../services/get-service-request-agreements.service";
 
 import {
+  confirmServicePaymentService,
+  getServicePaymentAcknowledgementsService,
+  reportServicePaymentIssueService,
+  reportServicePaymentPaidService,
+} from "../services/service-payment-acknowledgement.service";
+
+import {
   approveServiceAgreementService,
   proposeServiceAgreementService,
   rejectServiceAgreementService,
@@ -27,6 +34,8 @@ import type {
   ServiceAgreement,
   ServiceAgreementProposalDraft,
 } from "../types/service-agreement.types";
+
+import type { ServicePaymentAcknowledgement } from "../types/service-payment-acknowledgement.types";
 
 interface UseServiceAgreementPanelInput {
   requestId: string;
@@ -93,6 +102,11 @@ export function useServiceAgreementPanel({
 }: UseServiceAgreementPanelInput) {
   const [agreements, setAgreements] = useState<ServiceAgreement[]>([]);
 
+  const [
+    paymentAcknowledgements,
+    setPaymentAcknowledgements,
+  ] = useState<ServicePaymentAcknowledgement[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
@@ -114,6 +128,16 @@ export function useServiceAgreementPanel({
 
   const [rejectionReason, setRejectionReason] = useState("");
 
+  const [
+    paymentIssueAcknowledgementId,
+    setPaymentIssueAcknowledgementId,
+  ] = useState<string | null>(null);
+
+  const [
+    paymentIssueReason,
+    setPaymentIssueReason,
+  ] = useState("");
+
   const requestVersion = useRef(0);
 
   const load = useCallback(async () => {
@@ -126,13 +150,29 @@ export function useServiceAgreementPanel({
     setLoadErrorMessage(null);
 
     try {
-      const result = await getServiceRequestAgreementsService(requestId);
+      const [
+        agreementResult,
+        paymentAcknowledgementResult,
+      ] = await Promise.all([
+        getServiceRequestAgreementsService(
+          requestId,
+        ),
+        getServicePaymentAcknowledgementsService(
+          requestId,
+        ),
+      ]);
 
       if (requestVersion.current !== version) {
         return;
       }
 
-      setAgreements(result);
+      setAgreements(
+        agreementResult,
+      );
+
+      setPaymentAcknowledgements(
+        paymentAcknowledgementResult,
+      );
     } catch (error) {
       if (requestVersion.current !== version) {
         return;
@@ -143,7 +183,7 @@ export function useServiceAgreementPanel({
       setLoadErrorMessage(
         error instanceof Error
           ? error.message
-          : "Riwayat kesepakatan belum dapat dimuat.",
+          : "Detail kesepakatan dan pembayaran belum dapat dimuat.",
       );
     } finally {
       if (requestVersion.current === version) {
@@ -416,8 +456,175 @@ export function useServiceAgreementPanel({
     }
   }
 
+  async function handleReportPaymentPaid(
+    paymentStepId: string,
+  ) {
+    if (
+      actionPending ||
+      !isCustomer
+    ) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setActionPending(true);
+
+    try {
+      await reportServicePaymentPaidService(
+        paymentStepId,
+        "",
+      );
+
+      setPaymentIssueAcknowledgementId(null);
+
+      setPaymentIssueReason("");
+
+      await load();
+    } catch (error) {
+      console.error(
+        "REPORT SERVICE PAYMENT PAID ERROR:",
+        error,
+      );
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Pembayaran belum dapat dilaporkan.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleConfirmPayment(
+    acknowledgementId: string,
+  ) {
+    if (
+      actionPending ||
+      !isProvider
+    ) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setActionPending(true);
+
+    try {
+      await confirmServicePaymentService(
+        acknowledgementId,
+        "",
+      );
+
+      setPaymentIssueAcknowledgementId(null);
+
+      setPaymentIssueReason("");
+
+      await load();
+    } catch (error) {
+      console.error(
+        "CONFIRM SERVICE PAYMENT ERROR:",
+        error,
+      );
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Pembayaran belum dapat dikonfirmasi.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  function handleOpenPaymentIssue(
+    acknowledgementId: string,
+  ) {
+    if (
+      actionPending ||
+      !isProvider
+    ) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setPaymentIssueAcknowledgementId(
+      acknowledgementId,
+    );
+
+    setPaymentIssueReason("");
+  }
+
+  function handleCancelPaymentIssue() {
+    if (actionPending) {
+      return;
+    }
+
+    setPaymentIssueAcknowledgementId(null);
+
+    setPaymentIssueReason("");
+
+    setActionErrorMessage(null);
+  }
+
+  async function handleReportPaymentIssue() {
+    if (
+      actionPending ||
+      !isProvider ||
+      !paymentIssueAcknowledgementId
+    ) {
+      return;
+    }
+
+    const reason =
+      paymentIssueReason.trim();
+
+    if (!reason) {
+      setActionErrorMessage(
+        "Alasan masalah pembayaran wajib diisi.",
+      );
+
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setActionPending(true);
+
+    try {
+      await reportServicePaymentIssueService(
+        paymentIssueAcknowledgementId,
+        reason,
+        "",
+      );
+
+      setPaymentIssueAcknowledgementId(null);
+
+      setPaymentIssueReason("");
+
+      await load();
+    } catch (error) {
+      console.error(
+        "REPORT SERVICE PAYMENT ISSUE ERROR:",
+        error,
+      );
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Masalah pembayaran belum dapat dilaporkan.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   return {
     agreements,
+
+    paymentAcknowledgements,
 
     latestAgreement,
 
@@ -440,6 +647,10 @@ export function useServiceAgreementPanel({
     rejectionOpen,
 
     rejectionReason,
+
+    paymentIssueAcknowledgementId,
+
+    paymentIssueReason,
 
     refresh: load,
 
@@ -468,6 +679,24 @@ export function useServiceAgreementPanel({
     onCancelRejection: handleCancelRejection,
 
     onRejectAgreement: handleRejectAgreement,
+
+    onReportPaymentPaid:
+      handleReportPaymentPaid,
+
+    onConfirmPayment:
+      handleConfirmPayment,
+
+    onOpenPaymentIssue:
+      handleOpenPaymentIssue,
+
+    onCancelPaymentIssue:
+      handleCancelPaymentIssue,
+
+    onPaymentIssueReasonChange:
+      setPaymentIssueReason,
+
+    onReportPaymentIssue:
+      handleReportPaymentIssue,
 
     onRejectionReasonChange: setRejectionReason,
   };

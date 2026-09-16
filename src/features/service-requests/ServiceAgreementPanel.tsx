@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   CalendarDays,
@@ -22,11 +22,19 @@ import {
   type ServiceAgreementPaymentTriggerTypeValue,
 } from "./constants/service-agreement";
 
-import type { ServiceRequestStatusValue } from "./constants/service-request-status";
+import {
+  ServiceRequestStatus,
+  type ServiceRequestStatusValue,
+} from "./constants/service-request-status";
 
 import { useServiceAgreementPanel } from "./hooks/useServiceAgreementPanel";
 
 import type { ServiceAgreement } from "./types/service-agreement.types";
+
+import {
+  ServicePaymentAcknowledgementStatus,
+  type ServicePaymentAcknowledgement,
+} from "./types/service-payment-acknowledgement.types";
 
 import { formatServiceRequestDateTime } from "./utils/service-request-display";
 
@@ -100,6 +108,102 @@ function getPaymentTriggerLabel(
   }
 }
 
+function getLatestPaymentAcknowledgement(
+  acknowledgements: ServicePaymentAcknowledgement[],
+  paymentStepId: string,
+): ServicePaymentAcknowledgement | null {
+  return acknowledgements.reduce<ServicePaymentAcknowledgement | null>(
+    (
+      latest,
+      acknowledgement,
+    ) => {
+      if (
+        acknowledgement.paymentStepId !==
+        paymentStepId
+      ) {
+        return latest;
+      }
+
+      if (
+        !latest ||
+        acknowledgement.attemptNo >
+          latest.attemptNo
+      ) {
+        return acknowledgement;
+      }
+
+      return latest;
+    },
+    null,
+  );
+}
+
+function getPaymentAcknowledgementStatusLabel(
+  acknowledgement:
+    | ServicePaymentAcknowledgement
+    | null,
+): string {
+  if (!acknowledgement) {
+    return "Belum dilaporkan";
+  }
+
+  switch (acknowledgement.status) {
+    case ServicePaymentAcknowledgementStatus.CUSTOMER_REPORTED_PAID:
+      return "Menunggu konfirmasi penyedia";
+
+    case ServicePaymentAcknowledgementStatus.PROVIDER_CONFIRMED:
+      return "Pembayaran dikonfirmasi";
+
+    case ServicePaymentAcknowledgementStatus.PAYMENT_ISSUE:
+      return "Masalah pembayaran";
+  }
+}
+
+function isPaymentStepAvailableForCustomerReport(
+  triggerType: ServiceAgreementPaymentTriggerTypeValue,
+  requestStatus: ServiceRequestStatusValue,
+): boolean {
+  switch (triggerType) {
+    case ServiceAgreementPaymentTriggerType.UPFRONT:
+    case ServiceAgreementPaymentTriggerType.BEFORE_START:
+    case ServiceAgreementPaymentTriggerType.CUSTOM:
+      return (
+        requestStatus ===
+          ServiceRequestStatus.AGREED ||
+        requestStatus ===
+          ServiceRequestStatus.IN_PROGRESS ||
+        requestStatus ===
+          ServiceRequestStatus.SUBMITTED ||
+        requestStatus ===
+          ServiceRequestStatus.COMPLETED
+      );
+
+    case ServiceAgreementPaymentTriggerType.MILESTONE:
+      return (
+        requestStatus ===
+          ServiceRequestStatus.IN_PROGRESS ||
+        requestStatus ===
+          ServiceRequestStatus.SUBMITTED ||
+        requestStatus ===
+          ServiceRequestStatus.COMPLETED
+      );
+
+    case ServiceAgreementPaymentTriggerType.ON_SUBMISSION:
+      return (
+        requestStatus ===
+          ServiceRequestStatus.SUBMITTED ||
+        requestStatus ===
+          ServiceRequestStatus.COMPLETED
+      );
+
+    case ServiceAgreementPaymentTriggerType.AFTER_COMPLETION:
+      return (
+        requestStatus ===
+        ServiceRequestStatus.COMPLETED
+      );
+  }
+}
+
 function formatMoney(value: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -136,6 +240,7 @@ export default function ServiceAgreementPanel({
 }: ServiceAgreementPanelProps) {
   const {
     agreements,
+    paymentAcknowledgements,
     latestAgreement,
     loading,
     loadErrorMessage,
@@ -147,6 +252,8 @@ export default function ServiceAgreementPanel({
     proposalDraft,
     rejectionOpen,
     rejectionReason,
+    paymentIssueAcknowledgementId,
+    paymentIssueReason,
     refresh,
     onOpenProposal,
     onCancelProposal,
@@ -162,6 +269,12 @@ export default function ServiceAgreementPanel({
     onCancelRejection,
     onRejectAgreement,
     onRejectionReasonChange,
+    onReportPaymentPaid,
+    onConfirmPayment,
+    onOpenPaymentIssue,
+    onCancelPaymentIssue,
+    onPaymentIssueReasonChange,
+    onReportPaymentIssue,
   } = useServiceAgreementPanel({
     requestId,
     requestStatus,
@@ -789,28 +902,240 @@ export default function ServiceAgreementPanel({
                     </p>
 
                     <div className="mt-2 space-y-2">
-                      {agreement.paymentSteps.map((step) => (
-                        <div
-                          key={step.id}
-                          className="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
-                              {step.sequenceNo}. {step.label}
-                            </p>
+                      {agreement.paymentSteps.map((step) => {
+                        const latestAcknowledgement =
+                          getLatestPaymentAcknowledgement(
+                            paymentAcknowledgements,
+                            step.id,
+                          );
 
-                            <p className="mt-1 text-xs text-slate-500">
-                              {getPaymentTriggerLabel(step.triggerType)}
+                        const isAwaitingProvider =
+                          latestAcknowledgement?.status ===
+                          ServicePaymentAcknowledgementStatus.CUSTOMER_REPORTED_PAID;
 
-                              {step.triggerNote ? ` — ${step.triggerNote}` : ""}
-                            </p>
+                        const hasPaymentIssue =
+                          latestAcknowledgement?.status ===
+                          ServicePaymentAcknowledgementStatus.PAYMENT_ISSUE;
+
+                        const canCustomerReport =
+                          Boolean(
+                            isCustomer &&
+                              agreement.status ===
+                                ServiceAgreementStatus.APPROVED &&
+                              (
+                                !latestAcknowledgement ||
+                                hasPaymentIssue
+                              ) &&
+                              isPaymentStepAvailableForCustomerReport(
+                                step.triggerType,
+                                requestStatus,
+                              ),
+                          );
+
+                        const canProviderRespond =
+                          Boolean(
+                            isProvider &&
+                              agreement.status ===
+                                ServiceAgreementStatus.APPROVED &&
+                              isAwaitingProvider &&
+                              latestAcknowledgement,
+                          );
+
+                        const issueFormOpen =
+                          Boolean(
+                            latestAcknowledgement &&
+                              paymentIssueAcknowledgementId ===
+                                latestAcknowledgement.id,
+                          );
+
+                        return (
+                          <div
+                            key={step.id}
+                            className="rounded-xl bg-slate-50 p-3"
+                          >
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900">
+                                  {step.sequenceNo}. {step.label}
+                                </p>
+
+                                <p className="mt-1 text-xs text-slate-500">
+                                  {getPaymentTriggerLabel(
+                                    step.triggerType,
+                                  )}
+
+                                  {step.triggerNote
+                                    ? ` — ${step.triggerNote}`
+                                    : ""}
+                                </p>
+                              </div>
+
+                              <p className="shrink-0 text-sm font-bold text-slate-900">
+                                {formatMoney(step.amount)}
+                              </p>
+                            </div>
+
+                            <div className="mt-3 border-t border-slate-200 pt-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-500">
+                                    Status pembayaran
+                                  </p>
+
+                                  <p className="mt-1 text-sm font-bold text-slate-800">
+                                    {getPaymentAcknowledgementStatusLabel(
+                                      latestAcknowledgement,
+                                    )}
+                                  </p>
+
+                                  {latestAcknowledgement && (
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      Percobaan #{latestAcknowledgement.attemptNo}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {canCustomerReport && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void onReportPaymentPaid(
+                                        step.id,
+                                      )
+                                    }
+                                    disabled={actionPending}
+                                    className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                                  >
+                                    {hasPaymentIssue
+                                      ? "Lapor Ulang Pembayaran"
+                                      : "Lapor Sudah Bayar"}
+                                  </button>
+                                )}
+                              </div>
+
+                              {latestAcknowledgement?.customerNote && (
+                                <div className="mt-3 rounded-xl bg-white p-3">
+                                  <p className="text-xs font-semibold text-slate-500">
+                                    Catatan Customer
+                                  </p>
+
+                                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                                    {latestAcknowledgement.customerNote}
+                                  </p>
+                                </div>
+                              )}
+
+                              {hasPaymentIssue &&
+                                latestAcknowledgement?.issueReason && (
+                                  <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50 p-3">
+                                    <p className="text-xs font-bold uppercase tracking-wide text-rose-500">
+                                      Alasan masalah
+                                    </p>
+
+                                    <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-rose-700">
+                                      {latestAcknowledgement.issueReason}
+                                    </p>
+                                  </div>
+                                )}
+
+                              {latestAcknowledgement?.providerNote && (
+                                <div className="mt-3 rounded-xl bg-white p-3">
+                                  <p className="text-xs font-semibold text-slate-500">
+                                    Catatan Penyedia
+                                  </p>
+
+                                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                                    {latestAcknowledgement.providerNote}
+                                  </p>
+                                </div>
+                              )}
+
+                              {canProviderRespond &&
+                                latestAcknowledgement &&
+                                !issueFormOpen && (
+                                  <div className="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void onConfirmPayment(
+                                          latestAcknowledgement.id,
+                                        )
+                                      }
+                                      disabled={actionPending}
+                                      className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                                    >
+                                      Konfirmasi Pembayaran
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onOpenPaymentIssue(
+                                          latestAcknowledgement.id,
+                                        )
+                                      }
+                                      disabled={actionPending}
+                                      className="rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                                    >
+                                      Laporkan Masalah
+                                    </button>
+                                  </div>
+                                )}
+
+                              {canProviderRespond &&
+                                latestAcknowledgement &&
+                                issueFormOpen && (
+                                  <div className="mt-3 rounded-xl border border-rose-100 bg-white p-3">
+                                    <label
+                                      htmlFor={`payment-issue-${latestAcknowledgement.id}`}
+                                      className="text-xs font-bold text-slate-700"
+                                    >
+                                      Alasan masalah pembayaran
+                                    </label>
+
+                                    <textarea
+                                      id={`payment-issue-${latestAcknowledgement.id}`}
+                                      rows={3}
+                                      value={paymentIssueReason}
+                                      onChange={(event) =>
+                                        onPaymentIssueReasonChange(
+                                          event.target.value,
+                                        )
+                                      }
+                                      disabled={actionPending}
+                                      placeholder="Contoh: nominal yang diterima belum sesuai."
+                                      className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 disabled:bg-slate-50"
+                                    />
+
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          void onReportPaymentIssue()
+                                        }
+                                        disabled={actionPending}
+                                        className="rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                                      >
+                                        Kirim Laporan Masalah
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={
+                                          onCancelPaymentIssue
+                                        }
+                                        disabled={actionPending}
+                                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                                      >
+                                        Batal
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                            </div>
                           </div>
-
-                          <p className="shrink-0 text-sm font-bold text-slate-900">
-                            {formatMoney(step.amount)}
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 

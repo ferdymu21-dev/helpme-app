@@ -162,12 +162,29 @@ export function getNotificationConfig(
         ...badge,
       };
 
+    case "SERVICE_PAYMENT_REPORTED":
+      return {
+        icon: CreditCard,
+        iconColor: "text-violet-600",
+        backgroundColor: "bg-violet-100",
+        ...badge,
+      };
+
     case "SERVICE_AGREEMENT_APPROVED":
     case "SERVICE_COMPLETION_ACCEPTED":
+    case "SERVICE_PAYMENT_CONFIRMED":
       return {
         icon: CircleCheck,
         iconColor: "text-emerald-600",
         backgroundColor: "bg-emerald-100",
+        ...badge,
+      };
+
+    case "SERVICE_PAYMENT_ISSUE":
+      return {
+        icon: CircleX,
+        iconColor: "text-rose-600",
+        backgroundColor: "bg-rose-100",
         ...badge,
       };
 

@@ -49,6 +49,15 @@ export const NotificationTypeCategoryMap = {
   [NotificationType.SERVICE_COMPLETION_ACCEPTED]:
     NotificationCategory.SERVICE,
 
+  [NotificationType.SERVICE_PAYMENT_REPORTED]:
+    NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_PAYMENT_CONFIRMED]:
+    NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_PAYMENT_ISSUE]:
+    NotificationCategory.SERVICE,
+
   /* =========================
        REVIEW
     ========================= */
