@@ -50,6 +50,37 @@ export interface ProviderServiceRequestPage {
   pageSize: number;
 }
 
+export type ServiceCompletionSubmissionStatus =
+  | "SUBMITTED"
+  | "REVISION_REQUESTED"
+  | "ACCEPTED";
+
+export interface ServiceCompletionSubmission {
+  id: string;
+
+  serviceRequestId: string;
+
+  serviceAgreementId: string;
+
+  submissionNo: number;
+
+  providerNote: string;
+
+  proofStoragePath: string | null;
+
+  status: ServiceCompletionSubmissionStatus;
+
+  submittedAt: string;
+
+  customerRespondedAt: string | null;
+
+  revisionReason: string | null;
+
+  revisionRequestedAt: string | null;
+
+  acceptedAt: string | null;
+}
+
 export interface ServiceRequestDetail {
   id: string;
 
@@ -112,4 +143,6 @@ export interface ServiceRequestDetail {
   providerAvatarUrl: string | null;
 
   providerVerificationStatus: string | null;
+
+  latestCompletionSubmission: ServiceCompletionSubmission | null;
 }

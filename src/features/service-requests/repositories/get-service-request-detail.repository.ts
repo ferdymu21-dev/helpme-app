@@ -1,6 +1,9 @@
 ﻿import { supabase } from "@/lib/supabase/client";
 
-import { parseServiceRequestDetail } from "../parsers/service-request-read.parser";
+import {
+  parseServiceCompletionSubmission,
+  parseServiceRequestDetail,
+} from "../parsers/service-request-read.parser";
 
 import type { ServiceRequestDetail } from "../types/service-request-read.types";
 
@@ -21,5 +24,28 @@ export async function getServiceRequestDetailRepository(
     return null;
   }
 
-  return parseServiceRequestDetail(data);
+  const detail =
+    parseServiceRequestDetail(data);
+
+  const {
+    data: completionData,
+    error: completionError,
+  } = await supabase
+    .rpc("get_my_latest_service_completion_submission", {
+      p_request_id: requestId,
+    })
+    .maybeSingle();
+
+  if (completionError) {
+    throw completionError;
+  }
+
+  return {
+    ...detail,
+
+    latestCompletionSubmission:
+      completionData
+        ? parseServiceCompletionSubmission(completionData)
+        : null,
+  };
 }

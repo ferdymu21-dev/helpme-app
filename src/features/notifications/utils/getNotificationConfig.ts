@@ -141,6 +141,8 @@ export function getNotificationConfig(
 
     case "SERVICE_REQUEST_CREATED":
     case "SERVICE_REQUEST_NEGOTIATING":
+    case "SERVICE_REQUEST_IN_PROGRESS":
+    case "SERVICE_COMPLETION_SUBMITTED":
     case "SERVICE_AGREEMENT_PROPOSED":
       return {
         icon: Handshake,
@@ -152,6 +154,7 @@ export function getNotificationConfig(
     case "SERVICE_REQUEST_DECLINED":
     case "SERVICE_REQUEST_CANCELLED":
     case "SERVICE_AGREEMENT_REJECTED":
+    case "SERVICE_COMPLETION_REVISION_REQUESTED":
       return {
         icon: CircleX,
         iconColor: "text-rose-600",
@@ -160,6 +163,7 @@ export function getNotificationConfig(
       };
 
     case "SERVICE_AGREEMENT_APPROVED":
+    case "SERVICE_COMPLETION_ACCEPTED":
       return {
         icon: CircleCheck,
         iconColor: "text-emerald-600",

@@ -48,6 +48,8 @@ interface ServiceRequestDetailPageUIProps {
 
   canSubmitWork: boolean;
 
+  canRespondToCompletion: boolean;
+
   canDecline: boolean;
 
   canCancel: boolean;
@@ -60,6 +62,10 @@ interface ServiceRequestDetailPageUIProps {
 
   submissionNote: string;
 
+  revisionOpen: boolean;
+
+  revisionReason: string;
+
   declineReason: string;
 
   refresh: () => void;
@@ -71,6 +77,16 @@ interface ServiceRequestDetailPageUIProps {
   onSubmitWork: () => void;
 
   onSubmissionNoteChange: (value: string) => void;
+
+  onAcceptCompletion: () => void;
+
+  onOpenRevision: () => void;
+
+  onCancelRevision: () => void;
+
+  onConfirmRevision: () => void;
+
+  onRevisionReasonChange: (value: string) => void;
 
   onOpenDecline: () => void;
 
@@ -117,6 +133,7 @@ export default function ServiceRequestDetailPageUI({
   canBeginNegotiation,
   canStartWork,
   canSubmitWork,
+  canRespondToCompletion,
   canDecline,
   canCancel,
   declineOpen,
@@ -124,11 +141,18 @@ export default function ServiceRequestDetailPageUI({
   cancellationOpen,
   cancellationReason,
   submissionNote,
+  revisionOpen,
+  revisionReason,
   refresh,
   onBeginNegotiation,
   onStartWork,
   onSubmitWork,
   onSubmissionNoteChange,
+  onAcceptCompletion,
+  onOpenRevision,
+  onCancelRevision,
+  onConfirmRevision,
+  onRevisionReasonChange,
   onOpenDecline,
   onCancelDecline,
   onConfirmDecline,
@@ -411,6 +435,140 @@ export default function ServiceRequestDetailPageUI({
               isProvider={isProvider}
               isCustomer={isCustomer}
             />
+            {detail.latestCompletionSubmission && (
+              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-950">
+                      Hasil Pekerjaan
+                    </h2>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Pengiriman #{detail.latestCompletionSubmission.submissionNo}
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                    {detail.latestCompletionSubmission.status ===
+                    "SUBMITTED"
+                      ? "Menunggu respons"
+                      : detail.latestCompletionSubmission.status ===
+                          "REVISION_REQUESTED"
+                        ? "Revisi diminta"
+                        : "Diterima"}
+                  </span>
+                </div>
+
+                <p className="mt-5 text-xs font-semibold text-slate-500">
+                  Catatan Provider
+                </p>
+
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-800">
+                  {detail.latestCompletionSubmission.providerNote}
+                </p>
+
+                <p className="mt-3 text-xs text-slate-400">
+                  Dikirim{" "}
+                  {formatServiceRequestDateTime(
+                    detail.latestCompletionSubmission.submittedAt,
+                  )}
+                </p>
+
+                {detail.latestCompletionSubmission.revisionReason && (
+                  <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-amber-800">
+                      Catatan Revisi
+                    </p>
+
+                    <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-amber-900">
+                      {detail.latestCompletionSubmission.revisionReason}
+                    </p>
+                  </div>
+                )}
+
+                {isCustomer && canRespondToCompletion && (
+                  <div className="mt-5">
+                    {actionErrorMessage && (
+                      <div
+                        role="alert"
+                        className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                      >
+                        {actionErrorMessage}
+                      </div>
+                    )}
+
+                    {!revisionOpen ? (
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={onAcceptCompletion}
+                          disabled={actionPending}
+                          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <CheckCircle2 size={17} />
+                          {actionPending
+                            ? "Memproses..."
+                            : "Terima Hasil"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={onOpenRevision}
+                          disabled={actionPending}
+                          className="w-full rounded-2xl border border-amber-200 px-4 py-3 text-sm font-bold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Minta Revisi
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <label
+                          htmlFor="completion-revision-reason"
+                          className="block text-sm font-semibold text-slate-800"
+                        >
+                          Alasan revisi
+                        </label>
+
+                        <textarea
+                          id="completion-revision-reason"
+                          rows={4}
+                          value={revisionReason}
+                          onChange={(event) =>
+                            onRevisionReasonChange(event.target.value)
+                          }
+                          disabled={actionPending}
+                          placeholder="Jelaskan bagian yang perlu diperbaiki."
+                          className="w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                        />
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={onCancelRevision}
+                            disabled={actionPending}
+                            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Batal
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={onConfirmRevision}
+                            disabled={actionPending}
+                            className="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {actionPending
+                              ? "Mengirim..."
+                              : "Kirim Revisi"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
             {isProvider && canSubmitWork && (
               <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
                 <h2 className="text-base font-bold text-slate-950">

@@ -8,7 +8,11 @@ import { ServiceRequestStatus } from "../constants/service-request-status";
 
 import { getServiceRequestDetailService } from "../services/get-service-request-detail.service";
 
-import { cancelServiceRequestService } from "../services/service-request-customer-lifecycle.service";
+import {
+  acceptServiceCompletionService,
+  cancelServiceRequestService,
+  requestServiceCompletionRevisionService,
+} from "../services/service-request-customer-lifecycle.service";
 
 import {
   beginServiceRequestNegotiationService,
@@ -45,6 +49,10 @@ export function useServiceRequestDetailPage(requestId: string) {
   const [cancellationReason, setCancellationReason] = useState("");
 
   const [submissionNote, setSubmissionNote] = useState("");
+
+  const [revisionOpen, setRevisionOpen] = useState(false);
+
+  const [revisionReason, setRevisionReason] = useState("");
 
   const requestVersion = useRef(0);
 
@@ -116,6 +124,12 @@ export function useServiceRequestDetailPage(requestId: string) {
 
   const canSubmitWork = Boolean(
     isProvider && detail?.status === ServiceRequestStatus.IN_PROGRESS,
+  );
+
+  const canRespondToCompletion = Boolean(
+    isCustomer &&
+      detail?.status === ServiceRequestStatus.SUBMITTED &&
+      detail.latestCompletionSubmission?.status === "SUBMITTED",
   );
 
   const canDecline = Boolean(
@@ -215,6 +229,91 @@ export function useServiceRequestDetailPage(requestId: string) {
         error instanceof Error
           ? error.message
           : "Hasil pekerjaan belum dapat dikirim.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleAcceptCompletion() {
+    if (actionPending || !detail || !canRespondToCompletion) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+    setActionPending(true);
+
+    try {
+      await acceptServiceCompletionService(detail.id);
+
+      await load();
+    } catch (error) {
+      console.error("ACCEPT SERVICE COMPLETION ERROR:", error);
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Hasil pekerjaan belum dapat diterima.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  function handleOpenRevision() {
+    if (actionPending || !canRespondToCompletion) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+    setRevisionOpen(true);
+  }
+
+  function handleCancelRevision() {
+    if (actionPending) {
+      return;
+    }
+
+    setRevisionOpen(false);
+    setRevisionReason("");
+    setActionErrorMessage(null);
+  }
+
+  async function handleConfirmRevision() {
+    if (actionPending || !detail || !canRespondToCompletion) {
+      return;
+    }
+
+    const reason = revisionReason.trim();
+
+    if (!reason) {
+      setActionErrorMessage("Alasan revisi wajib diisi.");
+      return;
+    }
+
+    setActionErrorMessage(null);
+    setActionPending(true);
+
+    try {
+      await requestServiceCompletionRevisionService(
+        detail.id,
+        reason,
+      );
+
+      setRevisionOpen(false);
+      setRevisionReason("");
+
+      await load();
+    } catch (error) {
+      console.error(
+        "REQUEST SERVICE COMPLETION REVISION ERROR:",
+        error,
+      );
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Permintaan revisi belum dapat dikirim.",
       );
     } finally {
       setActionPending(false);
@@ -363,6 +462,8 @@ export function useServiceRequestDetailPage(requestId: string) {
 
     canSubmitWork,
 
+    canRespondToCompletion,
+
     canDecline,
 
     canCancel,
@@ -375,6 +476,10 @@ export function useServiceRequestDetailPage(requestId: string) {
 
     submissionNote,
 
+    revisionOpen,
+
+    revisionReason,
+
     declineReason,
 
     refresh: load,
@@ -386,6 +491,16 @@ export function useServiceRequestDetailPage(requestId: string) {
     onSubmitWork: handleSubmitWork,
 
     onSubmissionNoteChange: setSubmissionNote,
+
+    onAcceptCompletion: handleAcceptCompletion,
+
+    onOpenRevision: handleOpenRevision,
+
+    onCancelRevision: handleCancelRevision,
+
+    onConfirmRevision: handleConfirmRevision,
+
+    onRevisionReasonChange: setRevisionReason,
 
     onOpenDecline: handleOpenDecline,
 

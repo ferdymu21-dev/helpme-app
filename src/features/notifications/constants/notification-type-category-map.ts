@@ -37,6 +37,18 @@ export const NotificationTypeCategoryMap = {
 
   [NotificationType.SERVICE_AGREEMENT_REJECTED]: NotificationCategory.SERVICE,
 
+  [NotificationType.SERVICE_REQUEST_IN_PROGRESS]:
+    NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_COMPLETION_SUBMITTED]:
+    NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_COMPLETION_REVISION_REQUESTED]:
+    NotificationCategory.SERVICE,
+
+  [NotificationType.SERVICE_COMPLETION_ACCEPTED]:
+    NotificationCategory.SERVICE,
+
   /* =========================
        REVIEW
     ========================= */

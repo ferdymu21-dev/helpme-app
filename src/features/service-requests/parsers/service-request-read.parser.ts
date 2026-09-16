@@ -7,6 +7,8 @@ import {
 
 import type {
   ProviderServiceRequestSummary,
+  ServiceCompletionSubmission,
+  ServiceCompletionSubmissionStatus,
   ServiceRequestDetail,
 } from "../types/service-request-read.types";
 
@@ -84,6 +86,20 @@ function nullablePositiveInteger(value: unknown, field: string): number | null {
   }
 
   return parsed;
+}
+
+function parseCompletionSubmissionStatus(
+  value: unknown,
+): ServiceCompletionSubmissionStatus {
+  if (
+    value === "SUBMITTED" ||
+    value === "REVISION_REQUESTED" ||
+    value === "ACCEPTED"
+  ) {
+    return value;
+  }
+
+  throw new Error("Service completion submission status is invalid.");
 }
 
 function parseStatus(value: unknown): ServiceRequestStatusValue {
@@ -179,6 +195,77 @@ export function parseProviderServiceRequestSummary(
   };
 }
 
+export function parseServiceCompletionSubmission(
+  value: unknown,
+): ServiceCompletionSubmission {
+  if (!isRecord(value)) {
+    throw new Error("Service completion submission is invalid.");
+  }
+
+  const submissionNo =
+    parseSafeInteger(value.submission_no, "submission_no");
+
+  if (submissionNo <= 0) {
+    throw new Error("Service completion submission number is invalid.");
+  }
+
+  return {
+    id: requiredUuid(value.id, "id"),
+
+    serviceRequestId: requiredUuid(
+      value.service_request_id,
+      "service_request_id",
+    ),
+
+    serviceAgreementId: requiredUuid(
+      value.service_agreement_id,
+      "service_agreement_id",
+    ),
+
+    submissionNo,
+
+    providerNote: requiredString(
+      value.provider_note,
+      "provider_note",
+    ),
+
+    proofStoragePath: nullableString(
+      value.proof_storage_path,
+      "proof_storage_path",
+    ),
+
+    status:
+      parseCompletionSubmissionStatus(
+        value.status,
+      ),
+
+    submittedAt: requiredString(
+      value.submitted_at,
+      "submitted_at",
+    ),
+
+    customerRespondedAt: nullableString(
+      value.customer_responded_at,
+      "customer_responded_at",
+    ),
+
+    revisionReason: nullableString(
+      value.revision_reason,
+      "revision_reason",
+    ),
+
+    revisionRequestedAt: nullableString(
+      value.revision_requested_at,
+      "revision_requested_at",
+    ),
+
+    acceptedAt: nullableString(
+      value.accepted_at,
+      "accepted_at",
+    ),
+  };
+}
+
 export function parseServiceRequestDetail(
   value: unknown,
 ): ServiceRequestDetail {
@@ -244,5 +331,7 @@ export function parseServiceRequestDetail(
       value.provider_verification_status,
       "provider_verification_status",
     ),
+
+    latestCompletionSubmission: null,
   };
 }
