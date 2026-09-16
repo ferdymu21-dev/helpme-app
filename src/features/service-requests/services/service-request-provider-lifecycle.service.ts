@@ -1,6 +1,7 @@
 ﻿import {
   beginServiceRequestNegotiationRepository,
   declineServiceRequestRepository,
+  startServiceRequestWorkRepository,
 } from "../repositories/service-request-provider-lifecycle.repository";
 
 import { validateServiceRequestId } from "../validators/validate-service-request-identity";
@@ -9,6 +10,14 @@ export async function beginServiceRequestNegotiationService(
   requestId: string,
 ): Promise<string> {
   return beginServiceRequestNegotiationRepository(
+    validateServiceRequestId(requestId),
+  );
+}
+
+export async function startServiceRequestWorkService(
+  requestId: string,
+): Promise<string> {
+  return startServiceRequestWorkRepository(
     validateServiceRequestId(requestId),
   );
 }

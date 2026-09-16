@@ -44,6 +44,8 @@ interface ServiceRequestDetailPageUIProps {
 
   canBeginNegotiation: boolean;
 
+  canStartWork: boolean;
+
   canDecline: boolean;
 
   canCancel: boolean;
@@ -59,6 +61,8 @@ interface ServiceRequestDetailPageUIProps {
   refresh: () => void;
 
   onBeginNegotiation: () => void;
+
+  onStartWork: () => void;
 
   onOpenDecline: () => void;
 
@@ -103,6 +107,7 @@ export default function ServiceRequestDetailPageUI({
   isProvider,
   isCustomer,
   canBeginNegotiation,
+  canStartWork,
   canDecline,
   canCancel,
   declineOpen,
@@ -111,6 +116,7 @@ export default function ServiceRequestDetailPageUI({
   cancellationReason,
   refresh,
   onBeginNegotiation,
+  onStartWork,
   onOpenDecline,
   onCancelDecline,
   onConfirmDecline,
@@ -393,6 +399,38 @@ export default function ServiceRequestDetailPageUI({
               isProvider={isProvider}
               isCustomer={isCustomer}
             />
+            {isProvider && canStartWork && (
+              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+                <h2 className="text-base font-bold text-slate-950">
+                  Mulai Pekerjaan
+                </h2>
+
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Kesepakatan telah disetujui. Mulai pekerjaan saat Anda
+                  siap menjalankan pekerjaan sesuai kesepakatan.
+                </p>
+
+                {actionErrorMessage && (
+                  <div
+                    role="alert"
+                    className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                  >
+                    {actionErrorMessage}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onStartWork}
+                  disabled={actionPending}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <CheckCircle2 size={17} />
+                  {actionPending ? "Memproses..." : "Mulai Pekerjaan"}
+                </button>
+              </section>
+            )}
+
             {isProvider && (canBeginNegotiation || canDecline) && (
               <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
                 <h2 className="text-base font-bold text-slate-950">

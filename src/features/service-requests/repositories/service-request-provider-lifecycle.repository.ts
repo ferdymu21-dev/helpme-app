@@ -28,6 +28,23 @@ export async function beginServiceRequestNegotiationRepository(
   return parseMutationRequestId(data, "begin_service_request_negotiation");
 }
 
+export async function startServiceRequestWorkRepository(
+  requestId: string,
+): Promise<string> {
+  const { data, error } = await supabase.rpc(
+    "start_service_request_work",
+    {
+      p_request_id: requestId,
+    },
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return parseMutationRequestId(data, "start_service_request_work");
+}
+
 export async function declineServiceRequestRepository(
   requestId: string,
   reason: string,

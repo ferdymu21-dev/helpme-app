@@ -13,6 +13,7 @@ import { cancelServiceRequestService } from "../services/service-request-custome
 import {
   beginServiceRequestNegotiationService,
   declineServiceRequestService,
+  startServiceRequestWorkService,
 } from "../services/service-request-provider-lifecycle.service";
 
 import type { ServiceRequestDetail } from "../types/service-request-read.types";
@@ -106,6 +107,10 @@ export function useServiceRequestDetailPage(requestId: string) {
     isProvider && detail?.status === ServiceRequestStatus.PENDING_PROVIDER,
   );
 
+  const canStartWork = Boolean(
+    isProvider && detail?.status === ServiceRequestStatus.AGREED,
+  );
+
   const canDecline = Boolean(
     isProvider &&
     (detail?.status === ServiceRequestStatus.PENDING_PROVIDER ||
@@ -138,6 +143,32 @@ export function useServiceRequestDetailPage(requestId: string) {
         error instanceof Error
           ? error.message
           : "Permintaan belum dapat masuk ke tahap negosiasi.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleStartWork() {
+    if (actionPending || !detail || !canStartWork) {
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setActionPending(true);
+
+    try {
+      await startServiceRequestWorkService(detail.id);
+
+      await load();
+    } catch (error) {
+      console.error("START SERVICE REQUEST WORK ERROR:", error);
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Pekerjaan belum dapat dimulai.",
       );
     } finally {
       setActionPending(false);
@@ -282,6 +313,8 @@ export function useServiceRequestDetailPage(requestId: string) {
 
     canBeginNegotiation,
 
+    canStartWork,
+
     canDecline,
 
     canCancel,
@@ -297,6 +330,8 @@ export function useServiceRequestDetailPage(requestId: string) {
     refresh: load,
 
     onBeginNegotiation: handleBeginNegotiation,
+
+    onStartWork: handleStartWork,
 
     onOpenDecline: handleOpenDecline,
 
