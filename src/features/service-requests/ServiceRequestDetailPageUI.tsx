@@ -46,6 +46,8 @@ interface ServiceRequestDetailPageUIProps {
 
   canStartWork: boolean;
 
+  canSubmitWork: boolean;
+
   canDecline: boolean;
 
   canCancel: boolean;
@@ -56,6 +58,8 @@ interface ServiceRequestDetailPageUIProps {
 
   cancellationReason: string;
 
+  submissionNote: string;
+
   declineReason: string;
 
   refresh: () => void;
@@ -63,6 +67,10 @@ interface ServiceRequestDetailPageUIProps {
   onBeginNegotiation: () => void;
 
   onStartWork: () => void;
+
+  onSubmitWork: () => void;
+
+  onSubmissionNoteChange: (value: string) => void;
 
   onOpenDecline: () => void;
 
@@ -108,15 +116,19 @@ export default function ServiceRequestDetailPageUI({
   isCustomer,
   canBeginNegotiation,
   canStartWork,
+  canSubmitWork,
   canDecline,
   canCancel,
   declineOpen,
   declineReason,
   cancellationOpen,
   cancellationReason,
+  submissionNote,
   refresh,
   onBeginNegotiation,
   onStartWork,
+  onSubmitWork,
+  onSubmissionNoteChange,
   onOpenDecline,
   onCancelDecline,
   onConfirmDecline,
@@ -399,6 +411,57 @@ export default function ServiceRequestDetailPageUI({
               isProvider={isProvider}
               isCustomer={isCustomer}
             />
+            {isProvider && canSubmitWork && (
+              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+                <h2 className="text-base font-bold text-slate-950">
+                  Serahkan Hasil Pekerjaan
+                </h2>
+
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Tulis ringkasan hasil pekerjaan yang akan diperiksa oleh
+                  Customer.
+                </p>
+
+                <label
+                  htmlFor="completion-submission-note"
+                  className="mt-5 block text-sm font-semibold text-slate-800"
+                >
+                  Catatan hasil pekerjaan
+                </label>
+
+                <textarea
+                  id="completion-submission-note"
+                  rows={5}
+                  value={submissionNote}
+                  onChange={(event) =>
+                    onSubmissionNoteChange(event.target.value)
+                  }
+                  disabled={actionPending}
+                  placeholder="Contoh: Logo final sudah selesai sesuai warna cokelat dan krem yang disepakati."
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                />
+
+                {actionErrorMessage && (
+                  <div
+                    role="alert"
+                    className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                  >
+                    {actionErrorMessage}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onSubmitWork}
+                  disabled={actionPending}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <CheckCircle2 size={17} />
+                  {actionPending ? "Mengirim..." : "Kirim Hasil Pekerjaan"}
+                </button>
+              </section>
+            )}
+
             {isProvider && canStartWork && (
               <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
                 <h2 className="text-base font-bold text-slate-950">

@@ -2,6 +2,7 @@
   beginServiceRequestNegotiationRepository,
   declineServiceRequestRepository,
   startServiceRequestWorkRepository,
+  submitServiceRequestWorkRepository,
 } from "../repositories/service-request-provider-lifecycle.repository";
 
 import { validateServiceRequestId } from "../validators/validate-service-request-identity";
@@ -19,6 +20,22 @@ export async function startServiceRequestWorkService(
 ): Promise<string> {
   return startServiceRequestWorkRepository(
     validateServiceRequestId(requestId),
+  );
+}
+
+export async function submitServiceRequestWorkService(
+  requestId: string,
+  providerNote: string,
+): Promise<string> {
+  const normalizedNote = providerNote.trim();
+
+  if (!normalizedNote) {
+    throw new Error("Catatan hasil pekerjaan wajib diisi.");
+  }
+
+  return submitServiceRequestWorkRepository(
+    validateServiceRequestId(requestId),
+    normalizedNote,
   );
 }
 

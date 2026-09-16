@@ -45,6 +45,25 @@ export async function startServiceRequestWorkRepository(
   return parseMutationRequestId(data, "start_service_request_work");
 }
 
+export async function submitServiceRequestWorkRepository(
+  requestId: string,
+  providerNote: string,
+): Promise<string> {
+  const { data, error } = await supabase.rpc(
+    "submit_service_request_work",
+    {
+      p_request_id: requestId,
+      p_provider_note: providerNote,
+    },
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return parseMutationRequestId(data, "submit_service_request_work");
+}
+
 export async function declineServiceRequestRepository(
   requestId: string,
   reason: string,

@@ -14,6 +14,7 @@ import {
   beginServiceRequestNegotiationService,
   declineServiceRequestService,
   startServiceRequestWorkService,
+  submitServiceRequestWorkService,
 } from "../services/service-request-provider-lifecycle.service";
 
 import type { ServiceRequestDetail } from "../types/service-request-read.types";
@@ -42,6 +43,8 @@ export function useServiceRequestDetailPage(requestId: string) {
   const [cancellationOpen, setCancellationOpen] = useState(false);
 
   const [cancellationReason, setCancellationReason] = useState("");
+
+  const [submissionNote, setSubmissionNote] = useState("");
 
   const requestVersion = useRef(0);
 
@@ -111,6 +114,10 @@ export function useServiceRequestDetailPage(requestId: string) {
     isProvider && detail?.status === ServiceRequestStatus.AGREED,
   );
 
+  const canSubmitWork = Boolean(
+    isProvider && detail?.status === ServiceRequestStatus.IN_PROGRESS,
+  );
+
   const canDecline = Boolean(
     isProvider &&
     (detail?.status === ServiceRequestStatus.PENDING_PROVIDER ||
@@ -169,6 +176,45 @@ export function useServiceRequestDetailPage(requestId: string) {
         error instanceof Error
           ? error.message
           : "Pekerjaan belum dapat dimulai.",
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSubmitWork() {
+    if (actionPending || !detail || !canSubmitWork) {
+      return;
+    }
+
+    const note = submissionNote.trim();
+
+    if (!note) {
+      setActionErrorMessage("Catatan hasil pekerjaan wajib diisi.");
+
+      return;
+    }
+
+    setActionErrorMessage(null);
+
+    setActionPending(true);
+
+    try {
+      await submitServiceRequestWorkService(
+        detail.id,
+        note,
+      );
+
+      setSubmissionNote("");
+
+      await load();
+    } catch (error) {
+      console.error("SUBMIT SERVICE REQUEST WORK ERROR:", error);
+
+      setActionErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Hasil pekerjaan belum dapat dikirim.",
       );
     } finally {
       setActionPending(false);
@@ -315,6 +361,8 @@ export function useServiceRequestDetailPage(requestId: string) {
 
     canStartWork,
 
+    canSubmitWork,
+
     canDecline,
 
     canCancel,
@@ -325,6 +373,8 @@ export function useServiceRequestDetailPage(requestId: string) {
 
     cancellationReason,
 
+    submissionNote,
+
     declineReason,
 
     refresh: load,
@@ -332,6 +382,10 @@ export function useServiceRequestDetailPage(requestId: string) {
     onBeginNegotiation: handleBeginNegotiation,
 
     onStartWork: handleStartWork,
+
+    onSubmitWork: handleSubmitWork,
+
+    onSubmissionNoteChange: setSubmissionNote,
 
     onOpenDecline: handleOpenDecline,
 
