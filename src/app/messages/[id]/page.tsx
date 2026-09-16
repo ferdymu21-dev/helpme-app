@@ -96,7 +96,30 @@ export default function ChatRoomPage() {
       const isServiceConversation = conversation.task_id === null;
 
       if (isServiceConversation) {
-        await sendServiceRequestMessageService(conversationId, trimmedMessage);
+        const sentMessageId = await sendServiceRequestMessageService(
+          conversationId,
+          trimmedMessage,
+        );
+
+        const { data: sentMessage, error: sentMessageError } = await supabase
+          .from("messages")
+          .select("id, content, sender_id, created_at")
+          .eq("id", sentMessageId)
+          .eq("conversation_id", conversationId)
+          .single();
+
+        if (sentMessageError || !sentMessage) {
+          throw (
+            sentMessageError ??
+            new Error("Pesan yang baru dikirim belum dapat dimuat.")
+          );
+        }
+
+        setMessages((previous) =>
+          previous.some((item) => item.id === sentMessage.id)
+            ? previous
+            : [...previous, sentMessage],
+        );
       } else {
         /*
          * Existing Task Chat path.
@@ -461,7 +484,11 @@ export default function ChatRoomPage() {
 
         const newMessage = payload.new as Message;
 
-        setMessages((previous) => [...previous, newMessage]);
+        setMessages((previous) =>
+          previous.some((item) => item.id === newMessage.id)
+            ? previous
+            : [...previous, newMessage],
+        );
 
         /*
          * Update preview sidebar
