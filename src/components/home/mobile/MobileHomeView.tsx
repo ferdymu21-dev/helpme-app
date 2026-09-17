@@ -100,11 +100,11 @@ export default function MobileHomeView({
         <MobileGreetingSection />
       )}
 
+      <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
+
       <MobileQuickActions />
 
       <MobileAdsBanner />
-
-      <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
 
       {activeFeed === "tasks" ? (
         <MobileTaskFeed

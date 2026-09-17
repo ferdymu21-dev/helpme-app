@@ -90,11 +90,11 @@ export default function DesktopHomeView({
           onResumePayment={onResumePayment}
         />
 
+        <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
+
         <DesktopQuickActions />
 
         <DesktopAdsBanner />
-
-        <HomeFeedSelector activeFeed={activeFeed} onFeedChange={onFeedChange} />
 
         {activeFeed === "tasks" ? (
           <DesktopTaskFeed
