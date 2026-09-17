@@ -55,7 +55,9 @@ function HomePageContent() {
   const searchParams = useSearchParams();
 
   const activeFeed: HomeFeedValue =
-    searchParams.get("feed") === "services" ? "services" : "tasks";
+  searchParams.get("feed") === "jasa"
+    ? "services"
+    : "tasks";
 
   const [viewport, setViewport] = useState<HomeViewport | null>(null);
 
@@ -391,7 +393,7 @@ function HomePageContent() {
 
     const params = new URLSearchParams(searchParams.toString());
 
-    params.set("feed", feed);
+    params.set("feed", feed === "services" ? "jasa" : "tasks");
 
     router.replace(`/home?${params.toString()}`, {
       scroll: false,
