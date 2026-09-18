@@ -2,12 +2,17 @@
 
 import {
   ArrowLeft,
+  CalendarDays,
   CircleAlert,
+  ClipboardCheck,
   Clock3,
+  Eye,
   Globe2,
   Images,
+  Info,
   LoaderCircle,
   MapPin,
+  PackageCheck,
   Pause,
   PencilLine,
   Play,
@@ -75,7 +80,7 @@ function formatPrice(value: number): string {
   }).format(value);
 }
 
-function formatDateTime(value: string | null): string | null {
+function formatDate(value: string | null): string | null {
   if (!value) {
     return null;
   }
@@ -87,8 +92,7 @@ function formatDateTime(value: string | null): string | null {
   }
 
   return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle: "long",
   }).format(timestamp);
 }
 
@@ -114,6 +118,58 @@ function getStatusLabel(status: ProviderServiceListing["status"]): string {
 
     case ServiceListingStatus.ARCHIVED:
       return "Diarsipkan";
+  }
+}
+
+function getStatusClassName(status: ProviderServiceListing["status"]): string {
+  switch (status) {
+    case ServiceListingStatus.DRAFT:
+      return "border-slate-200 bg-slate-100 text-slate-700";
+
+    case ServiceListingStatus.PAYMENT_PENDING:
+      return "border-amber-200 bg-amber-50 text-amber-700";
+
+    case ServiceListingStatus.ACTIVE:
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+    case ServiceListingStatus.PAUSED:
+      return "border-indigo-200 bg-indigo-50 text-indigo-700";
+
+    case ServiceListingStatus.EXPIRED:
+      return "border-orange-200 bg-orange-50 text-orange-700";
+
+    case ServiceListingStatus.BLOCKED:
+      return "border-rose-200 bg-rose-50 text-rose-700";
+
+    case ServiceListingStatus.ARCHIVED:
+      return "border-slate-200 bg-slate-100 text-slate-600";
+  }
+}
+
+function getStatusDescription(
+  status: ProviderServiceListing["status"],
+): string {
+  switch (status) {
+    case ServiceListingStatus.DRAFT:
+      return "Jasa belum ditampilkan kepada pelanggan.";
+
+    case ServiceListingStatus.PAYMENT_PENDING:
+      return "Selesaikan pembayaran untuk melanjutkan publikasi.";
+
+    case ServiceListingStatus.ACTIVE:
+      return "Jasa dapat ditemukan dan diminta oleh pelanggan.";
+
+    case ServiceListingStatus.PAUSED:
+      return "Jasa disembunyikan sementara dari pelanggan.";
+
+    case ServiceListingStatus.EXPIRED:
+      return "Masa publikasi jasa telah berakhir.";
+
+    case ServiceListingStatus.BLOCKED:
+      return "Publikasi jasa sedang dibatasi oleh HelpMe.";
+
+    case ServiceListingStatus.ARCHIVED:
+      return "Jasa telah diarsipkan.";
   }
 }
 
@@ -303,7 +359,7 @@ export default function PreviewServiceListingPageUI({
 
   const publicationActionLabel = getPublicationActionLabel(listing.status);
 
-  const formattedExpiresAt = formatDateTime(listing.expiresAt);
+  const formattedExpiresAt = formatDate(listing.expiresAt);
 
   const actionBusy = publicationBusy || lifecycleBusy;
 
@@ -337,101 +393,78 @@ export default function PreviewServiceListingPageUI({
       >
         <header
           className="
-            sticky
-            top-0
-            z-30
-            flex
-            items-center
-            border-b
-            border-slate-200/80
-            bg-white/90
-            px-4
-            py-3
-            backdrop-blur-xl
-            sm:static
-            sm:border-b-0
-            sm:bg-transparent
-            sm:px-6
-            sm:pt-8
-            sm:backdrop-blur-none
-          "
+    sticky
+    top-0
+    z-30
+    flex
+    items-center
+    border-b
+    border-slate-200/80
+    bg-white/95
+    px-4
+    py-3
+    backdrop-blur-xl
+    sm:static
+    sm:border-b-0
+    sm:bg-transparent
+    sm:px-6
+    sm:pt-8
+    sm:backdrop-blur-none
+  "
         >
           <button
             type="button"
             onClick={onBack}
             aria-label="Kembali"
             className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-slate-200
-              bg-white
-              text-slate-700
-              shadow-sm
-              transition
-              hover:bg-slate-50
-            "
+      inline-flex
+      h-9
+      w-9
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      border
+      border-slate-200
+      bg-white
+      text-slate-600
+      transition
+      hover:border-slate-300
+      hover:bg-slate-50
+      hover:text-slate-950
+      active:scale-95
+    "
           >
-            <ArrowLeft size={19} strokeWidth={2.2} />
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           </button>
 
           <div
             className="
-              min-w-0
-              flex-1
-              px-3
-              text-center
-            "
+      min-w-0
+      flex-1
+      px-3
+    "
           >
             <h1
               className="
-                text-[15px]
-                font-bold
-                text-slate-900
-              "
+        text-base
+        font-black
+        text-slate-950
+      "
             >
-              Preview Jasa
+              Kelola Jasa
             </h1>
 
             <p
               className="
-                mt-0.5
-                text-[11px]
-                text-slate-500
-              "
+        mt-0.5
+        text-[11px]
+        text-slate-500
+      "
             >
-              Tampilan jasa milik Anda
+              Atur publikasi dan preview jasa
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label="Edit jasa"
-            className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-slate-200
-              bg-white
-              text-indigo-600
-              shadow-sm
-              transition
-              hover:bg-indigo-50
-            "
-          >
-            <PencilLine size={17} strokeWidth={2} />
-          </button>
         </header>
 
         <div
@@ -445,144 +478,188 @@ export default function PreviewServiceListingPageUI({
         >
           <div
             className="
-              flex
-              items-start
-              gap-2.5
-              rounded-2xl
-              border
-              border-indigo-100
-              bg-indigo-50
-              p-4
-            "
+    flex
+    items-start
+    gap-3
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-indigo-50
+    p-4
+  "
           >
-            <ShieldCheck
-              size={18}
-              strokeWidth={2}
+            <span
               className="
-                mt-0.5
-                shrink-0
-                text-indigo-600
-              "
-            />
+      inline-flex
+      h-8
+      w-8
+      shrink-0
+      items-center
+      justify-center
+      rounded-lg
+      bg-white
+      text-indigo-600
+    "
+            >
+              <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+            </span>
 
             <div>
               <p
                 className="
-                  text-sm
-                  font-bold
-                  text-indigo-900
-                "
+        text-sm
+        font-black
+        text-indigo-950
+      "
               >
-                Ini adalah preview
+                Kelola publikasi jasa
               </p>
 
               <p
                 className="
-                  mt-1
-                  text-xs
-                  leading-5
-                  text-indigo-700
-                "
+        mt-1
+        text-xs
+        leading-5
+        text-indigo-700
+      "
               >
-                Periksa kembali tampilan jasa sebelum dipublikasikan. Publikasi,
-                pembayaran, perpanjangan, dan pengaturan status jasa dapat
-                dilakukan dari halaman ini.
+                Atur status publikasi, perpanjangan, dan lihat tampilan jasa
+                yang akan dilihat pelanggan.
               </p>
             </div>
           </div>
 
           <section
             className="
-              rounded-3xl
-              border
-              border-slate-200/80
-              bg-white
-              p-5
-              shadow-sm
-              sm:p-6
-            "
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-5
+    shadow-sm
+    sm:p-6
+  "
           >
             <div
               className="
-                flex
-                flex-col
-                gap-4
-                sm:flex-row
-                sm:items-start
-                sm:justify-between
-              "
+      flex
+      items-start
+      justify-between
+      gap-4
+    "
             >
-              <div>
-                <div
+              <div className="min-w-0">
+                <p
                   className="
-                    flex
-                    items-center
-                    gap-2
-                    text-xs
-                    font-bold
-                    text-slate-500
-                  "
+          inline-flex
+          items-center
+          gap-1.5
+          text-[10px]
+          font-bold
+          tracking-wide
+          text-slate-400
+          uppercase
+        "
                 >
-                  <Clock3 size={15} strokeWidth={2} />
+                  <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
                   Status publikasi
-                </div>
+                </p>
+
+                <h2
+                  className="
+          mt-2
+          text-xl
+          font-black
+          tracking-tight
+          text-slate-950
+        "
+                >
+                  {getStatusLabel(listing.status)}
+                </h2>
 
                 <p
                   className="
-                    mt-1.5
-                    text-lg
-                    font-black
-                    text-slate-950
-                  "
+          mt-1
+          max-w-md
+          text-xs
+          leading-5
+          text-slate-500
+        "
                 >
-                  {getStatusLabel(listing.status)}
+                  {getStatusDescription(listing.status)}
                 </p>
-
-                {formattedExpiresAt && (
-                  <p
-                    className="
-                      mt-1
-                      text-xs
-                      leading-5
-                      text-slate-500
-                    "
-                  >
-                    Masa aktif sampai {formattedExpiresAt}
-                  </p>
-                )}
               </div>
 
               <span
-                className="
-                  inline-flex
-                  w-fit
-                  rounded-full
-                  bg-slate-100
-                  px-3
-                  py-1.5
-                  text-[11px]
-                  font-bold
-                  text-slate-700
-                "
+                className={`
+        inline-flex
+        shrink-0
+        items-center
+        rounded-lg
+        border
+        px-2.5
+        py-1.5
+        text-[10px]
+        font-bold
+        ${getStatusClassName(listing.status)}
+      `}
               >
                 {getStatusLabel(listing.status)}
               </span>
             </div>
 
+            {formattedExpiresAt && (
+              <div
+                className="
+        mt-4
+        flex
+        items-center
+        gap-2
+        border-t
+        border-slate-100
+        pt-4
+        text-xs
+        text-slate-500
+      "
+              >
+                <CalendarDays
+                  aria-hidden="true"
+                  className="
+          h-4
+          w-4
+          shrink-0
+        "
+                />
+
+                <span>
+                  Masa aktif sampai{" "}
+                  <strong
+                    className="
+            font-bold
+            text-slate-700
+          "
+                  >
+                    {formattedExpiresAt}
+                  </strong>
+                </span>
+              </div>
+            )}
+
             {listing.status === ServiceListingStatus.BLOCKED &&
               listing.blockedReason && (
                 <div
                   className="
-                    mt-4
-                    rounded-2xl
-                    border
-                    border-rose-100
-                    bg-rose-50
-                    p-3
-                    text-xs
-                    leading-5
-                    text-rose-700
-                  "
+          mt-4
+          rounded-xl
+          border
+          border-rose-200
+          bg-rose-50
+          px-4
+          py-3
+          text-xs
+          leading-5
+          text-rose-700
+        "
                 >
                   {listing.blockedReason}
                 </div>
@@ -591,16 +668,17 @@ export default function PreviewServiceListingPageUI({
             {actionSuccessMessage && (
               <div
                 className="
-                  mt-4
-                  rounded-2xl
-                  border
-                  border-emerald-100
-                  bg-emerald-50
-                  p-3
-                  text-xs
-                  leading-5
-                  text-emerald-700
-                "
+        mt-4
+        rounded-xl
+        border
+        border-emerald-200
+        bg-emerald-50
+        px-4
+        py-3
+        text-xs
+        leading-5
+        text-emerald-700
+      "
               >
                 {actionSuccessMessage}
               </div>
@@ -609,16 +687,17 @@ export default function PreviewServiceListingPageUI({
             {actionInfoMessage && (
               <div
                 className="
-                  mt-4
-                  rounded-2xl
-                  border
-                  border-amber-100
-                  bg-amber-50
-                  p-3
-                  text-xs
-                  leading-5
-                  text-amber-700
-                "
+        mt-4
+        rounded-xl
+        border
+        border-amber-200
+        bg-amber-50
+        px-4
+        py-3
+        text-xs
+        leading-5
+        text-amber-700
+      "
               >
                 {actionInfoMessage}
               </div>
@@ -627,27 +706,29 @@ export default function PreviewServiceListingPageUI({
             {actionErrorMessage && (
               <div
                 className="
-                  mt-4
-                  flex
-                  items-start
-                  gap-2
-                  rounded-2xl
-                  border
-                  border-rose-100
-                  bg-rose-50
-                  p-3
-                  text-xs
-                  leading-5
-                  text-rose-700
-                "
+        mt-4
+        flex
+        items-start
+        gap-2
+        rounded-xl
+        border
+        border-rose-200
+        bg-rose-50
+        px-4
+        py-3
+        text-xs
+        leading-5
+        text-rose-700
+      "
               >
                 <CircleAlert
-                  size={15}
-                  strokeWidth={2}
+                  aria-hidden="true"
                   className="
-                    mt-0.5
-                    shrink-0
-                  "
+          mt-0.5
+          h-4
+          w-4
+          shrink-0
+        "
                 />
 
                 <span>{actionErrorMessage}</span>
@@ -658,47 +739,48 @@ export default function PreviewServiceListingPageUI({
               publicationAmount > 0 && (
                 <div
                   className="
-                    mt-4
-                    flex
-                    items-center
-                    justify-between
-                    gap-3
-                    rounded-2xl
-                    bg-slate-50
-                    px-4
-                    py-3
-                  "
+          mt-4
+          flex
+          items-center
+          justify-between
+          gap-3
+          rounded-xl
+          bg-slate-50
+          px-4
+          py-3
+        "
                 >
                   <div>
                     <p
                       className="
-                        text-[11px]
-                        font-bold
-                        text-slate-500
-                      "
+              text-[10px]
+              font-bold
+              text-slate-500
+            "
                     >
                       Menunggu konfirmasi pembayaran
                     </p>
 
                     <p
                       className="
-                        mt-0.5
-                        text-sm
-                        font-black
-                        text-slate-900
-                      "
+              mt-0.5
+              text-sm
+              font-black
+              text-slate-900
+            "
                     >
                       {formatPrice(publicationAmount)}
                     </p>
                   </div>
 
                   <LoaderCircle
-                    size={18}
-                    strokeWidth={2}
+                    aria-hidden="true"
                     className="
-                      animate-spin
-                      text-indigo-600
-                    "
+            h-4
+            w-4
+            animate-spin
+            text-indigo-600
+          "
                   />
                 </div>
               )}
@@ -706,9 +788,7 @@ export default function PreviewServiceListingPageUI({
             <div
               className="
                 mt-5
-                grid
-                gap-2.5
-                sm:grid-cols-2
+                space-y-2
               "
             >
               {publicationActionLabel && (
@@ -717,38 +797,39 @@ export default function PreviewServiceListingPageUI({
                   disabled={actionBusy}
                   onClick={onPublication}
                   className="
-                    flex
-                    min-h-12
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-2xl
-                    bg-indigo-600
-                    px-4
-                    text-sm
-                    font-bold
-                    text-white
-                    shadow-lg
-                    shadow-indigo-600/15
-                    transition
-                    hover:bg-indigo-700
-                    disabled:cursor-wait
-                    disabled:bg-slate-300
-                    disabled:shadow-none
-                  "
+          inline-flex
+          min-h-11
+          items-center
+          justify-center
+          gap-2
+          rounded-xl
+          bg-indigo-600
+          px-4
+          text-xs
+          font-black
+          text-white
+          transition
+          hover:bg-indigo-700
+          active:scale-[0.99]
+          disabled:cursor-wait
+          disabled:bg-slate-300
+        "
                 >
                   {publicationBusy ? (
                     <>
                       <LoaderCircle
-                        size={17}
-                        strokeWidth={2}
-                        className="animate-spin"
+                        aria-hidden="true"
+                        className="
+                h-4
+                w-4
+                animate-spin
+              "
                       />
                       Memproses...
                     </>
                   ) : (
                     <>
-                      <Rocket size={17} strokeWidth={2} />
+                      <Rocket aria-hidden="true" className="h-4 w-4" />
 
                       {publicationActionLabel}
                     </>
@@ -756,91 +837,139 @@ export default function PreviewServiceListingPageUI({
                 </button>
               )}
 
-              {canPause && (
+              <div
+                className="
+    grid
+    grid-cols-2
+    gap-2
+  "
+              >
                 <button
                   type="button"
                   disabled={actionBusy}
-                  onClick={onPause}
+                  onClick={onEdit}
                   className="
-                    flex
-                    min-h-12
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    px-4
-                    text-sm
-                    font-bold
-                    text-slate-700
-                    transition
-                    hover:bg-slate-50
-                    disabled:cursor-wait
-                    disabled:opacity-50
-                  "
+      inline-flex
+      min-h-11
+      items-center
+      justify-center
+      gap-2
+      rounded-xl
+      border
+      border-slate-200
+      bg-white
+      px-3
+      text-xs
+      font-black
+      text-slate-700
+      transition
+      hover:border-indigo-200
+      hover:bg-indigo-50
+      hover:text-indigo-700
+      disabled:cursor-wait
+      disabled:opacity-50
+    "
                 >
-                  {lifecycleBusy ? (
-                    <LoaderCircle
-                      size={17}
-                      strokeWidth={2}
-                      className="animate-spin"
-                    />
-                  ) : (
-                    <Pause size={17} strokeWidth={2} />
-                  )}
-                  Jeda jasa
+                  <PencilLine aria-hidden="true" className="h-4 w-4" />
+                  Edit jasa
                 </button>
-              )}
 
-              {canResume && (
-                <button
-                  type="button"
-                  disabled={actionBusy}
-                  onClick={onResume}
-                  className="
-                    flex
-                    min-h-12
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    px-4
-                    text-sm
-                    font-bold
-                    text-slate-700
-                    transition
-                    hover:bg-slate-50
-                    disabled:cursor-wait
-                    disabled:opacity-50
-                  "
-                >
-                  {lifecycleBusy ? (
-                    <LoaderCircle
-                      size={17}
-                      strokeWidth={2}
-                      className="animate-spin"
-                    />
-                  ) : (
-                    <Play size={17} strokeWidth={2} />
-                  )}
-                  Aktifkan kembali
-                </button>
-              )}
+                {canPause && (
+                  <button
+                    type="button"
+                    disabled={actionBusy}
+                    onClick={onPause}
+                    className="
+        inline-flex
+        min-h-11
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        px-3
+        text-xs
+        font-black
+        text-slate-700
+        transition
+        hover:border-indigo-200
+        hover:bg-indigo-50
+        hover:text-indigo-700
+        disabled:cursor-wait
+        disabled:opacity-50
+      "
+                  >
+                    {lifecycleBusy ? (
+                      <LoaderCircle
+                        aria-hidden="true"
+                        className="
+            h-4
+            w-4
+            animate-spin
+          "
+                      />
+                    ) : (
+                      <Pause aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    Jeda jasa
+                  </button>
+                )}
+
+                {canResume && (
+                  <button
+                    type="button"
+                    disabled={actionBusy}
+                    onClick={onResume}
+                    className="
+        inline-flex
+        min-h-11
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        px-3
+        text-xs
+        font-black
+        text-slate-700
+        transition
+        hover:border-indigo-200
+        hover:bg-indigo-50
+        hover:text-indigo-700
+        disabled:cursor-wait
+        disabled:opacity-50
+      "
+                  >
+                    {lifecycleBusy ? (
+                      <LoaderCircle
+                        aria-hidden="true"
+                        className="
+            h-4
+            w-4
+            animate-spin
+          "
+                      />
+                    ) : (
+                      <Play aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    Aktifkan
+                  </button>
+                )}
+              </div>
             </div>
 
             {listing.status === ServiceListingStatus.PAUSED && (
               <p
                 className="
-                    mt-3
-                    text-[11px]
-                    leading-5
-                    text-slate-500
-                  "
+          mt-3
+          text-[11px]
+          leading-5
+          text-slate-500
+        "
               >
                 Menjeda jasa tidak menghentikan masa aktif publikasi.
               </p>
@@ -849,11 +978,11 @@ export default function PreviewServiceListingPageUI({
             {listing.status === ServiceListingStatus.ARCHIVED && (
               <p
                 className="
-                    mt-4
-                    text-xs
-                    leading-5
-                    text-slate-500
-                  "
+          mt-4
+          text-xs
+          leading-5
+          text-slate-500
+        "
               >
                 Jasa yang sudah diarsipkan tidak dapat dipublikasikan kembali
                 dari halaman ini.
@@ -861,12 +990,52 @@ export default function PreviewServiceListingPageUI({
             )}
           </section>
 
+          <div
+            className="
+    flex
+    items-center
+    gap-2
+    pt-2
+  "
+          >
+            <Eye
+              aria-hidden="true"
+              className="
+      h-4
+      w-4
+      text-indigo-600
+    "
+            />
+
+            <div>
+              <p
+                className="
+        text-sm
+        font-black
+        text-slate-950
+      "
+              >
+                Preview pelanggan
+              </p>
+
+              <p
+                className="
+        mt-0.5
+        text-[11px]
+        text-slate-500
+      "
+              >
+                Tampilan jasa yang dilihat pelanggan.
+              </p>
+            </div>
+          </div>
+
           <article
             className="
               overflow-hidden
-              rounded-[28px]
+              rounded-2xl
               border
-              border-slate-200/80
+              border-slate-200
               bg-white
               shadow-sm
             "
@@ -977,7 +1146,7 @@ export default function PreviewServiceListingPageUI({
                     text-slate-500
                   "
                 >
-                  Harga mulai
+                  Mulai dari
                 </p>
 
                 <p
@@ -1000,7 +1169,7 @@ export default function PreviewServiceListingPageUI({
                       text-emerald-600
                     "
                   >
-                    Harga dapat dinegosiasikan
+                    Bisa nego
                   </p>
                 )}
               </div>
@@ -1046,112 +1215,160 @@ export default function PreviewServiceListingPageUI({
 
           <section
             className="
-              rounded-3xl
-              border
-              border-slate-200/80
-              bg-white
-              p-5
-              shadow-sm
-              sm:p-6
-            "
+    overflow-hidden
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+  "
           >
-            <h3
-              className="
-                text-base
-                font-bold
-                text-slate-900
-              "
-            >
-              Tentang jasa ini
-            </h3>
-
-            <p
-              className="
-                mt-3
-                whitespace-pre-wrap
-                text-sm
-                leading-6
-                text-slate-600
-              "
-            >
-              {listing.description}
-            </p>
-          </section>
-
-          <section
-            className="
-              rounded-3xl
-              border
-              border-slate-200/80
-              bg-white
-              p-5
-              shadow-sm
-              sm:p-6
-            "
-          >
-            <h3
-              className="
-                text-base
-                font-bold
-                text-slate-900
-              "
-            >
-              Yang didapat pelanggan
-            </h3>
-
-            <p
-              className="
-                mt-3
-                whitespace-pre-wrap
-                text-sm
-                leading-6
-                text-slate-600
-              "
-            >
-              {listing.deliverables}
-            </p>
-          </section>
-
-          {listing.customerPreparation && (
-            <section
-              className="
-                rounded-3xl
-                border
-                border-slate-200/80
-                bg-white
-                p-5
-                shadow-sm
-                sm:p-6
-              "
-            >
-              <h3
+            <div className="p-5 sm:p-6">
+              <div
                 className="
-                  text-base
-                  font-bold
-                  text-slate-900
-                "
+        flex
+        items-center
+        gap-3
+      "
               >
-                Yang perlu disiapkan pelanggan
-              </h3>
+                <span
+                  className="
+          inline-flex
+          h-6
+          w-6
+          shrink-0
+          items-center
+          justify-center
+          rounded-lg
+          bg-indigo-50
+          text-indigo-600
+        "
+                >
+                  <Info aria-hidden="true" className="h-4 w-4" />
+                </span>
+
+                <h3
+                  className="
+          text-[12px]
+          font-black
+          text-slate-950
+        "
+                >
+                  Tentang jasa
+                </h3>
+              </div>
 
               <p
                 className="
-                  mt-3
-                  whitespace-pre-wrap
-                  text-sm
-                  leading-6
-                  text-slate-600
-                "
+        mt-1
+        whitespace-pre-wrap
+        text-[11px]
+        leading-5
+        text-slate-600
+      "
               >
-                {listing.customerPreparation}
+                {listing.description}
               </p>
-            </section>
-          )}
+            </div>
+
+            <div
+              className="
+      border-t
+      border-slate-100
+      p-5
+      sm:p-6
+    "
+            >
+              <div
+                className="
+        flex
+        items-center
+        gap-3
+      "
+              >
+                <span
+                  className="
+          inline-flex
+          h-6
+          w-6
+          shrink-0
+          items-center
+          justify-center
+          rounded-lg
+          bg-indigo-50
+          text-indigo-600
+        "
+                >
+                  <PackageCheck aria-hidden="true" className="h-4 w-4" />
+                </span>
+
+                <h3 className="text-[12px] font-black text-slate-950">
+                  Yang didapat pelanggan
+                </h3>
+              </div>
+
+              <p
+                className="
+        mt-1
+        whitespace-pre-wrap
+        text-[11px]
+        leading-5
+        text-slate-600
+      "
+              >
+                {listing.deliverables}
+              </p>
+            </div>
+
+            {listing.customerPreparation && (
+              <div
+                className="
+        border-t
+        border-slate-100
+        p-5
+        sm:p-6
+      "
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className="
+            inline-flex
+            h-6
+            w-6
+            shrink-0
+            items-center
+            justify-center
+            rounded-lg
+            bg-indigo-50
+            text-indigo-600
+          "
+                  >
+                    <ClipboardCheck aria-hidden="true" className="h-4 w-4" />
+                  </span>
+
+                  <h3 className="text-[12px] font-black text-slate-950">
+                    Yang perlu disiapkan
+                  </h3>
+                </div>
+
+                <p
+                  className="
+          mt-1
+          whitespace-pre-wrap
+          text-[11px]
+          leading-5
+          text-slate-600
+        "
+                >
+                  {listing.customerPreparation}
+                </p>
+              </div>
+            )}
+          </section>
 
           {portfolio.length > 0 && (
             <section
               className="
-                rounded-3xl
+                rounded-2xl
                 border
                 border-slate-200/80
                 bg-white
@@ -1160,15 +1377,26 @@ export default function PreviewServiceListingPageUI({
                 sm:p-6
               "
             >
-              <h3
-                className="
-                  text-base
-                  font-bold
-                  text-slate-900
-                "
-              >
-                Portfolio
-              </h3>
+              <div className="flex items-center gap-3">
+                <span
+                  className="
+      inline-flex
+      h-6
+      w-6
+      items-center
+      justify-center
+      rounded-lg
+      bg-indigo-50
+      text-indigo-600
+    "
+                >
+                  <Images aria-hidden="true" className="h-4 w-4" />
+                </span>
+
+                <h3 className="text-[12px] font-black text-slate-950">
+                  Portfolio
+                </h3>
+              </div>
 
               <div
                 className="
