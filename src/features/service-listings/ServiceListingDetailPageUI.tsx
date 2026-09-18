@@ -1,3 +1,11 @@
+﻿"use client";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import Link from "next/link";
 
 import {
@@ -39,6 +47,12 @@ interface ServiceListingDetailPageUIProps {
 
   refresh: () => void;
 }
+
+type DetailTab =
+  | "ABOUT"
+  | "PACKAGE"
+  | "PORTFOLIO"
+  | "REVIEWS";
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -248,6 +262,71 @@ export default function ServiceListingDetailPageUI({
   errorMessage,
   refresh,
 }: ServiceListingDetailPageUIProps) {
+    const [activeTab, setActiveTab] =
+    useState<DetailTab>("ABOUT");
+
+  const [selectedMediaId, setSelectedMediaId] =
+    useState<string | null>(null);
+
+  const [
+    showMobileSticky,
+    setShowMobileSticky,
+  ] = useState(true);
+
+  const lastScrollYRef =
+    useRef(0);
+
+  useEffect(() => {
+    lastScrollYRef.current =
+      window.scrollY;
+
+    function handleScroll() {
+      const currentScrollY =
+        window.scrollY;
+
+      const delta =
+        currentScrollY -
+        lastScrollYRef.current;
+
+      if (currentScrollY < 120) {
+        setShowMobileSticky(true);
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      if (delta >= 12) {
+        setShowMobileSticky(false);
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      if (delta <= -12) {
+        setShowMobileSticky(true);
+        lastScrollYRef.current =
+          currentScrollY;
+      }
+    }
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
+  }, []);
+
   if (loading) {
     return <DetailSkeleton />;
   }
@@ -284,6 +363,29 @@ export default function ServiceListingDetailPageUI({
   const showLocation =
     listing.serviceMode !== ServiceMode.ONLINE &&
     Boolean(listing.locationName?.trim());
+
+    const galleryMedia = cover
+    ? [
+        cover,
+        ...portfolio.filter(
+          (item) =>
+            item.id !== cover.id,
+        ),
+      ]
+    : portfolio;
+
+  const selectedMedia =
+    galleryMedia.find(
+      (item) =>
+        item.id === selectedMediaId,
+    ) ??
+    galleryMedia[0] ??
+    null;
+
+  const requestHref =
+    `/services/${encodeURIComponent(
+      listing.id,
+    )}/request`;
 
   return (
     <main
@@ -323,7 +425,7 @@ export default function ServiceListingDetailPageUI({
             shrink-0
             items-center
             justify-center
-            rounded-xl
+            rounded-full
             border
             border-slate-200
             bg-white
@@ -378,52 +480,108 @@ export default function ServiceListingDetailPageUI({
               shadow-sm
             "
             >
-              {cover ? (
-                <div
-                  role="img"
-                  aria-label={`Cover ${listing.title}`}
-                  style={{
-                    backgroundImage: getBackgroundImage(cover.publicUrl),
-                  }}
-                  className="
-                  aspect-video
-                  w-full
+              {selectedMedia ? (
+                <>
+                  <div
+                    role="img"
+                    aria-label={`Media ${listing.title}`}
+                    style={{
+                      backgroundImage: getBackgroundImage(
+                        selectedMedia.publicUrl,
+                      ),
+                    }}
+                    className="
+        aspect-video
+        w-full
+        bg-slate-100
+        bg-cover
+        bg-center
+      "
+                  />
+
+                  {galleryMedia.length > 1 && (
+                    <div
+                      className="
+          flex
+          gap-2
+          overflow-x-auto
+          border-t
+          border-slate-100
+          bg-white
+          px-4
+          py-3
+          scrollbar-none
+          [&::-webkit-scrollbar]:hidden
+        "
+                    >
+                      {galleryMedia.map((image, index) => {
+                        const selected = image.id === selectedMedia.id;
+
+                        return (
+                          <button
+                            key={image.id}
+                            type="button"
+                            onClick={() => setSelectedMediaId(image.id)}
+                            aria-label={`Tampilkan gambar ${index + 1}`}
+                            aria-pressed={selected}
+                            style={{
+                              backgroundImage: getBackgroundImage(
+                                image.publicUrl,
+                              ),
+                            }}
+                            className={`
+                  h-14
+                  w-20
+                  shrink-0
+                  rounded-lg
+                  border-2
                   bg-slate-100
                   bg-cover
                   bg-center
-                "
-                />
+                  transition
+                  ${
+                    selected
+                      ? "border-indigo-600"
+                      : "border-transparent hover:border-slate-300"
+                  }
+                `}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div
                   className="
-                  flex
-                  aspect-video
-                  w-full
-                  flex-col
-                  items-center
-                  justify-center
-                  bg-slate-100
-                  px-6
-                  text-center
-                "
+      flex
+      aspect-video
+      w-full
+      flex-col
+      items-center
+      justify-center
+      bg-slate-100
+      px-6
+      text-center
+    "
                 >
                   <BriefcaseBusiness
                     aria-hidden="true"
                     className="
-                    h-9
-                    w-9
-                    text-slate-400
-                  "
+        h-9
+        w-9
+        text-slate-400
+      "
                     strokeWidth={1.5}
                   />
 
                   <p
                     className="
-                    mt-3
-                    text-sm
-                    font-bold
-                    text-slate-500
-                  "
+        mt-3
+        text-sm
+        font-bold
+        text-slate-500
+      "
                   >
                     HelpMe Jasa
                   </p>
@@ -667,343 +825,717 @@ export default function ServiceListingDetailPageUI({
                   )}
                 </div>
 
-                {/* MOBILE PRICE */}
+                {/* MOBILE PRICE + ACTION */}
                 <div
                   className="
-                  mt-5
-                  flex
-                  items-end
-                  justify-between
-                  gap-4
-                  border-t
-                  border-slate-100
-                  pt-4
-                  lg:hidden
-                "
+    mt-5
+    border-t
+    border-slate-100
+    pt-4
+    lg:hidden
+  "
                 >
-                  <div>
-                    <p
-                      className="
-                      text-[9px]
-                      font-bold
-                      tracking-wide
-                      text-slate-400
-                      uppercase
-                    "
-                    >
-                      Mulai dari
-                    </p>
+                  <div
+                    className="
+      flex
+      items-center
+      justify-between
+      gap-4
+    "
+                  >
+                    <div className="min-w-0">
+                      <p
+                        className="
+          text-[9px]
+          font-bold
+          tracking-wide
+          text-slate-400
+          uppercase
+        "
+                      >
+                        Mulai dari
+                      </p>
 
-                    <p
+                      <p
+                        className="
+          mt-0.5
+          truncate
+          text-xl
+          font-black
+          tracking-tight
+          text-indigo-700
+        "
+                      >
+                        {formatPrice(listing.priceFrom)}
+                      </p>
+
+                      {listing.isNegotiable && (
+                        <p
+                          className="
+            mt-0.5
+            text-[10px]
+            font-bold
+            text-emerald-600
+          "
+                        >
+                          Bisa nego
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      href={requestHref}
                       className="
-                      mt-0.5
-                      text-xl
-                      font-black
-                      tracking-tight
-                      text-indigo-700
-                    "
+        inline-flex
+        min-h-11
+        shrink-0
+        items-center
+        justify-center
+        rounded-xl
+        bg-indigo-600
+        px-5
+        text-xs
+        font-black
+        text-white
+        shadow-sm
+        transition
+        hover:bg-indigo-700
+        active:scale-[0.98]
+      "
                     >
-                      {formatPrice(listing.priceFrom)}
-                    </p>
+                      Minta Jasa
+                    </Link>
                   </div>
-
-                  {listing.isNegotiable && (
-                    <span
-                      className="
-                      rounded-lg
-                      bg-emerald-50
-                      px-2.5
-                      py-1.5
-                      text-[10px]
-                      font-bold
-                      text-emerald-700
-                    "
-                    >
-                      Bisa nego
-                    </span>
-                  )}
                 </div>
               </div>
             </article>
 
-            {/* SERVICE INFORMATION */}
+            {/* SERVICE DETAIL TABS */}
             <section
               className="
-              overflow-hidden
-              rounded-2xl
-              border
-              border-slate-200
-              bg-white
-            "
-            >
-              <div className="p-5 sm:p-6">
-                <div
-                  className="
-    flex
-    items-center
-    gap-3
+    overflow-hidden
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
   "
-                >
-                  <span
-                    className="
-      inline-flex
-      h-6.5
-      w-6.5
-      shrink-0
-      items-center
-      justify-center
-      rounded-lg
-      bg-indigo-50
-      text-indigo-600
-    "
-                  >
-                    <Info
-                      aria-hidden="true"
-                      className="h-4 w-4"
-                      strokeWidth={2}
-                    />
-                  </span>
-
-                  <h2
-                    className="
-      text-[12px]
-      font-black
-      tracking-tight
-      text-slate-950
-    "
-                  >
-                    Tentang jasa
-                  </h2>
-                </div>
-
-                <p
-                  className="
-                  mt-2
-                  whitespace-pre-line
-                  text-sm
-                  leading-5
-                  text-slate-600
-                "
-                >
-                  {listing.description}
-                </p>
-              </div>
-
+            >
               <div
                 className="
-                border-t
-                border-slate-100
-                p-5
-                sm:p-6
-              "
+      overflow-x-auto
+      border-b
+      border-slate-200
+      scrollbar-none
+      [&::-webkit-scrollbar]:hidden
+    "
               >
                 <div
                   className="
-    flex
-    items-center
-    gap-3
-  "
+        flex
+        min-w-max
+        px-2
+        sm:px-4
+      "
                 >
-                  <span
-                    className="
-      inline-flex
-      h-6.5
-      w-6.5
-      shrink-0
-      items-center
-      justify-center
-      rounded-lg
-      bg-indigo-50
-      text-indigo-600
-    "
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("ABOUT")}
+                    className={`
+          relative
+          px-4
+          py-4
+          text-xs
+          font-bold
+          transition
+          ${
+            activeTab === "ABOUT"
+              ? "text-indigo-700"
+              : "text-slate-500 hover:text-slate-900"
+          }
+        `}
                   >
-                    <PackageCheck
-                      aria-hidden="true"
-                      className="h-4 w-4"
-                      strokeWidth={2}
-                    />
-                  </span>
+                    Tentang
+                    {activeTab === "ABOUT" && (
+                      <span
+                        className="
+              absolute
+              inset-x-4
+              bottom-0
+              h-0.5
+              rounded-full
+              bg-indigo-600
+            "
+                      />
+                    )}
+                  </button>
 
-                  <h2
-                    className="
-      text-[12px]
-      font-black
-      text-slate-950
-    "
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("PACKAGE")}
+                    className={`
+          relative
+          px-4
+          py-4
+          text-xs
+          font-bold
+          transition
+          ${
+            activeTab === "PACKAGE"
+              ? "text-indigo-700"
+              : "text-slate-500 hover:text-slate-900"
+          }
+        `}
                   >
-                    Yang kamu dapatkan
-                  </h2>
+                    Paket
+                    {activeTab === "PACKAGE" && (
+                      <span
+                        className="
+              absolute
+              inset-x-4
+              bottom-0
+              h-0.5
+              rounded-full
+              bg-indigo-600
+            "
+                      />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("PORTFOLIO")}
+                    className={`
+          relative
+          px-4
+          py-4
+          text-xs
+          font-bold
+          transition
+          ${
+            activeTab === "PORTFOLIO"
+              ? "text-indigo-700"
+              : "text-slate-500 hover:text-slate-900"
+          }
+        `}
+                  >
+                    Portfolio
+                    {activeTab === "PORTFOLIO" && (
+                      <span
+                        className="
+              absolute
+              inset-x-4
+              bottom-0
+              h-0.5
+              rounded-full
+              bg-indigo-600
+            "
+                      />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("REVIEWS")}
+                    className={`
+          relative
+          px-4
+          py-4
+          text-xs
+          font-bold
+          transition
+          ${
+            activeTab === "REVIEWS"
+              ? "text-indigo-700"
+              : "text-slate-500 hover:text-slate-900"
+          }
+        `}
+                  >
+                    Review
+                    {activeTab === "REVIEWS" && (
+                      <span
+                        className="
+              absolute
+              inset-x-4
+              bottom-0
+              h-0.5
+              rounded-full
+              bg-indigo-600
+            "
+                      />
+                    )}
+                  </button>
                 </div>
-
-                <p
-                  className="
-                  mt-2
-                  whitespace-pre-line
-                  text-sm
-                  leading-5
-                  text-slate-600
-                "
-                >
-                  {listing.deliverables}
-                </p>
               </div>
 
-              {listing.customerPreparation && (
-                <div
-                  className="
-                  border-t
-                  border-slate-100
-                  p-5
-                  sm:p-6
+              <div className="p-5 sm:p-6">
+                {activeTab === "ABOUT" && (
+                  <div>
+                    <div
+                      className="
+            flex
+            items-center
+            gap-3
+          "
+                    >
+                      <span
+                        className="
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-indigo-50
+              text-indigo-600
+            "
+                      >
+                        <Info aria-hidden="true" className="h-4 w-4" />
+                      </span>
+
+                      <h2
+                        className="
+              text-sm
+              font-black
+              text-slate-950
+            "
+                      >
+                        Tentang jasa ini
+                      </h2>
+                    </div>
+
+                    <p
+                      className="
+            mt-4
+            whitespace-pre-line
+            text-sm
+            leading-6
+            text-slate-600
+          "
+                    >
+                      {listing.description}
+                    </p>
+
+                    {listing.customerPreparation && (
+                      <div
+                        className="
+              mt-6
+              border-t
+              border-slate-100
+              pt-5
+            "
+                      >
+                        <div
+                          className="
+                flex
+                items-center
+                gap-3
+              "
+                        >
+                          <span
+                            className="
+                  inline-flex
+                  h-8
+                  w-8
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-lg
+                  bg-slate-100
+                  text-slate-600
                 "
-                >
-                  <div
-                    className="
-    flex
-    items-center
-    gap-3
-  "
-                  >
-                    <span
-                      className="
-      inline-flex
-      h-6.5
-      w-6.5
-      shrink-0
-      items-center
-      justify-center
-      rounded-lg
-      bg-indigo-50
-      text-indigo-600
-    "
-                    >
-                      <ClipboardCheck
-                        aria-hidden="true"
-                        className="h-4 w-4"
-                        strokeWidth={2}
-                      />
-                    </span>
+                          >
+                            <ClipboardCheck
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                            />
+                          </span>
 
-                    <h2
-                      className="
-      text-[12px]
-      font-black
-      text-slate-950
-    "
-                    >
-                      Yang perlu disiapkan
-                    </h2>
+                          <h3
+                            className="
+                  text-sm
+                  font-black
+                  text-slate-950
+                "
+                          >
+                            Yang perlu disiapkan
+                          </h3>
+                        </div>
+
+                        <p
+                          className="
+                mt-3
+                whitespace-pre-line
+                text-sm
+                leading-6
+                text-slate-600
+              "
+                        >
+                          {listing.customerPreparation}
+                        </p>
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  <p
-                    className="
-                    mt-2
-                    whitespace-pre-line
-                    text-sm
-                    leading-5
+                {activeTab === "PACKAGE" && (
+                  <div>
+                    <div
+                      className="
+            flex
+            items-center
+            gap-3
+          "
+                    >
+                      <span
+                        className="
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-indigo-50
+              text-indigo-600
+            "
+                      >
+                        <PackageCheck aria-hidden="true" className="h-4 w-4" />
+                      </span>
+
+                      <div>
+                        <h2
+                          className="
+                text-sm
+                font-black
+                text-slate-950
+              "
+                        >
+                          Paket jasa
+                        </h2>
+
+                        <p
+                          className="
+                mt-0.5
+                text-xs
+                text-slate-500
+              "
+                        >
+                          Detail hasil yang akan kamu dapatkan.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className="
+            mt-5
+            rounded-xl
+            bg-slate-50
+            p-4
+          "
+                    >
+                      <p
+                        className="
+              text-[10px]
+              font-bold
+              tracking-wide
+              text-slate-400
+              uppercase
+            "
+                      >
+                        Yang kamu dapatkan
+                      </p>
+
+                      <p
+                        className="
+              mt-2
+              whitespace-pre-line
+              text-sm
+              leading-6
+              text-slate-700
+            "
+                      >
+                        {listing.deliverables}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "PORTFOLIO" && (
+                  <div>
+                    <div
+                      className="
+            flex
+            items-center
+            gap-3
+          "
+                    >
+                      <span
+                        className="
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-indigo-50
+              text-indigo-600
+            "
+                      >
+                        <Images aria-hidden="true" className="h-4 w-4" />
+                      </span>
+
+                      <div>
+                        <h2
+                          className="
+                text-sm
+                font-black
+                text-slate-950
+              "
+                        >
+                          Portfolio
+                        </h2>
+
+                        <p
+                          className="
+                mt-0.5
+                text-xs
+                text-slate-500
+              "
+                        >
+                          Contoh hasil atau dokumentasi penyedia.
+                        </p>
+                      </div>
+                    </div>
+
+                    {portfolio.length > 0 ? (
+                      <div
+                        className="
+              mt-5
+              grid
+              grid-cols-2
+              gap-3
+              sm:grid-cols-3
+            "
+                      >
+                        {portfolio.map((image) => (
+                          <button
+                            key={image.id}
+                            type="button"
+                            onClick={() => setSelectedMediaId(image.id)}
+                            aria-label={`Lihat portfolio ${
+                              image.sortOrder + 1
+                            }`}
+                            style={{
+                              backgroundImage: getBackgroundImage(
+                                image.publicUrl,
+                              ),
+                            }}
+                            className="
+                    aspect-square
+                    rounded-xl
+                    bg-slate-100
+                    bg-cover
+                    bg-center
+                    transition
+                    hover:opacity-90
+                  "
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="
+              mt-5
+              rounded-xl
+              bg-slate-50
+              px-5
+              py-8
+              text-center
+            "
+                      >
+                        <Images
+                          aria-hidden="true"
+                          className="
+                mx-auto
+                h-6
+                w-6
+                text-slate-400
+              "
+                        />
+
+                        <p
+                          className="
+                mt-2
+                text-xs
+                font-semibold
+                text-slate-500
+              "
+                        >
+                          Belum ada portfolio yang ditambahkan.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "REVIEWS" && (
+                  <div>
+                    <div
+                      className="
+            flex
+            items-center
+            gap-3
+          "
+                    >
+                      <span
+                        className="
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-amber-50
+              text-amber-500
+            "
+                      >
+                        <Star
+                          aria-hidden="true"
+                          className="
+                h-4
+                w-4
+                fill-current
+              "
+                        />
+                      </span>
+
+                      <div>
+                        <h2
+                          className="
+                text-sm
+                font-black
+                text-slate-950
+              "
+                        >
+                          Review pelanggan
+                        </h2>
+
+                        <p
+                          className="
+                mt-0.5
+                text-xs
+                text-slate-500
+              "
+                        >
+                          Rating penyedia jasa.
+                        </p>
+                      </div>
+                    </div>
+
+                    {typeof providerRating === "number" ? (
+                      <div
+                        className="
+              mt-5
+              flex
+              items-center
+              gap-4
+              rounded-xl
+              bg-slate-50
+              p-5
+            "
+                      >
+                        <div>
+                          <p
+                            className="
+                  text-3xl
+                  font-black
+                  tracking-tight
+                  text-slate-950
+                "
+                          >
+                            {providerRating.toFixed(1)}
+                          </p>
+
+                          <div
+                            className="
+                  mt-1
+                  flex
+                  items-center
+                  gap-1
+                  text-amber-400
+                "
+                          >
+                            <Star
+                              aria-hidden="true"
+                              className="
+                    h-4
+                    w-4
+                    fill-current
+                  "
+                            />
+
+                            <span
+                              className="
+                    text-xs
+                    font-bold
                     text-slate-600
                   "
-                  >
-                    {listing.customerPreparation}
-                  </p>
-                </div>
-              )}
-            </section>
-
-            {/* PORTFOLIO */}
-            {portfolio.length > 0 && (
-              <section
-                className="
-                rounded-2xl
-                border
-                border-slate-200
-                bg-white
-                p-5
-                sm:p-6
+                            >
+                              {providerTotalReviews} ulasan
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="
+              mt-5
+              rounded-xl
+              bg-slate-50
+              px-5
+              py-8
+              text-center
+            "
+                      >
+                        <Star
+                          aria-hidden="true"
+                          className="
+                mx-auto
+                h-6
+                w-6
+                text-slate-400
               "
-              >
-                <div>
-                  <div
-                    className="
-    flex
-    items-center
-    gap-3
-  "
-                  >
-                    <span
-                      className="
-      inline-flex
-      h-6.5
-      w-6.5
-      shrink-0
-      items-center
-      justify-center
-      rounded-lg
-      bg-indigo-50
-      text-indigo-600
-    "
-                    >
-                      <Images
-                        aria-hidden="true"
-                        className="h-4 w-4"
-                        strokeWidth={2}
-                      />
-                    </span>
+                        />
 
-                    <h2
-                      className="
-      text-[12px]
-      font-black
-      tracking-tight
-      text-slate-950
-    "
-                    >
-                      Portfolio
-                    </h2>
+                        <p
+                          className="
+                mt-2
+                text-sm
+                font-bold
+                text-slate-700
+              "
+                        >
+                          Belum ada ulasan
+                        </p>
+
+                        <p
+                          className="
+                mt-1
+                text-xs
+                text-slate-500
+              "
+                        >
+                          Penyedia ini belum memiliki rating.
+                        </p>
+                      </div>
+                    )}
                   </div>
-
-                  <p
-                    className="
-                    mt-1
-                    text-[12px]
-                    leading-5
-                    text-slate-500
-                    sm:text-sm
-                  "
-                  >
-                    Contoh hasil atau dokumentasi dari provider.
-                  </p>
-                </div>
-
-                <div
-                  className="
-                  mt-4
-                  grid
-                  grid-cols-2
-                  gap-3
-                  sm:grid-cols-3
-                "
-                >
-                  {portfolio.map((image) => (
-                    <div
-                      key={image.id}
-                      role="img"
-                      aria-label={`Portfolio jasa ${image.sortOrder + 1}`}
-                      style={{
-                        backgroundImage: getBackgroundImage(image.publicUrl),
-                      }}
-                      className="
-                        aspect-square
-                        rounded-xl
-                        bg-slate-100
-                        bg-cover
-                        bg-center
-                      "
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+                )}
+              </div>
+            </section>
           </div>
 
           {/* DESKTOP SIDEBAR */}
@@ -1402,19 +1934,28 @@ export default function ServiceListingDetailPageUI({
 
       {/* MOBILE STICKY CTA */}
       <div
-        className="
-        fixed
-        inset-x-0
-        bottom-0
-        z-40
-        border-t
-        border-slate-200
-        bg-white/95
-        px-4
-        py-3
-        backdrop-blur-xl
-        lg:hidden
-      "
+        className={`
+    fixed
+    inset-x-0
+    bottom-0
+    z-40
+    border-t
+    border-slate-200
+    bg-white/95
+    px-4
+    py-3
+    shadow-[0_-8px_30px_rgba(15,23,42,0.08)]
+    backdrop-blur-xl
+    transition-all
+    duration-300
+    ease-out
+    lg:hidden
+    ${
+      showMobileSticky
+        ? "translate-y-0 opacity-100"
+        : "pointer-events-none translate-y-full opacity-0"
+    }
+  `}
       >
         <div
           className="
@@ -1453,7 +1994,7 @@ export default function ServiceListingDetailPageUI({
           </div>
 
           <Link
-            href={`/services/${encodeURIComponent(listing.id)}/request`}
+            href={requestHref}
             className="
             inline-flex
             min-h-11
