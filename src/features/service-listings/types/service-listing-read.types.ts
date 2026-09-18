@@ -153,6 +153,52 @@ export interface PaginatedServiceListingResult<T> {
 }
 
 /**
+ * Provider-owned Service Listing lifecycle summary.
+ *
+ * Counts are global for the authenticated Provider and are
+ * intentionally independent from the current dashboard filter.
+ */
+export interface MyServiceListingStatusCounts {
+  totalCount: number;
+
+  activeCount: number;
+
+  draftCount: number;
+
+  paymentPendingCount: number;
+
+  pausedCount: number;
+
+  expiredCount: number;
+
+  blockedCount: number;
+
+  archivedCount: number;
+}
+
+/**
+ * Raw row returned by
+ * get_my_service_listing_status_counts().
+ */
+export interface MyServiceListingStatusCountsRpcRow {
+  total_count: number;
+
+  active_count: number;
+
+  draft_count: number;
+
+  payment_pending_count: number;
+
+  paused_count: number;
+
+  expired_count: number;
+
+  blocked_count: number;
+
+  archived_count: number;
+}
+
+/**
  * Normalized raw row returned by
  * get_my_service_listings().
  *

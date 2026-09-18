@@ -2,22 +2,51 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { getMyServiceListingsService } from "../services/get-my-service-listings.service";
+import {
+  getMyServiceListingStatusCountsService,
+  getMyServiceListingsService,
+} from "../services/get-my-service-listings.service";
 
 import type {
+  MyServiceListingStatusCounts,
   PaginatedServiceListingResult,
   ProviderServiceListing,
 } from "../types/service-listing-read.types";
 
 const PAGE_SIZE = 20;
 
+const EMPTY_STATUS_COUNTS: MyServiceListingStatusCounts = {
+  totalCount: 0,
+
+  activeCount: 0,
+
+  draftCount: 0,
+
+  paymentPendingCount: 0,
+
+  pausedCount: 0,
+
+  expiredCount: 0,
+
+  blockedCount: 0,
+
+  archivedCount: 0,
+};
+
 export function useMyServicesPage() {
   const [page, setPage] = useState(1);
+
+  const [selectedStatus, setSelectedStatus] = useState<
+    ProviderServiceListing["status"] | null
+  >(null);
 
   const [data, setData] =
     useState<PaginatedServiceListingResult<ProviderServiceListing> | null>(
       null,
     );
+
+  const [statusCounts, setStatusCounts] =
+    useState<MyServiceListingStatusCounts>(EMPTY_STATUS_COUNTS);
 
   const [loading, setLoading] = useState(true);
 
@@ -35,11 +64,17 @@ export function useMyServicesPage() {
     setErrorMessage(null);
 
     try {
-      const result = await getMyServiceListingsService({
-        page,
+      const [result, counts] = await Promise.all([
+        getMyServiceListingsService({
+          page,
 
-        pageSize: PAGE_SIZE,
-      });
+          pageSize: PAGE_SIZE,
+
+          status: selectedStatus,
+        }),
+
+        getMyServiceListingStatusCountsService(),
+      ]);
 
       if (requestVersion.current !== version) {
         return;
@@ -52,6 +87,7 @@ export function useMyServicesPage() {
       }
 
       setData(result);
+      setStatusCounts(counts);
     } catch (error) {
       if (requestVersion.current !== version) {
         return;
@@ -69,7 +105,7 @@ export function useMyServicesPage() {
         setLoading(false);
       }
     }
-  }, [page]);
+  }, [page, selectedStatus]);
 
   useEffect(() => {
     const loadTimer = window.setTimeout(() => {
@@ -87,6 +123,18 @@ export function useMyServicesPage() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
+  function handleStatusChange(status: ProviderServiceListing["status"] | null) {
+    if (status === selectedStatus) {
+      return;
+    }
+
+    setData(null);
+
+    setPage(1);
+
+    setSelectedStatus(status);
+  }
+
   function handlePreviousPage() {
     setPage((current) => Math.max(1, current - 1));
   }
@@ -100,6 +148,10 @@ export function useMyServicesPage() {
 
     totalCount,
 
+    statusCounts,
+
+    selectedStatus,
+
     page,
 
     totalPages,
@@ -109,6 +161,8 @@ export function useMyServicesPage() {
     errorMessage,
 
     refresh: load,
+
+    onStatusChange: handleStatusChange,
 
     onPreviousPage: handlePreviousPage,
 

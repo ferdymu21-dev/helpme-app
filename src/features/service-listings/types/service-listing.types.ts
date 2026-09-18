@@ -76,6 +76,8 @@ export interface GetMyServiceListingsQuery {
   page?: number;
 
   pageSize?: number;
+
+  status?: ServiceListingStatusValue | null;
 }
 
 /**

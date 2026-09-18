@@ -15,6 +15,7 @@ import type {
   PublicServiceListingDetailRpcRow,
   PublicServiceListingRpcRow,
   ServiceListingBlockedFromStatus,
+  MyServiceListingStatusCountsRpcRow,
 } from "../types/service-listing-read.types";
 
 function isRecord(
@@ -426,6 +427,66 @@ export function parseMyServiceListingRpcRow(
       readSafeInteger(
         row,
         "total_count",
+      ),
+  };
+}
+
+export function parseMyServiceListingStatusCountsRpcRow(
+  value: unknown,
+): MyServiceListingStatusCountsRpcRow {
+  const row =
+    requireRecord(
+      value,
+      "get_my_service_listing_status_counts row",
+    );
+
+  return {
+    total_count:
+      readSafeInteger(
+        row,
+        "total_count",
+      ),
+
+    active_count:
+      readSafeInteger(
+        row,
+        "active_count",
+      ),
+
+    draft_count:
+      readSafeInteger(
+        row,
+        "draft_count",
+      ),
+
+    payment_pending_count:
+      readSafeInteger(
+        row,
+        "payment_pending_count",
+      ),
+
+    paused_count:
+      readSafeInteger(
+        row,
+        "paused_count",
+      ),
+
+    expired_count:
+      readSafeInteger(
+        row,
+        "expired_count",
+      ),
+
+    blocked_count:
+      readSafeInteger(
+        row,
+        "blocked_count",
+      ),
+
+    archived_count:
+      readSafeInteger(
+        row,
+        "archived_count",
       ),
   };
 }
