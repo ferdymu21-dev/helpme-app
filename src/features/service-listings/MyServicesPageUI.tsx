@@ -8,6 +8,7 @@ import {
   Clock3,
   Globe2,
   ImageIcon,
+  Inbox,
   MapPin,
   Pencil,
   Plus,
@@ -432,7 +433,7 @@ const statusFilters: Array<{
         className="
           max-w-xl
           text-[11px]
-          leading-5
+          leading-4
           text-slate-500
         "
       >
@@ -443,35 +444,92 @@ const statusFilters: Array<{
     </div>
   </div>
 
+  <div
+  className="
+    grid
+    w-full
+    grid-cols-2
+    gap-2
+    sm:flex
+    sm:w-auto
+    sm:items-center
+  "
+>
   <Link
     href="/my-services/new"
     className="
       inline-flex
       min-h-11
-      w-full
       items-center
       justify-center
       gap-2
       rounded-xl
       bg-indigo-600
-      px-5
-      text-sm
+      px-4
+      text-xs
       font-black
       text-white
       shadow-sm
       transition
       hover:bg-indigo-700
       active:scale-[0.99]
-      sm:w-auto
+      sm:px-5
+      sm:text-sm
     "
   >
     <Plus
       aria-hidden="true"
-      className="h-4 w-4"
+      className="
+        h-4
+        w-4
+        shrink-0
+      "
     />
 
-    Tawarkan Jasa
+    <span>
+      Tawarkan Jasa
+    </span>
   </Link>
+
+  <Link
+    href="/service-requests/provider"
+    className="
+      inline-flex
+      min-h-11
+      items-center
+      justify-center
+      gap-2
+      rounded-xl
+      border
+      border-slate-200
+      bg-white
+      px-4
+      text-xs
+      font-black
+      text-slate-700
+      transition
+      hover:border-indigo-200
+      hover:bg-indigo-50
+      hover:text-indigo-700
+      active:scale-[0.99]
+      sm:px-5
+      sm:text-sm
+    "
+  >
+    <Inbox
+      aria-hidden="true"
+      className="
+        h-4
+        w-4
+        shrink-0
+      "
+    />
+
+    <span>
+      Permintaan
+    </span>
+  </Link>
+</div>
 </div>
 
       {/* SUMMARY */}
