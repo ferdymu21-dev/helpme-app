@@ -113,22 +113,12 @@ function getLatestPaymentAcknowledgement(
   paymentStepId: string,
 ): ServicePaymentAcknowledgement | null {
   return acknowledgements.reduce<ServicePaymentAcknowledgement | null>(
-    (
-      latest,
-      acknowledgement,
-    ) => {
-      if (
-        acknowledgement.paymentStepId !==
-        paymentStepId
-      ) {
+    (latest, acknowledgement) => {
+      if (acknowledgement.paymentStepId !== paymentStepId) {
         return latest;
       }
 
-      if (
-        !latest ||
-        acknowledgement.attemptNo >
-          latest.attemptNo
-      ) {
+      if (!latest || acknowledgement.attemptNo > latest.attemptNo) {
         return acknowledgement;
       }
 
@@ -139,9 +129,7 @@ function getLatestPaymentAcknowledgement(
 }
 
 function getPaymentAcknowledgementStatusLabel(
-  acknowledgement:
-    | ServicePaymentAcknowledgement
-    | null,
+  acknowledgement: ServicePaymentAcknowledgement | null,
 ): string {
   if (!acknowledgement) {
     return "Belum dilaporkan";
@@ -168,39 +156,27 @@ function isPaymentStepAvailableForCustomerReport(
     case ServiceAgreementPaymentTriggerType.BEFORE_START:
     case ServiceAgreementPaymentTriggerType.CUSTOM:
       return (
-        requestStatus ===
-          ServiceRequestStatus.AGREED ||
-        requestStatus ===
-          ServiceRequestStatus.IN_PROGRESS ||
-        requestStatus ===
-          ServiceRequestStatus.SUBMITTED ||
-        requestStatus ===
-          ServiceRequestStatus.COMPLETED
+        requestStatus === ServiceRequestStatus.AGREED ||
+        requestStatus === ServiceRequestStatus.IN_PROGRESS ||
+        requestStatus === ServiceRequestStatus.SUBMITTED ||
+        requestStatus === ServiceRequestStatus.COMPLETED
       );
 
     case ServiceAgreementPaymentTriggerType.MILESTONE:
       return (
-        requestStatus ===
-          ServiceRequestStatus.IN_PROGRESS ||
-        requestStatus ===
-          ServiceRequestStatus.SUBMITTED ||
-        requestStatus ===
-          ServiceRequestStatus.COMPLETED
+        requestStatus === ServiceRequestStatus.IN_PROGRESS ||
+        requestStatus === ServiceRequestStatus.SUBMITTED ||
+        requestStatus === ServiceRequestStatus.COMPLETED
       );
 
     case ServiceAgreementPaymentTriggerType.ON_SUBMISSION:
       return (
-        requestStatus ===
-          ServiceRequestStatus.SUBMITTED ||
-        requestStatus ===
-          ServiceRequestStatus.COMPLETED
+        requestStatus === ServiceRequestStatus.SUBMITTED ||
+        requestStatus === ServiceRequestStatus.COMPLETED
       );
 
     case ServiceAgreementPaymentTriggerType.AFTER_COMPLETION:
-      return (
-        requestStatus ===
-        ServiceRequestStatus.COMPLETED
-      );
+      return requestStatus === ServiceRequestStatus.COMPLETED;
   }
 }
 
@@ -288,18 +264,27 @@ export default function ServiceAgreementPanel({
   }
 
   return (
-    <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+    <section
+      className="
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-5
+    sm:p-6
+  "
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-indigo-600">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-indigo-600">
             Kesepakatan Jasa
           </p>
 
-          <h2 className="mt-2 text-lg font-bold text-slate-950">
+          <h2 className="mt-2 text-[13px] font-bold text-slate-950">
             Detail Kesepakatan
           </h2>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm leading-5 text-slate-500">
             Proposal, pembayaran, dan versi kesepakatan tercatat tanpa menghapus
             riwayat sebelumnya.
           </p>
@@ -309,7 +294,23 @@ export default function ServiceAgreementPanel({
           type="button"
           onClick={refresh}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+          className="
+  inline-flex
+  h-9
+  shrink-0
+  items-center
+  gap-2
+  rounded-xl
+  px-3
+  text-xs
+  font-bold
+  text-slate-500
+  transition
+  hover:bg-slate-50
+  hover:text-slate-900
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
         >
           <RefreshCw
             size={16}
@@ -338,12 +339,27 @@ export default function ServiceAgreementPanel({
       )}
 
       {canPropose && !proposalOpen && (
-        <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
-          <h3 className="font-bold text-indigo-950">
+        <div
+          className="
+    mt-6
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-indigo-50/60
+    p-5
+  "
+        >
+          <h3
+            className="
+    text-sm
+    font-black
+    text-slate-950
+  "
+          >
             Buat proposal kesepakatan
           </h3>
 
-          <p className="mt-2 text-sm leading-6 text-indigo-700">
+          <p className="mt-1.5 max-w-xl text-xs leading-5 text-slate-600">
             Tentukan ruang lingkup, hasil pekerjaan, harga, deadline, dan jadwal
             pembayaran untuk diajukan kepada Customer.
           </p>
@@ -352,7 +368,25 @@ export default function ServiceAgreementPanel({
             type="button"
             onClick={onOpenProposal}
             disabled={actionPending}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            className="
+  mt-4
+  inline-flex
+  min-h-11
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
           >
             <FileText size={17} />
             Buat Proposal
@@ -361,8 +395,25 @@ export default function ServiceAgreementPanel({
       )}
 
       {canPropose && proposalOpen && (
-        <div className="mt-6 rounded-[24px] border border-indigo-100 bg-indigo-50/50 p-4 sm:p-5">
-          <h3 className="text-base font-bold text-slate-950">
+        <div
+          className="
+    mt-6
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-indigo-50/40
+    p-4
+    sm:p-5
+  "
+        >
+          <h3
+            className="
+    text-base
+    font-black
+    tracking-tight
+    text-slate-950
+  "
+          >
             Proposal Kesepakatan
           </h3>
 
@@ -384,7 +435,27 @@ export default function ServiceAgreementPanel({
                 }
                 disabled={actionPending}
                 placeholder="Jelaskan pekerjaan yang termasuk dalam kesepakatan."
-                className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
               />
             </div>
 
@@ -405,7 +476,27 @@ export default function ServiceAgreementPanel({
                 }
                 disabled={actionPending}
                 placeholder="Tuliskan hasil atau deliverable yang akan diterima Customer."
-                className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
               />
             </div>
 
@@ -428,7 +519,25 @@ export default function ServiceAgreementPanel({
                   }
                   disabled={actionPending}
                   placeholder="Contoh: 500000"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                  className="
+  mt-2
+  h-12
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                 />
               </div>
 
@@ -448,7 +557,25 @@ export default function ServiceAgreementPanel({
                     onProposalFieldChange("deadline", event.target.value)
                   }
                   disabled={actionPending}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                  className="
+  mt-2
+  h-12
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                 />
               </div>
             </div>
@@ -470,7 +597,27 @@ export default function ServiceAgreementPanel({
                 }
                 disabled={actionPending}
                 placeholder="Contoh: maksimal 2 kali revisi minor."
-                className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
               />
             </div>
 
@@ -493,7 +640,24 @@ export default function ServiceAgreementPanel({
                   }
                 }}
                 disabled={actionPending}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                className="
+  mt-2
+  h-12
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
               >
                 {SERVICE_AGREEMENT_PAYMENT_PLAN_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -519,7 +683,24 @@ export default function ServiceAgreementPanel({
                   type="button"
                   onClick={onAddPaymentStep}
                   disabled={actionPending}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 disabled:opacity-50"
+                  className="
+  inline-flex
+  h-9
+  items-center
+  gap-1.5
+  rounded-xl
+  border
+  border-indigo-200
+  bg-white
+  px-3
+  text-xs
+  font-bold
+  text-indigo-700
+  transition
+  hover:bg-indigo-50
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                 >
                   <Plus size={15} />
                   Tambah
@@ -530,7 +711,14 @@ export default function ServiceAgreementPanel({
                 {proposalDraft.paymentSteps.map((step, index) => (
                   <div
                     key={index}
-                    className="rounded-2xl border border-slate-200 bg-white p-4"
+                    className="
+  rounded-2xl
+  border
+  border-slate-200
+  bg-white
+  p-4
+  shadow-sm
+"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-bold text-slate-900">
@@ -555,7 +743,25 @@ export default function ServiceAgreementPanel({
                       <div>
                         <label
                           htmlFor={`agreement-step-label-${index}`}
-                          className="text-xs font-semibold text-slate-600"
+                          className="
+  mt-1.5
+  h-11
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-3
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                         >
                           Nama tahap
                         </label>
@@ -579,7 +785,25 @@ export default function ServiceAgreementPanel({
                       <div>
                         <label
                           htmlFor={`agreement-step-amount-${index}`}
-                          className="text-xs font-semibold text-slate-600"
+                          className="
+  mt-1.5
+  h-11
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-3
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                         >
                           Nominal
                         </label>
@@ -640,7 +864,25 @@ export default function ServiceAgreementPanel({
                       <div>
                         <label
                           htmlFor={`agreement-step-note-${index}`}
-                          className="text-xs font-semibold text-slate-600"
+                          className="
+  mt-1.5
+  h-11
+  w-full
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-3
+  text-sm
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                         >
                           Catatan pemicu
                           {step.triggerType ===
@@ -700,7 +942,21 @@ export default function ServiceAgreementPanel({
                 type="button"
                 onClick={onCancelProposal}
                 disabled={actionPending}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 disabled:opacity-50"
+                className="
+  min-h-12
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  text-sm
+  font-bold
+  text-slate-700
+  transition
+  hover:bg-slate-50
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
               >
                 Batal
               </button>
@@ -709,7 +965,20 @@ export default function ServiceAgreementPanel({
                 type="button"
                 onClick={onSubmitProposal}
                 disabled={actionPending}
-                className="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                className="
+  min-h-12
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
               >
                 {actionPending ? "Mengirim..." : "Ajukan Kesepakatan"}
               </button>
@@ -719,7 +988,7 @@ export default function ServiceAgreementPanel({
       )}
 
       {canCustomerRespond && latestAgreement && (
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
           <h3 className="font-bold text-slate-950">
             Proposal menunggu keputusan Anda
           </h3>
@@ -735,7 +1004,23 @@ export default function ServiceAgreementPanel({
                 type="button"
                 onClick={onApproveAgreement}
                 disabled={actionPending}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                className="
+  inline-flex
+  min-h-12
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-emerald-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-emerald-700
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
               >
                 <CheckCircle2 size={17} />
                 {actionPending ? "Memproses..." : "Setujui Kesepakatan"}
@@ -745,7 +1030,25 @@ export default function ServiceAgreementPanel({
                 type="button"
                 onClick={onOpenRejection}
                 disabled={actionPending}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                className="
+  inline-flex
+  min-h-12
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  border
+  border-rose-200
+  bg-white
+  px-4
+  text-sm
+  font-bold
+  text-rose-600
+  transition
+  hover:bg-rose-50
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
               >
                 <XCircle size={17} />
                 Tolak Proposal
@@ -769,7 +1072,27 @@ export default function ServiceAgreementPanel({
                 }
                 disabled={actionPending}
                 placeholder="Jelaskan bagian proposal yang perlu diperbaiki."
-                className="mt-2 w-full resize-y rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:bg-slate-50"
+                className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-rose-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-rose-400
+  focus:ring-4
+  focus:ring-rose-100
+  disabled:bg-slate-50
+"
               />
 
               <div className="mt-3 grid grid-cols-2 gap-3">
@@ -797,10 +1120,12 @@ export default function ServiceAgreementPanel({
       )}
 
       <div className="mt-7 border-t border-slate-100 pt-6">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <History size={18} className="text-slate-500" />
 
-          <h3 className="font-bold text-slate-950">Riwayat Kesepakatan</h3>
+          <h3 className="text-sm font-black text-slate-950">
+            Riwayat Kesepakatan
+          </h3>
         </div>
 
         {loading && agreements.length === 0 ? (
@@ -817,7 +1142,7 @@ export default function ServiceAgreementPanel({
             {agreements.map((agreement) => (
               <article
                 key={agreement.id}
-                className="rounded-2xl border border-slate-200 p-4 sm:p-5"
+                className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -917,52 +1242,60 @@ export default function ServiceAgreementPanel({
                           latestAcknowledgement?.status ===
                           ServicePaymentAcknowledgementStatus.PAYMENT_ISSUE;
 
-                        const canCustomerReport =
-                          Boolean(
-                            isCustomer &&
-                              agreement.status ===
-                                ServiceAgreementStatus.APPROVED &&
-                              (
-                                !latestAcknowledgement ||
-                                hasPaymentIssue
-                              ) &&
-                              isPaymentStepAvailableForCustomerReport(
-                                step.triggerType,
-                                requestStatus,
-                              ),
-                          );
+                        const canCustomerReport = Boolean(
+                          isCustomer &&
+                          agreement.status ===
+                            ServiceAgreementStatus.APPROVED &&
+                          (!latestAcknowledgement || hasPaymentIssue) &&
+                          isPaymentStepAvailableForCustomerReport(
+                            step.triggerType,
+                            requestStatus,
+                          ),
+                        );
 
-                        const canProviderRespond =
-                          Boolean(
-                            isProvider &&
-                              agreement.status ===
-                                ServiceAgreementStatus.APPROVED &&
-                              isAwaitingProvider &&
-                              latestAcknowledgement,
-                          );
+                        const canProviderRespond = Boolean(
+                          isProvider &&
+                          agreement.status ===
+                            ServiceAgreementStatus.APPROVED &&
+                          isAwaitingProvider &&
+                          latestAcknowledgement,
+                        );
 
-                        const issueFormOpen =
-                          Boolean(
-                            latestAcknowledgement &&
-                              paymentIssueAcknowledgementId ===
-                                latestAcknowledgement.id,
-                          );
+                        const issueFormOpen = Boolean(
+                          latestAcknowledgement &&
+                          paymentIssueAcknowledgementId ===
+                            latestAcknowledgement.id,
+                        );
 
                         return (
                           <div
                             key={step.id}
-                            className="rounded-xl bg-slate-50 p-3"
+                            className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
                           >
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div
+                              className="
+    flex
+    flex-col
+    gap-3
+    p-4
+    sm:flex-row
+    sm:items-start
+    sm:justify-between
+  "
+                            >
                               <div>
-                                <p className="text-sm font-semibold text-slate-900">
+                                <p
+                                  className="
+    text-sm
+    font-black
+    text-slate-950
+  "
+                                >
                                   {step.sequenceNo}. {step.label}
                                 </p>
 
                                 <p className="mt-1 text-xs text-slate-500">
-                                  {getPaymentTriggerLabel(
-                                    step.triggerType,
-                                  )}
+                                  {getPaymentTriggerLabel(step.triggerType)}
 
                                   {step.triggerNote
                                     ? ` — ${step.triggerNote}`
@@ -970,27 +1303,64 @@ export default function ServiceAgreementPanel({
                                 </p>
                               </div>
 
-                              <p className="shrink-0 text-sm font-bold text-slate-900">
+                              <p
+                                className="
+    shrink-0
+    text-base
+    font-black
+    text-slate-950
+  "
+                              >
                                 {formatMoney(step.amount)}
                               </p>
                             </div>
 
-                            <div className="mt-3 border-t border-slate-200 pt-3">
+                            <div
+                              className="
+    border-t
+    border-slate-100
+    bg-slate-50/70
+    p-4
+  "
+                            >
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
-                                  <p className="text-xs font-semibold text-slate-500">
+                                  <p
+                                    className="
+    text-[9px]
+    font-bold
+    uppercase
+    tracking-[0.12em]
+    text-slate-400
+  "
+                                  >
                                     Status pembayaran
                                   </p>
 
-                                  <p className="mt-1 text-sm font-bold text-slate-800">
+                                  <p
+                                    className="
+    mt-1
+    text-sm
+    font-black
+    text-slate-900
+  "
+                                  >
                                     {getPaymentAcknowledgementStatusLabel(
                                       latestAcknowledgement,
                                     )}
                                   </p>
 
                                   {latestAcknowledgement && (
-                                    <p className="mt-1 text-xs text-slate-500">
-                                      Percobaan #{latestAcknowledgement.attemptNo}
+                                    <p
+                                      className="
+      mt-1
+      text-[10px]
+      font-medium
+      text-slate-400
+    "
+                                    >
+                                      Percobaan #
+                                      {latestAcknowledgement.attemptNo}
                                     </p>
                                   )}
                                 </div>
@@ -999,12 +1369,26 @@ export default function ServiceAgreementPanel({
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      void onReportPaymentPaid(
-                                        step.id,
-                                      )
+                                      void onReportPaymentPaid(step.id)
                                     }
                                     disabled={actionPending}
-                                    className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                                    className="
+  inline-flex
+  min-h-10
+  items-center
+  justify-center
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-xs
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                                   >
                                     {hasPaymentIssue
                                       ? "Lapor Ulang Pembayaran"
@@ -1014,8 +1398,25 @@ export default function ServiceAgreementPanel({
                               </div>
 
                               {latestAcknowledgement?.customerNote && (
-                                <div className="mt-3 rounded-xl bg-white p-3">
-                                  <p className="text-xs font-semibold text-slate-500">
+                                <div
+                                  className="
+    mt-3
+    rounded-xl
+    border
+    border-slate-200
+    bg-white
+    p-3.5
+  "
+                                >
+                                  <p
+                                    className="
+    text-[9px]
+    font-bold
+    uppercase
+    tracking-wide
+    text-slate-400
+  "
+                                  >
                                     Catatan Customer
                                   </p>
 
@@ -1027,7 +1428,16 @@ export default function ServiceAgreementPanel({
 
                               {hasPaymentIssue &&
                                 latestAcknowledgement?.issueReason && (
-                                  <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50 p-3">
+                                  <div
+                                    className="
+    mt-3
+    rounded-xl
+    border
+    border-rose-200
+    bg-rose-50
+    p-3.5
+  "
+                                  >
                                     <p className="text-xs font-bold uppercase tracking-wide text-rose-500">
                                       Alasan masalah
                                     </p>
@@ -1039,8 +1449,25 @@ export default function ServiceAgreementPanel({
                                 )}
 
                               {latestAcknowledgement?.providerNote && (
-                                <div className="mt-3 rounded-xl bg-white p-3">
-                                  <p className="text-xs font-semibold text-slate-500">
+                                <div
+                                  className="
+    mt-3
+    rounded-xl
+    border
+    border-slate-200
+    bg-white
+    p-3.5
+  "
+                                >
+                                  <p
+                                    className="
+    text-[9px]
+    font-bold
+    uppercase
+    tracking-wide
+    text-slate-400
+  "
+                                  >
                                     Catatan Penyedia
                                   </p>
 
@@ -1053,7 +1480,14 @@ export default function ServiceAgreementPanel({
                               {canProviderRespond &&
                                 latestAcknowledgement &&
                                 !issueFormOpen && (
-                                  <div className="mt-3 flex flex-wrap gap-2">
+                                  <div
+                                    className="
+    mt-4
+    grid
+    gap-2
+    sm:grid-cols-2
+  "
+                                  >
                                     <button
                                       type="button"
                                       onClick={() =>
@@ -1062,7 +1496,23 @@ export default function ServiceAgreementPanel({
                                         )
                                       }
                                       disabled={actionPending}
-                                      className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                                      className="
+  inline-flex
+  min-h-11
+  items-center
+  justify-center
+  rounded-xl
+  bg-emerald-600
+  px-4
+  text-xs
+  font-black
+  text-white
+  transition
+  hover:bg-emerald-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                                     >
                                       Konfirmasi Pembayaran
                                     </button>
@@ -1075,7 +1525,24 @@ export default function ServiceAgreementPanel({
                                         )
                                       }
                                       disabled={actionPending}
-                                      className="rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                                      className="
+  inline-flex
+  min-h-11
+  items-center
+  justify-center
+  rounded-xl
+  border
+  border-rose-200
+  bg-white
+  px-4
+  text-xs
+  font-bold
+  text-rose-600
+  transition
+  hover:bg-rose-50
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                                     >
                                       Laporkan Masalah
                                     </button>
@@ -1085,7 +1552,16 @@ export default function ServiceAgreementPanel({
                               {canProviderRespond &&
                                 latestAcknowledgement &&
                                 issueFormOpen && (
-                                  <div className="mt-3 rounded-xl border border-rose-100 bg-white p-3">
+                                  <div
+                                    className="
+    mt-4
+    rounded-xl
+    border
+    border-rose-200
+    bg-white
+    p-4
+  "
+                                  >
                                     <label
                                       htmlFor={`payment-issue-${latestAcknowledgement.id}`}
                                       className="text-xs font-bold text-slate-700"
@@ -1104,28 +1580,79 @@ export default function ServiceAgreementPanel({
                                       }
                                       disabled={actionPending}
                                       placeholder="Contoh: nominal yang diterima belum sesuai."
-                                      className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100 disabled:bg-slate-50"
+                                      className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-3
+  py-3
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-rose-400
+  focus:ring-4
+  focus:ring-rose-100
+  disabled:bg-slate-50
+"
                                     />
 
-                                    <div className="mt-3 flex flex-wrap gap-2">
+                                    <div
+                                      className="
+    mt-3
+    grid
+    grid-cols-2
+    gap-2
+  "
+                                    >
                                       <button
                                         type="button"
                                         onClick={() =>
                                           void onReportPaymentIssue()
                                         }
                                         disabled={actionPending}
-                                        className="rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                                        className="
+  min-h-11
+  rounded-xl
+  bg-rose-600
+  px-3
+  text-xs
+  font-black
+  text-white
+  transition
+  hover:bg-rose-700
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                                       >
                                         Kirim Laporan Masalah
                                       </button>
 
                                       <button
                                         type="button"
-                                        onClick={
-                                          onCancelPaymentIssue
-                                        }
+                                        onClick={onCancelPaymentIssue}
                                         disabled={actionPending}
-                                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                                        className="
+  min-h-11
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-3
+  text-xs
+  font-bold
+  text-slate-600
+  transition
+  hover:bg-slate-50
+  disabled:cursor-not-allowed
+  disabled:opacity-50
+"
                                       >
                                         Batal
                                       </button>
