@@ -6,6 +6,14 @@ import { ArrowLeft, Send } from "lucide-react";
 
 import { formatChatMessageTime } from "@/features/messages/utils/format-message-time";
 
+import ServiceRequestChatTimeline from "@/features/service-requests/ServiceRequestChatTimeline";
+
+import type { ServiceAgreement } from "@/features/service-requests/types/service-agreement.types";
+
+import ServiceRequestChatContextCard from "@/features/service-requests/ServiceRequestChatContextCard";
+
+import type { ServiceRequestDetail } from "@/features/service-requests/types/service-request-read.types";
+
 interface Message {
   id: string;
 
@@ -20,6 +28,10 @@ interface Props {
   loading: boolean;
 
   messages: Message[];
+
+  serviceRequestDetail: ServiceRequestDetail | null;
+
+  serviceAgreements?: ServiceAgreement[];
 
   currentUserId: string;
 
@@ -37,11 +49,17 @@ interface Props {
   setMessage: (value: string) => void;
 
   handleSendMessage: () => void;
+
+  canCreateServiceProposal?: boolean;
+
+  onCreateServiceProposal?: () => void;
 }
 
 export default function MobileChatRoomView({
   loading,
   messages,
+  serviceRequestDetail,
+  serviceAgreements = [],
   currentUserId,
   otherUser,
   message,
@@ -49,6 +67,8 @@ export default function MobileChatRoomView({
   bottomRef,
   setMessage,
   handleSendMessage,
+  canCreateServiceProposal,
+  onCreateServiceProposal,
 }: Props) {
   const router = useRouter();
 
@@ -128,83 +148,131 @@ export default function MobileChatRoomView({
             {/* INFO */}
 
             <div>
-              <h1
-                className="text-base font-bold text-slate-900">
+              <h1 className="text-base font-bold text-slate-900">
                 {otherUser?.full_name || "Loading..."}
               </h1>
 
-              <p
-                className="text-xs text-slate-500">
-                Percakapan
-              </p>
+              <p className="text-xs text-slate-500">Percakapan</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* MESSAGES */}
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 px-4 py-6 sm:px-6">
         {loading ? (
           <div>Memuat pesan...</div>
         ) : (
-          <div className="space-y-2">
-            {messages.map((item) => {
-              const isMine = item.sender_id === currentUserId;
+          <div>
+            {serviceRequestDetail && (
+              <ServiceRequestChatContextCard
+  detail={serviceRequestDetail}
+  canCreateProposal={
+    canCreateServiceProposal
+  }
+  onCreateProposal={
+    onCreateServiceProposal
+  }
+/>
+            )}
 
-              return (
-                <div
-                  key={item.id}
-                  className={`
-                    flex
-                    ${isMine ? "justify-end" : "justify-start"}
-                  `}
-                >
-                  <div
-                    className={`
-    max-w-[80%]
-    rounded-2xl
-    px-3
-    py-2
-    text-[14px]
-
-    ${
-      isMine
-        ? "bg-indigo-600 text-white"
-        : "border border-slate-200 bg-white text-slate-700"
+            {serviceRequestDetail ? (
+  <ServiceRequestChatTimeline
+    messages={messages}
+    agreements={
+      serviceAgreements
     }
-  `}
-                  >
-                    <div
-                      className="flex items-end gap-2">
+    currentUserId={
+      currentUserId
+    }
+    requestId={
+      serviceRequestDetail.id
+    }
+    variant="mobile"
+  />
+) : (
+  <div className="space-y-2">
+    {messages.map((item) => {
+      const isMine =
+        item.sender_id ===
+        currentUserId;
 
-                      {/* MESSAGE */}
-                      <p
-                        className="min-w-0 whitespace-pre-wrap wrap-break-word leading-5">
-                        {item.content}
-                      </p>
+      return (
+        <div
+          key={item.id}
+          className={`
+            flex
+            ${
+              isMine
+                ? "justify-end"
+                : "justify-start"
+            }
+          `}
+        >
+          <div
+            className={`
+              max-w-[80%]
+              rounded-2xl
+              px-3
+              py-2
+              text-[14px]
 
-                      {/* TIME */}
-                      <time
-                        dateTime={item.created_at}
-                        className={`
-        mb-0.5
-        shrink-0
-        whitespace-nowrap
-        text-[8.5px]
-        leading-none
+              ${
+                isMine
+                  ? "bg-indigo-600 text-white"
+                  : "border border-slate-200 bg-white text-slate-700"
+              }
+            `}
+          >
+            <div
+              className="
+                flex
+                items-end
+                gap-2
+              "
+            >
+              <p
+                className="
+                  min-w-0
+                  whitespace-pre-wrap
+                  wrap-break-word
+                  leading-5
+                "
+              >
+                {item.content}
+              </p>
 
-        ${isMine ? "text-indigo-200" : "text-slate-400"}
-      `}
-                      >
-                        {formatChatMessageTime(item.created_at)}
-                      </time>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+              <time
+                dateTime={
+                  item.created_at
+                }
+                className={`
+                  mb-0.5
+                  shrink-0
+                  whitespace-nowrap
+                  text-[8.5px]
+                  leading-none
 
-            <div ref={bottomRef} />
+                  ${
+                    isMine
+                      ? "text-indigo-200"
+                      : "text-slate-400"
+                  }
+                `}
+              >
+                {formatChatMessageTime(
+                  item.created_at,
+                )}
+              </time>
+            </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
+<div ref={bottomRef} />
           </div>
         )}
       </div>

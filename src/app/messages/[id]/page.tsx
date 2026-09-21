@@ -11,6 +11,12 @@ import { supabase } from "@/lib/supabase/client";
 
 import type { Conversation } from "@/features/messages/types/conversation.types";
 
+import { getServiceRequestDetailService } from "@/features/service-requests/services/get-service-request-detail.service";
+
+import type { ServiceRequestDetail } from "@/features/service-requests/types/service-request-read.types";
+
+import ServiceRequestChatExperience from "@/features/service-requests/ServiceRequestChatExperience";
+
 import {
   markServiceRequestConversationReadService,
   sendServiceRequestMessageService,
@@ -49,6 +55,9 @@ export default function ChatRoomPage() {
   const [currentUserId, setCurrentUserId] = useState("");
 
   const [otherUser, setOtherUser] = useState<ChatUser | null>(null);
+
+  const [serviceRequestDetail, setServiceRequestDetail] =
+    useState<ServiceRequestDetail | null>(null);
 
   /* =========================
        SEND MESSAGE
@@ -335,6 +344,33 @@ export default function ChatRoomPage() {
         return;
       }
 
+      setServiceRequestDetail(null);
+
+      if (conversation.service_request_id) {
+        try {
+          const requestDetail = await getServiceRequestDetailService(
+            conversation.service_request_id,
+          );
+
+          if (!cancelled) {
+            setServiceRequestDetail(requestDetail);
+          }
+        } catch (contextError) {
+          if (!cancelled) {
+            console.error(
+              "LOAD SERVICE REQUEST CHAT CONTEXT ERROR:",
+              contextError,
+            );
+
+            setServiceRequestDetail(null);
+          }
+        }
+      }
+
+      if (cancelled) {
+        return;
+      }
+
       const other =
         user.id === conversation.owner_id
           ? conversation.helper
@@ -558,12 +594,56 @@ export default function ChatRoomPage() {
     });
   }, [messages]);
 
+  async function refreshServiceRequestDetail() {
+  if (!serviceRequestDetail) {
+    return;
+  }
+
+  const result =
+    await getServiceRequestDetailService(
+      serviceRequestDetail.id,
+    );
+
+  setServiceRequestDetail(result);
+}
+
+if (serviceRequestDetail) {
+  return (
+    <ServiceRequestChatExperience
+      loading={loading}
+      messages={messages}
+      conversations={conversations}
+      conversationId={
+        conversationId
+      }
+      currentUserId={
+        currentUserId
+      }
+      otherUser={otherUser}
+      message={message}
+      sending={sending}
+      bottomRef={bottomRef}
+      serviceRequestDetail={
+        serviceRequestDetail
+      }
+      setMessage={setMessage}
+      handleSendMessage={
+        handleSendMessage
+      }
+      onRequestChanged={
+        refreshServiceRequestDetail
+      }
+    />
+  );
+}
+
   return (
     <>
       {/* MOBILE */}
       <MobileChatRoomView
         loading={loading}
         messages={messages}
+        serviceRequestDetail={serviceRequestDetail}
         currentUserId={currentUserId}
         otherUser={otherUser}
         message={message}
@@ -577,6 +657,7 @@ export default function ChatRoomPage() {
       <DesktopChatRoomView
         loading={loading}
         messages={messages}
+        serviceRequestDetail={serviceRequestDetail}
         conversations={conversations}
         conversationId={conversationId}
         currentUserId={currentUserId}

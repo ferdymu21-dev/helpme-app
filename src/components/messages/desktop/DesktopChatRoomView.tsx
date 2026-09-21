@@ -6,6 +6,14 @@ import { formatChatMessageTime } from "@/features/messages/utils/format-message-
 
 import type { Conversation } from "@/features/messages/types/conversation.types";
 
+import ServiceRequestChatContextCard from "@/features/service-requests/ServiceRequestChatContextCard";
+
+import type { ServiceRequestDetail } from "@/features/service-requests/types/service-request-read.types";
+
+import ServiceRequestChatTimeline from "@/features/service-requests/ServiceRequestChatTimeline";
+
+import type { ServiceAgreement } from "@/features/service-requests/types/service-agreement.types";
+
 interface Message {
   id: string;
   content: string;
@@ -17,6 +25,10 @@ interface Props {
   loading: boolean;
 
   messages: Message[];
+
+  serviceRequestDetail: ServiceRequestDetail | null;
+
+  serviceAgreements?: ServiceAgreement[];
 
   conversations: Conversation[];
 
@@ -38,11 +50,17 @@ interface Props {
   setMessage: (value: string) => void;
 
   handleSendMessage: () => void;
+
+  canCreateServiceProposal?: boolean;
+
+  onCreateServiceProposal?: () => void;
 }
 
 export default function DesktopChatRoomView({
   loading,
   messages,
+  serviceRequestDetail,
+  serviceAgreements = [],
   conversations,
   conversationId,
   currentUserId,
@@ -52,6 +70,8 @@ export default function DesktopChatRoomView({
   bottomRef,
   setMessage,
   handleSendMessage,
+  canCreateServiceProposal,
+  onCreateServiceProposal,
 }: Props) {
   return (
     <div className="hidden lg:flex">
@@ -130,9 +150,7 @@ export default function DesktopChatRoomView({
                     text-indigo-700
                   "
                 >
-                  {otherUser?.full_name
-                    ?.charAt(0)
-                    .toUpperCase() || "U"}
+                  {otherUser?.full_name?.charAt(0).toUpperCase() || "U"}
                 </div>
               )}
 
@@ -149,9 +167,7 @@ export default function DesktopChatRoomView({
                   {otherUser?.full_name || "Loading..."}
                 </h1>
 
-                <p className="text-sm text-slate-500">
-                  Percakapan
-                </p>
+                <p className="text-sm text-slate-500">Percakapan</p>
               </div>
             </div>
           </div>
@@ -169,86 +185,113 @@ export default function DesktopChatRoomView({
             {loading ? (
               <div>Memuat pesan...</div>
             ) : (
-              <div className="space-y-4">
-                {messages.map((item) => {
-                  const isMine =
-                    item.sender_id === currentUserId;
+              <div>
+                {serviceRequestDetail && (
+                  <ServiceRequestChatContextCard
+                    detail={serviceRequestDetail}
+                    canCreateProposal={canCreateServiceProposal}
+                    onCreateProposal={onCreateServiceProposal}
+                  />
+                )}
 
-                  return (
-                    <div
-                      key={item.id}
-                      className={`
-                        flex
-                        ${
-                          isMine
-                            ? "justify-end"
-                            : "justify-start"
-                        }
-                      `}
-                    >
-                      <div
-  className={`
-    max-w-[65%]
-    rounded-3xl
-    px-3.5
-    py-2
-    text-sm
-    shadow-sm
-
-    ${
-      isMine
-        ? "bg-indigo-600 text-white"
-        : "border border-slate-200 bg-white text-slate-700"
+                {serviceRequestDetail ? (
+  <ServiceRequestChatTimeline
+    messages={messages}
+    agreements={
+      serviceAgreements
     }
-  `}
->
-  <div
-    className="
-      flex
-      items-end
-      gap-2
-    "
-  >
-    {/* MESSAGE */}
-    <p
-      className="
-        min-w-0
-        whitespace-pre-wrap
-        wrap-break-word
-        leading-6
-      "
-    >
-      {item.content}
-    </p>
+    currentUserId={
+      currentUserId
+    }
+    requestId={
+      serviceRequestDetail.id
+    }
+    variant="desktop"
+  />
+) : (
+  <div className="space-y-4">
+    {messages.map((item) => {
+      const isMine =
+        item.sender_id ===
+        currentUserId;
 
-    {/* TIME */}
-    <time
-      dateTime={item.created_at}
-      className={`
-        mb-0.5
-        shrink-0
-        whitespace-nowrap
-        text-[10px]
-        leading-none
+      return (
+        <div
+          key={item.id}
+          className={`
+            flex
+            ${
+              isMine
+                ? "justify-end"
+                : "justify-start"
+            }
+          `}
+        >
+          <div
+            className={`
+              max-w-[65%]
+              rounded-3xl
+              px-3.5
+              py-2
+              text-sm
+              shadow-sm
 
-        ${
-          isMine
-            ? "text-indigo-200"
-            : "text-slate-400"
-        }
-      `}
-    >
-      {formatChatMessageTime(
-        item.created_at,
-      )}
-    </time>
+              ${
+                isMine
+                  ? "bg-indigo-600 text-white"
+                  : "border border-slate-200 bg-white text-slate-700"
+              }
+            `}
+          >
+            <div
+              className="
+                flex
+                items-end
+                gap-2
+              "
+            >
+              <p
+                className="
+                  min-w-0
+                  whitespace-pre-wrap
+                  wrap-break-word
+                  leading-6
+                "
+              >
+                {item.content}
+              </p>
+
+              <time
+                dateTime={
+                  item.created_at
+                }
+                className={`
+                  mb-0.5
+                  shrink-0
+                  whitespace-nowrap
+                  text-[10px]
+                  leading-none
+
+                  ${
+                    isMine
+                      ? "text-indigo-200"
+                      : "text-slate-400"
+                  }
+                `}
+              >
+                {formatChatMessageTime(
+                  item.created_at,
+                )}
+              </time>
+            </div>
+          </div>
+        </div>
+      );
+    })}
   </div>
-</div>
-                    </div>
-                  );
-                })}
+)}
 
-                <div ref={bottomRef} />
+<div ref={bottomRef} />
               </div>
             )}
           </div>
@@ -267,15 +310,9 @@ export default function DesktopChatRoomView({
             <div className="flex gap-4">
               <input
                 value={message}
-                onChange={(event) =>
-                  setMessage(event.target.value)
-                }
+                onChange={(event) => setMessage(event.target.value)}
                 onKeyDown={(event) => {
-                  if (
-                    event.key === "Enter" &&
-                    !event.shiftKey &&
-                    !sending
-                  ) {
+                  if (event.key === "Enter" && !event.shiftKey && !sending) {
                     event.preventDefault();
 
                     handleSendMessage();
