@@ -241,92 +241,374 @@ export default function ServiceRequestDetailPageUI({
   return (
     <main className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <Link
-          href={
-            isProvider
-              ? "/service-requests/provider"
-              : `/services/${encodeURIComponent(detail.serviceListingId)}`
-          }
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
-        >
-          <ArrowLeft size={18} />
-          Kembali
-        </Link>
+        <header
+  className="
+    flex
+    items-start
+    gap-3
+  "
+>
+  <Link
+    href={
+      isProvider
+        ? "/service-requests/provider"
+        : `/services/${encodeURIComponent(
+            detail.serviceListingId,
+          )}`
+    }
+    aria-label="Kembali"
+    className="
+      mt-0.5
+      inline-flex
+      h-9
+      w-9
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      border
+      border-slate-200
+      bg-white
+      text-slate-600
+      transition
+      hover:border-slate-300
+      hover:bg-slate-50
+      hover:text-slate-950
+      active:scale-95
+    "
+  >
+    <ArrowLeft
+      size={17}
+      strokeWidth={2}
+    />
+  </Link>
+
+  <div className="min-w-0">
+    <h1
+      className="
+        mt-1
+        text-base
+        font-black
+        tracking-tight
+        text-slate-950
+        sm:text-2xl
+      "
+    >
+      Detail Permintaan
+    </h1>
+
+    <p
+      className="
+        mt-1
+        text-[11px]
+        leading-4
+        text-slate-500
+      "
+    >
+      {isProvider
+        ? "Tinjau kebutuhan pelanggan dan kelola proses layanan."
+        : "Pantau detail dan perkembangan permintaan jasa Anda."}
+    </p>
+  </div>
+</header>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-5">
-            <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">
-                    {getServiceRequestStatusLabel(detail.status)}
-                  </span>
+            <section
+  className="
+    overflow-hidden
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+  "
+>
+  <div className="p-5 sm:p-6">
+    <div
+      className="
+        flex
+        items-start
+        justify-between
+        gap-4
+      "
+    >
+      <div className="min-w-0">
+        <span
+          className="
+            inline-flex
+            rounded-lg
+            border
+            border-indigo-100
+            bg-indigo-50
+            px-2.5
+            py-1.5
+            text-[10px]
+            font-black
+            text-indigo-700
+          "
+        >
+          {getServiceRequestStatusLabel(
+            detail.status,
+          )}
+        </span>
 
-                  <h1 className="mt-3 text-2xl font-bold text-slate-950">
-                    {detail.listingTitle}
-                  </h1>
+        <h2
+          className="
+            mt-3
+            text-xl
+            font-black
+            leading-7
+            tracking-tight
+            text-slate-950
+            sm:text-2xl
+          "
+        >
+          {detail.listingTitle}
+        </h2>
 
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    {detail.listingCategory}
-                  </p>
-                </div>
+        <p
+          className="
+            mt-1
+            text-[11px]
+            font-semibold
+            text-indigo-600
+          "
+        >
+          {detail.listingCategory}
+        </p>
+      </div>
 
-                <p className="text-base font-bold text-slate-950">
-                  {formatServiceRequestBudget(detail.budget)}
-                </p>
-              </div>
+      <div
+        className="
+          shrink-0
+          text-right
+        "
+      >
+        <p
+          className="
+            text-[10px]
+            font-medium
+            text-slate-400
+          "
+        >
+          Anggaran
+        </p>
 
-              <div className="mt-6 border-t border-slate-100 pt-6">
-                <h2 className="text-sm font-bold text-slate-950">
-                  Kebutuhan Customer
-                </h2>
+        <p
+          className="
+            mt-1
+            text-base
+            font-black
+            text-slate-950
+          "
+        >
+          {formatServiceRequestBudget(
+            detail.budget,
+          )}
+        </p>
+      </div>
+    </div>
 
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-600">
-                  {detail.requestDescription}
-                </p>
-              </div>
+    <div
+      className="
+        mt-6
+        border-t
+        border-slate-100
+        pt-5
+      "
+    >
+      <p
+        className="
+          text-xs
+          font-bold
+          text-slate-800
+        "
+      >
+        Kebutuhan pelanggan
+      </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <CalendarDays size={15} />
-                    Dibutuhkan
-                  </p>
+      <p
+        className="
+          mt-2
+          whitespace-pre-wrap
+          text-sm
+          leading-7
+          text-slate-600
+        "
+      >
+        {detail.requestDescription}
+      </p>
+    </div>
 
-                  <p className="mt-2 text-sm font-semibold text-slate-900">
-                    {formatServiceRequestDateTime(detail.neededAt)}
-                  </p>
-                </div>
+    <div
+      className="
+        mt-5
+        grid
+        grid-cols-2
+        gap-3
+      "
+    >
+      <div
+        className="
+          rounded-xl
+          bg-slate-50
+          p-3.5
+        "
+      >
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+            text-slate-400
+          "
+        >
+          <CalendarDays
+            size={14}
+            strokeWidth={2}
+          />
 
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    {detail.serviceMode === "ONLINE" ? (
-                      <Globe2 size={15} />
-                    ) : (
-                      <MapPin size={15} />
-                    )}
-                    Pelaksanaan
-                  </p>
+          <span
+            className="
+              text-[9px]
+              font-bold
+              uppercase
+              tracking-wide
+            "
+          >
+            Dibutuhkan
+          </span>
+        </div>
 
-                  <p className="mt-2 text-sm font-semibold text-slate-900">
-                    {getServiceRequestModeLabel(detail.serviceMode)}
-                  </p>
-                </div>
-              </div>
+        <p
+          className="
+            mt-2
+            text-xs
+            font-bold
+            leading-5
+            text-slate-800
+          "
+        >
+          {formatServiceRequestDateTime(
+            detail.neededAt,
+          )}
+        </p>
+      </div>
 
-              {detail.locationName && (
-                <div className="mt-3 rounded-2xl bg-slate-50 p-4">
-                  <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <MapPin size={15} />
-                    Lokasi
-                  </p>
+      <div
+        className="
+          rounded-xl
+          bg-slate-50
+          p-3.5
+        "
+      >
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+            text-slate-400
+          "
+        >
+          {detail.serviceMode ===
+          "ONLINE" ? (
+            <Globe2
+              size={14}
+              strokeWidth={2}
+            />
+          ) : (
+            <MapPin
+              size={14}
+              strokeWidth={2}
+            />
+          )}
 
-                  <p className="mt-2 text-sm font-semibold text-slate-900">
-                    {detail.locationName}
-                  </p>
-                </div>
-              )}
-            </section>
+          <span
+            className="
+              text-[9px]
+              font-bold
+              uppercase
+              tracking-wide
+            "
+          >
+            Cara layanan
+          </span>
+        </div>
+
+        <p
+          className="
+            mt-2
+            text-xs
+            font-bold
+            text-slate-800
+          "
+        >
+          {getServiceRequestModeLabel(
+            detail.serviceMode,
+          )}
+        </p>
+      </div>
+    </div>
+
+    {detail.locationName && (
+      <div
+        className="
+          mt-3
+          flex
+          items-start
+          gap-3
+          rounded-xl
+          bg-slate-50
+          p-3.5
+        "
+      >
+        <span
+          className="
+            flex
+            h-8
+            w-8
+            shrink-0
+            items-center
+            justify-center
+            rounded-lg
+            bg-white
+            text-slate-500
+          "
+        >
+          <MapPin
+            size={14}
+            strokeWidth={2}
+          />
+        </span>
+
+        <div>
+          <p
+            className="
+              text-[9px]
+              font-bold
+              uppercase
+              tracking-wide
+              text-slate-400
+            "
+          >
+            Area layanan
+          </p>
+
+          <p
+            className="
+              mt-1
+              text-xs
+              font-bold
+              text-slate-800
+            "
+          >
+            {detail.locationName}
+          </p>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
 
             <ServiceAgreementPanel
               requestId={detail.id}
@@ -336,47 +618,192 @@ export default function ServiceRequestDetailPageUI({
               onRequestChanged={refresh}
             />
 
-            <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-              <h2 className="text-base font-bold text-slate-950">
-                Pihak dalam Permintaan
-              </h2>
+            <section
+  className="
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-5
+    sm:p-6
+  "
+>
+  <div>
+    <p
+      className="
+        text-[10px]
+        font-black
+        uppercase
+        tracking-[0.14em]
+        text-indigo-600
+      "
+    >
+      Pihak Transaksi
+    </p>
 
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <UserRound size={15} />
-                    Customer
-                  </p>
+    <h2
+      className="
+        mt-1
+        text-[13px]
+        font-black
+        text-slate-950
+      "
+    >
+      Customer dan Penyedia
+    </h2>
+  </div>
 
-                  <p className="mt-2 text-sm font-bold text-slate-950">
-                    {customerLabel}
-                  </p>
+  <div
+    className="
+      mt-5
+      grid
+      gap-3
+      sm:grid-cols-2
+    "
+  >
+    <div
+      className="
+        flex
+        items-start
+        gap-3
+        rounded-xl
+        bg-slate-50
+        p-4
+      "
+    >
+      <span
+        className="
+          flex
+          h-10
+          w-10
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          bg-white
+          text-slate-500
+          shadow-sm
+        "
+      >
+        <UserRound
+          size={17}
+          strokeWidth={2}
+        />
+      </span>
 
-                  {detail.customerFullName && detail.customerUsername && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      @{detail.customerUsername}
-                    </p>
-                  )}
-                </div>
+      <div className="min-w-0">
+        <p
+          className="
+            text-[9px]
+            font-bold
+            uppercase
+            tracking-wide
+            text-slate-400
+          "
+        >
+          Customer
+        </p>
 
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <UserRound size={15} />
-                    Provider
-                  </p>
+        <p
+          className="
+            mt-1
+            truncate
+            text-sm
+            font-black
+            text-slate-900
+          "
+        >
+          {customerLabel}
+        </p>
 
-                  <p className="mt-2 text-sm font-bold text-slate-950">
-                    {providerLabel}
-                  </p>
+        {detail.customerFullName &&
+          detail.customerUsername && (
+            <p
+              className="
+                mt-0.5
+                truncate
+                text-[11px]
+                text-slate-500
+              "
+            >
+              @{detail.customerUsername}
+            </p>
+          )}
+      </div>
+    </div>
 
-                  {detail.providerFullName && detail.providerUsername && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      @{detail.providerUsername}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </section>
+    <div
+      className="
+        flex
+        items-start
+        gap-3
+        rounded-xl
+        bg-slate-50
+        p-4
+      "
+    >
+      <span
+        className="
+          flex
+          h-10
+          w-10
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          bg-white
+          text-slate-500
+          shadow-sm
+        "
+      >
+        <UserRound
+          size={17}
+          strokeWidth={2}
+        />
+      </span>
+
+      <div className="min-w-0">
+        <p
+          className="
+            text-[9px]
+            font-bold
+            uppercase
+            tracking-wide
+            text-slate-400
+          "
+        >
+          Penyedia
+        </p>
+
+        <p
+          className="
+            mt-1
+            truncate
+            text-sm
+            font-black
+            text-slate-900
+          "
+        >
+          {providerLabel}
+        </p>
+
+        {detail.providerFullName &&
+          detail.providerUsername && (
+            <p
+              className="
+                mt-0.5
+                truncate
+                text-[11px]
+                text-slate-500
+              "
+            >
+              @{detail.providerUsername}
+            </p>
+          )}
+      </div>
+    </div>
+  </div>
+</section>
 
             {(detail.status === ServiceRequestStatus.DECLINED ||
               detail.status === ServiceRequestStatus.CANCELLED) && (
@@ -418,16 +845,70 @@ export default function ServiceRequestDetailPageUI({
           </div>
 
           <aside className="space-y-5">
-            <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
-              <p className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                <Clock3 size={15} />
-                Dibuat
-              </p>
+            <section
+  className="
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-4
+  "
+>
+  <div
+    className="
+      flex
+      items-start
+      gap-3
+    "
+  >
+    <span
+      className="
+        flex
+        h-9
+        w-9
+        shrink-0
+        items-center
+        justify-center
+        rounded-xl
+        bg-slate-100
+        text-slate-500
+      "
+    >
+      <Clock3
+        size={15}
+        strokeWidth={2}
+      />
+    </span>
 
-              <p className="mt-2 text-sm font-semibold text-slate-900">
-                {formatServiceRequestDateTime(detail.createdAt)}
-              </p>
-            </section>
+    <div>
+      <p
+        className="
+          text-[9px]
+          font-bold
+          uppercase
+          tracking-wide
+          text-slate-400
+        "
+      >
+        Permintaan dibuat
+      </p>
+
+      <p
+        className="
+          mt-1
+          text-xs
+          font-bold
+          leading-5
+          text-slate-800
+        "
+      >
+        {formatServiceRequestDateTime(
+          detail.createdAt,
+        )}
+      </p>
+    </div>
+  </div>
+</section>
 
             <ServiceRequestChatAction
               requestId={detail.id}
@@ -436,7 +917,7 @@ export default function ServiceRequestDetailPageUI({
               isCustomer={isCustomer}
             />
             {detail.latestCompletionSubmission && (
-              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+              <section className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-base font-bold text-slate-950">
@@ -448,7 +929,17 @@ export default function ServiceRequestDetailPageUI({
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  <span
+  className="
+    rounded-lg
+    bg-slate-100
+    px-2.5
+    py-1.5
+    text-[10px]
+    font-bold
+    text-slate-600
+  "
+>
                     {detail.latestCompletionSubmission.status ===
                     "SUBMITTED"
                       ? "Menunggu respons"
@@ -503,7 +994,25 @@ export default function ServiceRequestDetailPageUI({
                           type="button"
                           onClick={onAcceptCompletion}
                           disabled={actionPending}
-                          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="
+  flex
+  min-h-12
+  w-full
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                         >
                           <CheckCircle2 size={17} />
                           {actionPending
@@ -515,7 +1024,22 @@ export default function ServiceRequestDetailPageUI({
                           type="button"
                           onClick={onOpenRevision}
                           disabled={actionPending}
-                          className="w-full rounded-2xl border border-amber-200 px-4 py-3 text-sm font-bold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="
+  min-h-12
+  w-full
+  rounded-xl
+  border
+  border-amber-200
+  bg-amber-50/40
+  px-4
+  text-sm
+  font-bold
+  text-amber-700
+  transition
+  hover:bg-amber-50
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                         >
                           Minta Revisi
                         </button>
@@ -570,7 +1094,15 @@ export default function ServiceRequestDetailPageUI({
             )}
 
             {isProvider && canSubmitWork && (
-              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+              <section
+  className="
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-white
+    p-5
+  "
+>
                 <h2 className="text-base font-bold text-slate-950">
                   Serahkan Hasil Pekerjaan
                 </h2>
@@ -596,7 +1128,27 @@ export default function ServiceRequestDetailPageUI({
                   }
                   disabled={actionPending}
                   placeholder="Contoh: Logo final sudah selesai sesuai warna cokelat dan krem yang disepakati."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                  className="
+  mt-3
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-indigo-400
+  focus:ring-4
+  focus:ring-indigo-100
+  disabled:bg-slate-50
+"
                 />
 
                 {actionErrorMessage && (
@@ -612,7 +1164,26 @@ export default function ServiceRequestDetailPageUI({
                   type="button"
                   onClick={onSubmitWork}
                   disabled={actionPending}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="
+  mt-4
+  flex
+  min-h-12
+  w-full
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                 >
                   <CheckCircle2 size={17} />
                   {actionPending ? "Mengirim..." : "Kirim Hasil Pekerjaan"}
@@ -621,7 +1192,15 @@ export default function ServiceRequestDetailPageUI({
             )}
 
             {isProvider && canStartWork && (
-              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+              <section
+  className="
+    rounded-2xl
+    border
+    border-emerald-100
+    bg-emerald-50/40
+    p-5
+  "
+>
                 <h2 className="text-base font-bold text-slate-950">
                   Mulai Pekerjaan
                 </h2>
@@ -644,7 +1223,26 @@ export default function ServiceRequestDetailPageUI({
                   type="button"
                   onClick={onStartWork}
                   disabled={actionPending}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="
+  mt-5
+  flex
+  min-h-12
+  w-full
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                 >
                   <CheckCircle2 size={17} />
                   {actionPending ? "Memproses..." : "Mulai Pekerjaan"}
@@ -653,7 +1251,15 @@ export default function ServiceRequestDetailPageUI({
             )}
 
             {isProvider && (canBeginNegotiation || canDecline) && (
-              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+              <section
+  className="
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-white
+    p-5
+  "
+>
                 <h2 className="text-base font-bold text-slate-950">
                   Tanggapi Permintaan
                 </h2>
@@ -679,7 +1285,25 @@ export default function ServiceRequestDetailPageUI({
                         type="button"
                         onClick={onBeginNegotiation}
                         disabled={actionPending}
-                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="
+  flex
+  min-h-12
+  w-full
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  bg-indigo-600
+  px-4
+  text-sm
+  font-black
+  text-white
+  transition
+  hover:bg-indigo-700
+  active:scale-[0.99]
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                       >
                         <CheckCircle2 size={17} />
                         {actionPending ? "Memproses..." : "Mulai Negosiasi"}
@@ -691,7 +1315,22 @@ export default function ServiceRequestDetailPageUI({
                         type="button"
                         onClick={onOpenDecline}
                         disabled={actionPending}
-                        className="w-full rounded-2xl border border-red-200 px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="
+  min-h-12
+  w-full
+  rounded-xl
+  border
+  border-rose-200
+  bg-white
+  px-4
+  text-sm
+  font-bold
+  text-rose-600
+  transition
+  hover:bg-rose-50
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                       >
                         Tolak Permintaan
                       </button>
@@ -715,7 +1354,27 @@ export default function ServiceRequestDetailPageUI({
                       }
                       disabled={actionPending}
                       placeholder="Jelaskan alasan agar Customer memahami keputusan Anda."
-                      className="mt-2 w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:bg-slate-50"
+                      className="
+  mt-2
+  w-full
+  resize-y
+  rounded-xl
+  border
+  border-slate-200
+  bg-white
+  px-4
+  py-3.5
+  text-sm
+  leading-6
+  text-slate-950
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-rose-400
+  focus:ring-4
+  focus:ring-rose-100
+  disabled:bg-slate-50
+"
                     />
 
                     <div className="mt-3 grid grid-cols-2 gap-3">
@@ -743,7 +1402,15 @@ export default function ServiceRequestDetailPageUI({
             )}
 
             {canCancel && (
-              <section className="rounded-[28px] border border-red-100 bg-white p-5 shadow-sm">
+              <section
+  className="
+    rounded-2xl
+    border
+    border-rose-100
+    bg-white
+    p-5
+  "
+>
                 {actionErrorMessage && (
                   <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {actionErrorMessage}
@@ -755,7 +1422,26 @@ export default function ServiceRequestDetailPageUI({
                     type="button"
                     onClick={onOpenCancellation}
                     disabled={actionPending}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="
+  flex
+  min-h-11
+  w-full
+  items-center
+  justify-center
+  gap-2
+  rounded-xl
+  border
+  border-rose-200
+  bg-white
+  px-4
+  text-sm
+  font-bold
+  text-rose-600
+  transition
+  hover:bg-rose-50
+  disabled:cursor-not-allowed
+  disabled:opacity-60
+"
                   >
                     <XCircle size={17} />
                     Batalkan Permintaan
@@ -809,7 +1495,15 @@ export default function ServiceRequestDetailPageUI({
             {isProvider &&
               detail.status === ServiceRequestStatus.NEGOTIATING &&
               !declineOpen && (
-                <section className="rounded-[28px] border border-indigo-100 bg-indigo-50 p-5">
+                <section
+  className="
+    rounded-2xl
+    border
+    border-indigo-100
+    bg-indigo-50/70
+    p-5
+  "
+>
                   <p className="text-sm font-bold text-indigo-800">
                     Tahap negosiasi aktif
                   </p>
