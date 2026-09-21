@@ -192,10 +192,8 @@ export default function ServiceListingForm({
 
         <MediaSection
           media={media}
-          enabled={
-            mediaEnabled &&
-            !disabled
-          }
+          enabled={mediaEnabled}
+          disabled={disabled}
           busy={mediaBusy}
           onUploadCover={
             onUploadCover

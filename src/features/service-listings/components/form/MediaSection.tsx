@@ -1,249 +1,323 @@
-"use client";
+﻿"use client";
 
-import type {
-  ChangeEvent,
-} from "react";
+import type { ChangeEvent } from "react";
 
-import {
-  ImagePlus,
-  Images,
-  Trash2,
-} from "lucide-react";
+import { ImagePlus, Images, Trash2 } from "lucide-react";
 
-import {
-  ServiceListingImageKind,
-} from "../../constants/service-listing-image-kind";
+import { ServiceListingImageKind } from "../../constants/service-listing-image-kind";
 
-import {
-  ServiceListingConfig,
-} from "../../constants/service-listing-config";
+import { ServiceListingConfig } from "../../constants/service-listing-config";
 
-import type {
-  ProviderServiceListingMedia,
-} from "../../types/service-listing-media.types";
+import type { ProviderServiceListingMedia } from "../../types/service-listing-media.types";
 
 interface MediaSectionProps {
-  media:
-    ProviderServiceListingMedia[];
+  media: ProviderServiceListingMedia[];
 
   enabled: boolean;
 
+  disabled: boolean;
+
   busy: boolean;
 
-  onUploadCover:
-    (file: File) => void;
+  onUploadCover: (file: File) => void;
 
-  onUploadPortfolio:
-    (file: File) => void;
+  onUploadPortfolio: (file: File) => void;
 
-  onDeleteImage:
-    (imageId: string) => void;
+  onDeleteImage: (imageId: string) => void;
 }
 
-function getBackgroundImage(
-  publicUrl: string,
-) {
-  return `url(${JSON.stringify(
-    publicUrl,
-  )})`;
+function getBackgroundImage(publicUrl: string) {
+  return `url(${JSON.stringify(publicUrl)})`;
 }
 
 export default function MediaSection({
   media,
   enabled,
+  disabled,
   busy,
   onUploadCover,
   onUploadPortfolio,
   onDeleteImage,
 }: MediaSectionProps) {
   const cover =
-    media.find(
-      (item) =>
-        item.kind ===
-        ServiceListingImageKind.COVER,
-    ) ?? null;
+    media.find((item) => item.kind === ServiceListingImageKind.COVER) ?? null;
 
-  const portfolio =
-    media
-      .filter(
-        (item) =>
-          item.kind ===
-          ServiceListingImageKind.PORTFOLIO,
-      )
-      .slice()
-      .sort(
-        (first, second) =>
-          first.sortOrder -
-          second.sortOrder,
-      );
+  const portfolio = media
+    .filter((item) => item.kind === ServiceListingImageKind.PORTFOLIO)
+    .slice()
+    .sort((first, second) => first.sortOrder - second.sortOrder);
 
   const portfolioFull =
-    portfolio.length >=
-    ServiceListingConfig.maxPortfolioImages;
+    portfolio.length >= ServiceListingConfig.maxPortfolioImages;
 
-  function handleCoverChange(
-    event:
-      ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0];
+  const mediaDisabled =
+    disabled ||
+    busy;
 
-    event.target.value =
-      "";
+  function handleCoverChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
 
-    if (
-      !file
-    ) {
+    event.target.value = "";
+
+    if (!file) {
       return;
     }
 
-    onUploadCover(
-      file,
-    );
+    onUploadCover(file);
   }
 
-  function handlePortfolioChange(
-    event:
-      ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0];
+  function handlePortfolioChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
 
-    event.target.value =
-      "";
+    event.target.value = "";
 
-    if (
-      !file
-    ) {
+    if (!file) {
       return;
     }
 
-    onUploadPortfolio(
-      file,
-    );
+    onUploadPortfolio(file);
   }
 
   return (
     <section
       className="
-        rounded-3xl
+        rounded-2xl
         border
-        border-slate-200/80
+        border-slate-200
         bg-white
         p-5
-        shadow-sm
         sm:p-6
       "
     >
       <div>
         <p
           className="
-            text-[11px]
-            font-bold
-            uppercase
-            tracking-[0.16em]
-            text-indigo-600
-          "
+      text-[10px]
+      font-black
+      tracking-[0.14em]
+      text-indigo-600
+      uppercase
+    "
         >
           Foto Jasa
         </p>
 
         <h2
           className="
-            mt-1
-            text-lg
-            font-bold
-            tracking-tight
-            text-slate-950
-          "
+      mt-1
+      text-base
+      font-black
+      tracking-tight
+      text-slate-950
+    "
         >
-          Tampilkan hasil terbaik Anda
+          Tampilkan kualitas layanan Anda
         </h2>
 
         <p
           className="
-            mt-1
-            text-sm
-            leading-5
-            text-slate-500
-          "
+      mt-0.5
+      text-[11px]
+      leading-4
+      text-slate-500
+    "
         >
-          Cover diperlukan sebelum jasa
-          dipublikasikan. Portfolio bersifat
-          opsional.
+          Tambahkan cover dan portfolio untuk membantu pelanggan mengenali hasil
+          pekerjaan Anda.
         </p>
       </div>
 
       {!enabled && (
         <div
           className="
-            mt-5
-            rounded-2xl
-            border
-            border-indigo-100
-            bg-indigo-50/70
-            p-4
-          "
+      mt-6
+      overflow-hidden
+      rounded-2xl
+      border
+      border-indigo-100
+      bg-indigo-50/50
+    "
         >
-          <p
+          <div
             className="
-              text-sm
-              font-semibold
-              text-indigo-900
-            "
+        p-5
+        text-center
+        sm:p-6
+      "
           >
-            Simpan draft terlebih dahulu
-          </p>
+            <div
+              className="
+          mx-auto
+          flex
+          h-12
+          w-12
+          items-center
+          justify-center
+          rounded-2xl
+          bg-white
+          text-xl
+          shadow-sm
+          ring-1
+          ring-indigo-100
+        "
+              aria-hidden="true"
+            >
+              🖼️
+            </div>
 
-          <p
+            <h3
+              className="
+          mt-4
+          text-sm
+          font-black
+          text-slate-900
+        "
+            >
+              Upload foto tersedia setelah draft
+              tersimpan
+            </h3>
+
+            <p
+              className="
+          mx-auto
+          mt-1.5
+          max-w-sm
+          text-xs
+          leading-5
+          text-slate-500
+        "
+            >
+              Selesaikan informasi jasa terlebih
+              dahulu. Setelah disimpan, Anda akan
+              diarahkan ke tahap berikutnya untuk
+              menambahkan cover dan portfolio.
+            </p>
+          </div>
+
+          <div
             className="
-              mt-1
-              text-xs
-              leading-5
-              text-indigo-700
-            "
+        grid
+        grid-cols-2
+        border-t
+        border-indigo-100
+        bg-white/70
+      "
           >
-            Setelah draft tersimpan, Anda
-            dapat menambahkan cover dan
-            portfolio secara aman.
-          </p>
+            <div
+              className="
+          border-r
+          border-indigo-100
+          p-4
+        "
+            >
+              <p
+                className="
+            text-xs
+            font-bold
+            text-slate-800
+          "
+              >
+                Cover
+              </p>
+
+              <p
+                className="
+            mt-1
+            text-[10px]
+            leading-4
+            text-slate-500
+          "
+              >
+                Digunakan sebagai foto utama jasa.
+              </p>
+
+              <span
+                className="
+            mt-2
+            inline-block
+            text-[9px]
+            font-bold
+            text-indigo-600
+          "
+              >
+                Diperlukan sebelum publikasi
+              </span>
+            </div>
+
+            <div className="p-4">
+              <p
+                className="
+            text-xs
+            font-bold
+            text-slate-800
+          "
+              >
+                Portfolio
+              </p>
+
+              <p
+                className="
+            mt-1
+            text-[10px]
+            leading-4
+            text-slate-500
+          "
+              >
+                Tampilkan beberapa contoh hasil pekerjaan.
+              </p>
+
+              <span
+                className="
+            mt-2
+            inline-block
+            text-[9px]
+            font-bold
+            text-slate-400
+          "
+              >
+                Opsional
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="mt-6">
-        <div
-          className="
+      {enabled && (
+        <>
+          <div className="mt-6">
+            <div
+              className="
             flex
             items-center
             justify-between
             gap-3
           "
-        >
-          <div>
-            <h3
-              className="
+            >
+              <div>
+                <h3
+                  className="
                 text-sm
                 font-bold
                 text-slate-900
               "
-            >
-              Cover
-            </h3>
+                >
+                  Cover
+                </h3>
 
-            <p
-              className="
+                <p
+                  className="
                 mt-0.5
                 text-xs
                 text-slate-500
               "
-            >
-              Maksimal 5 MB · JPG, PNG, WEBP
-            </p>
-          </div>
+                >
+                  Maksimal 5 MB · JPG, PNG, WEBP
+                </p>
+              </div>
 
-          <label
-            htmlFor="service-cover-upload"
-            className={`
+              <label
+                htmlFor="service-cover-upload"
+                className={`
               inline-flex
               h-10
               items-center
@@ -257,7 +331,7 @@ export default function MediaSection({
 
               ${
                 enabled &&
-                !busy
+                  !mediaDisabled
                   ? `
                     cursor-pointer
                     bg-indigo-600
@@ -271,32 +345,27 @@ export default function MediaSection({
                   `
               }
             `}
-          >
-            <ImagePlus
-              size={16}
-              strokeWidth={2}
-            />
+              >
+                <ImagePlus size={16} strokeWidth={2} />
 
-            {cover
-              ? "Ganti cover"
-              : "Tambah cover"}
-          </label>
+                {cover ? "Ganti cover" : "Tambah cover"}
+              </label>
 
-          <input
-            id="service-cover-upload"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={
-              !enabled ||
-              busy
-            }
-            onChange={handleCoverChange}
-            className="hidden"
-          />
-        </div>
+              <input
+                id="service-cover-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={
+                  !enabled ||
+                  mediaDisabled
+                }
+                onChange={handleCoverChange}
+                className="hidden"
+              />
+            </div>
 
-        <div
-          className="
+            <div
+              className="
             mt-3
             overflow-hidden
             rounded-2xl
@@ -305,36 +374,29 @@ export default function MediaSection({
             border-slate-200
             bg-slate-50
           "
-        >
-          {cover ? (
-            <div className="relative">
-              <div
-                role="img"
-                aria-label="Cover jasa"
-                style={{
-                  backgroundImage:
-                    getBackgroundImage(
-                      cover.publicUrl,
-                    ),
-                }}
-                className="
+            >
+              {cover ? (
+                <div className="relative">
+                  <div
+                    role="img"
+                    aria-label="Cover jasa"
+                    style={{
+                      backgroundImage: getBackgroundImage(cover.publicUrl),
+                    }}
+                    className="
                   aspect-video
                   w-full
                   bg-slate-100
                   bg-cover
                   bg-center
                 "
-              />
+                  />
 
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() =>
-                  onDeleteImage(
-                    cover.id,
-                  )
-                }
-                className="
+                  <button
+                    type="button"
+                    disabled={mediaDisabled}
+                    onClick={() => onDeleteImage(cover.id)}
+                    className="
                   absolute
                   right-3
                   top-3
@@ -353,17 +415,14 @@ export default function MediaSection({
                   disabled:cursor-not-allowed
                   disabled:opacity-50
                 "
-                aria-label="Hapus cover jasa"
-              >
-                <Trash2
-                  size={16}
-                  strokeWidth={2}
-                />
-              </button>
-            </div>
-          ) : (
-            <div
-              className="
+                    aria-label="Hapus cover jasa"
+                  >
+                    <Trash2 size={16} strokeWidth={2} />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="
                 flex
                 aspect-video
                 flex-col
@@ -372,9 +431,9 @@ export default function MediaSection({
                 p-6
                 text-center
               "
-            >
-              <span
-                className="
+                >
+                  <span
+                    className="
                   flex
                   h-12
                   w-12
@@ -385,89 +444,82 @@ export default function MediaSection({
                   text-slate-400
                   shadow-sm
                 "
-              >
-                <ImagePlus
-                  size={21}
-                  strokeWidth={1.8}
-                />
-              </span>
+                  >
+                    <ImagePlus size={21} strokeWidth={1.8} />
+                  </span>
 
-              <p
-                className="
+                  <p
+                    className="
                   mt-3
                   text-sm
                   font-semibold
                   text-slate-600
                 "
-              >
-                Belum ada cover
-              </p>
+                  >
+                    Belum ada cover
+                  </p>
 
-              <p
-                className="
+                  <p
+                    className="
                   mt-1
                   max-w-xs
                   text-xs
                   leading-5
                   text-slate-400
                 "
-              >
-                Gunakan foto yang mewakili
-                layanan atau hasil pekerjaan
-                Anda.
-              </p>
+                  >
+                    Gunakan foto yang mewakili layanan atau hasil pekerjaan
+                    Anda.
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      <div
-        className="
+          <div
+            className="
           mt-7
           border-t
           border-slate-100
           pt-6
         "
-      >
-        <div
-          className="
+          >
+            <div
+              className="
             flex
             items-center
             justify-between
             gap-3
           "
-        >
-          <div>
-            <h3
-              className="
+            >
+              <div>
+                <h3
+                  className="
                 text-sm
                 font-bold
                 text-slate-900
               "
-            >
-              Portfolio
-            </h3>
+                >
+                  Portfolio
+                </h3>
 
-            <p
-              className="
+                <p
+                  className="
                 mt-0.5
                 text-xs
                 text-slate-500
               "
-            >
-              {portfolio.length}
-              {" / "}
-              {
-                ServiceListingConfig
-                  .maxPortfolioImages
-              }
-              {" foto"}
-            </p>
-          </div>
+                >
+                  {portfolio.length}
+                  {" / "}
+                  {ServiceListingConfig.maxPortfolioImages}
+                  {" foto"}
+                </p>
+              </div>
 
-          <label
-            htmlFor="service-portfolio-upload"
-            className={`
+              <label
+                htmlFor="service-portfolio-upload"
+                className={`
               inline-flex
               h-10
               items-center
@@ -481,8 +533,8 @@ export default function MediaSection({
 
               ${
                 enabled &&
-                !busy &&
-                !portfolioFull
+                  !mediaDisabled &&
+                  !portfolioFull
                   ? `
                     cursor-pointer
                     border
@@ -501,44 +553,39 @@ export default function MediaSection({
                   `
               }
             `}
-          >
-            <Images
-              size={16}
-              strokeWidth={2}
-            />
+              >
+                <Images size={16} strokeWidth={2} />
+                Tambah foto
+              </label>
 
-            Tambah foto
-          </label>
+              <input
+                id="service-portfolio-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={
+                  !enabled ||
+                  mediaDisabled ||
+                  portfolioFull
+                }
+                onChange={handlePortfolioChange}
+                className="hidden"
+              />
+            </div>
 
-          <input
-            id="service-portfolio-upload"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={
-              !enabled ||
-              busy ||
-              portfolioFull
-            }
-            onChange={handlePortfolioChange}
-            className="hidden"
-          />
-        </div>
-
-        {portfolio.length > 0 ? (
-          <div
-            className="
+            {portfolio.length > 0 ? (
+              <div
+                className="
               mt-4
               grid
               grid-cols-2
               gap-3
               sm:grid-cols-3
             "
-          >
-            {portfolio.map(
-              (image) => (
-                <div
-                  key={image.id}
-                  className="
+              >
+                {portfolio.map((image) => (
+                  <div
+                    key={image.id}
+                    className="
                     relative
                     overflow-hidden
                     rounded-2xl
@@ -546,33 +593,26 @@ export default function MediaSection({
                     border-slate-200
                     bg-slate-100
                   "
-                >
-                  <div
-                    role="img"
-                    aria-label={`Portfolio jasa ${image.sortOrder + 1}`}
-                    style={{
-                      backgroundImage:
-                        getBackgroundImage(
-                          image.publicUrl,
-                        ),
-                    }}
-                    className="
+                  >
+                    <div
+                      role="img"
+                      aria-label={`Portfolio jasa ${image.sortOrder + 1}`}
+                      style={{
+                        backgroundImage: getBackgroundImage(image.publicUrl),
+                      }}
+                      className="
                       aspect-square
                       w-full
                       bg-cover
                       bg-center
                     "
-                  />
+                    />
 
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() =>
-                      onDeleteImage(
-                        image.id,
-                      )
-                    }
-                    className="
+                    <button
+                      type="button"
+                      disabled={mediaDisabled}
+                      onClick={() => onDeleteImage(image.id)}
+                      className="
                       absolute
                       right-2
                       top-2
@@ -590,20 +630,16 @@ export default function MediaSection({
                       disabled:cursor-not-allowed
                       disabled:opacity-50
                     "
-                    aria-label="Hapus foto portfolio"
-                  >
-                    <Trash2
-                      size={14}
-                      strokeWidth={2}
-                    />
-                  </button>
-                </div>
-              ),
-            )}
-          </div>
-        ) : (
-          <div
-            className="
+                      aria-label="Hapus foto portfolio"
+                    >
+                      <Trash2 size={14} strokeWidth={2} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                className="
               mt-4
               rounded-2xl
               border
@@ -613,25 +649,22 @@ export default function MediaSection({
               p-5
               text-center
             "
-          >
-            <p
-              className="
+              >
+                <p
+                  className="
                 text-xs
                 leading-5
                 text-slate-500
               "
-            >
-              Tambahkan hingga{" "}
-              {
-                ServiceListingConfig
-                  .maxPortfolioImages
-              }{" "}
-              foto untuk menunjukkan contoh
-              hasil pekerjaan Anda.
-            </p>
+                >
+                  Tambahkan hingga {ServiceListingConfig.maxPortfolioImages}{" "}
+                  foto untuk menunjukkan contoh hasil pekerjaan Anda.
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </section>
   );
 }

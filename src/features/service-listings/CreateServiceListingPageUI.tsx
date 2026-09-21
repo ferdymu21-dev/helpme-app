@@ -7,6 +7,8 @@ import type {
 import {
   ArrowLeft,
   BriefcaseBusiness,
+  ImagePlus,
+  Rocket,
   ShieldCheck,
 } from "lucide-react";
 
@@ -111,194 +113,336 @@ export default function CreateServiceListingPageUI({
       >
         <header
           className="
-            sticky
-            top-0
-            z-30
-            flex
-            items-center
-            border-b
-            border-slate-200/80
-            bg-white/90
-            px-4
-            py-3
-            backdrop-blur-xl
-            sm:static
-            sm:border-b-0
-            sm:bg-transparent
-            sm:px-6
-            sm:pt-8
-            sm:backdrop-blur-none
-          "
+    sticky
+    top-0
+    z-30
+    border-b
+    border-slate-200/80
+    bg-white/95
+    backdrop-blur-xl
+    sm:static
+    sm:border-b-0
+    sm:bg-transparent
+    sm:backdrop-blur-none
+  "
         >
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={onBack}
-            aria-label="Kembali"
-            className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              border
-              border-slate-200
-              bg-white
-              text-slate-700
-              shadow-sm
-              transition
-              hover:bg-slate-50
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-            "
-          >
-            <ArrowLeft
-              size={19}
-              strokeWidth={2.2}
-            />
-          </button>
-
           <div
             className="
-              min-w-0
-              flex-1
-              px-3
-              text-center
-            "
+      flex
+      items-center
+      gap-3
+      px-4
+      py-3
+      sm:px-6
+      sm:pt-8
+    "
           >
-            <h1
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={onBack}
+              aria-label="Kembali"
               className="
-                text-[15px]
-                font-bold
-                text-slate-900
-              "
+        flex
+        h-9
+        w-9
+        shrink-0
+        items-center
+        justify-center
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        text-slate-600
+        transition
+        hover:border-slate-300
+        hover:bg-slate-50
+        hover:text-slate-950
+        disabled:cursor-not-allowed
+        disabled:opacity-50
+      "
             >
-              Tawarkan Jasa
-            </h1>
+              <ArrowLeft size={17} strokeWidth={2} />
+            </button>
 
-            <p
-              className="
-                mt-0.5
-                text-[11px]
-                text-slate-500
-              "
-            >
-              Buat draft jasa baru
-            </p>
+            <div className="min-w-0">
+              <h1
+                className="
+          text-base
+          font-black
+          tracking-tight
+          text-slate-950
+        "
+              >
+                Tawarkan Jasa
+              </h1>
+
+              <p
+                className="
+          mt-0.5
+          text-[11px]
+          text-slate-500
+        "
+              >
+                Buat layanan baru
+              </p>
+            </div>
           </div>
-
-          <div className="h-10 w-10" />
         </header>
 
         <section
           className="
-            px-4
-            pb-4
-            pt-5
-            sm:px-6
-            sm:pt-8
-          "
+    px-4
+    pb-4
+    pt-5
+    sm:px-6
+    sm:pt-6
+  "
         >
           <div
             className="
-              overflow-hidden
-              rounded-[28px]
-              bg-linear-to-br
-              from-indigo-600
-              via-indigo-600
-              to-violet-600
-              p-6
-              text-white
-              shadow-[0_20px_50px_rgba(79,70,229,0.20)]
-              sm:p-8
-            "
+      rounded-2xl
+      border
+      border-slate-200
+      bg-white
+      p-5
+      shadow-sm
+      sm:p-6
+    "
           >
-            <span
+            <div
               className="
-                inline-flex
-                items-center
-                gap-1.5
-                rounded-full
-                bg-white/15
-                px-2.5
-                py-1.5
-                text-[10px]
-                font-semibold
-                ring-1
-                ring-white/20
-              "
+        flex
+        flex-wrap
+        items-center
+        justify-between
+        gap-2
+      "
             >
-              <BriefcaseBusiness
-                size={13}
-                strokeWidth={2}
-              />
+              <span
+                className="
+          inline-flex
+          items-center
+          gap-1.5
+          rounded-lg
+          bg-indigo-50
+          px-2.5
+          py-1.5
+          text-[10px]
+          font-bold
+          text-indigo-700
+        "
+              >
+                <BriefcaseBusiness size={13} strokeWidth={2} />
+                Draft baru
+              </span>
 
-              Jasa baru
-            </span>
+              <span
+                className="
+          text-[10px]
+          font-semibold
+          text-slate-400
+        "
+              >
+                Belum dipublikasikan
+              </span>
+            </div>
 
             <h2
               className="
-                mt-3
-                max-w-md
-                text-xl
-                font-bold
-                tracking-tight
-                sm:text-3xl
-              "
+        mt-4
+        max-w-xl
+        text-xl
+        font-black
+        tracking-tight
+        text-slate-950
+        sm:text-2xl
+      "
             >
-              Ubah keahlian Anda menjadi
-              layanan yang mudah ditemukan
+              Buat layanan yang jelas dan siap ditemukan pelanggan
             </h2>
 
             <p
               className="
-                mt-2
-                max-w-lg
-                text-[13px]
-                leading-5
-                text-indigo-100
-              "
+        mt-2
+        max-w-xl
+        text-sm
+        leading-6
+        text-slate-500
+      "
             >
-              Jelaskan layanan, harga, cara
-              pengerjaan, dan hasil yang akan
-              diterima pelanggan.
+              Lengkapi informasi utama terlebih dahulu. Foto, preview, dan
+              publikasi dapat diatur setelah draft tersimpan.
             </p>
 
             <div
               className="
-                mt-5
-                flex
-                items-start
-                gap-2.5
-                rounded-2xl
-                bg-white/10
-                p-3
-                ring-1
-                ring-white/10
-              "
+        mt-5
+        grid
+        grid-cols-3
+        gap-2
+      "
+            >
+              <div
+                className="
+          rounded-xl
+          border
+          border-indigo-200
+          bg-indigo-50
+          p-3
+        "
+              >
+                <BriefcaseBusiness
+                  aria-hidden="true"
+                  className="
+            h-4
+            w-4
+            text-indigo-600
+          "
+                />
+
+                <p
+                  className="
+            mt-2
+            text-[10px]
+            font-black
+            text-indigo-700
+            sm:text-xs
+          "
+                >
+                  1. Detail jasa
+                </p>
+
+                <p
+                  className="
+            mt-0.5
+            hidden
+            text-[10px]
+            leading-4
+            text-indigo-600
+            sm:block
+          "
+                >
+                  Lengkapi informasi layanan
+                </p>
+              </div>
+
+              <div
+                className="
+          rounded-xl
+          border
+          border-slate-200
+          bg-slate-50
+          p-3
+        "
+              >
+                <ImagePlus
+                  aria-hidden="true"
+                  className="
+            h-4
+            w-4
+            text-slate-500
+          "
+                />
+
+                <p
+                  className="
+            mt-2
+            text-[10px]
+            font-black
+            text-slate-700
+            sm:text-xs
+          "
+                >
+                  2. Foto & preview
+                </p>
+
+                <p
+                  className="
+            mt-0.5
+            hidden
+            text-[10px]
+            leading-4
+            text-slate-500
+            sm:block
+          "
+                >
+                  Setelah draft tersimpan
+                </p>
+              </div>
+
+              <div
+                className="
+          rounded-xl
+          border
+          border-slate-200
+          bg-slate-50
+          p-3
+        "
+              >
+                <Rocket
+                  aria-hidden="true"
+                  className="
+            h-4
+            w-4
+            text-slate-500
+          "
+                />
+
+                <p
+                  className="
+            mt-2
+            text-[10px]
+            font-black
+            text-slate-700
+            sm:text-xs
+          "
+                >
+                  3. Publikasikan
+                </p>
+
+                <p
+                  className="
+            mt-0.5
+            hidden
+            text-[10px]
+            leading-4
+            text-slate-500
+            sm:block
+          "
+                >
+                  Setelah layanan siap
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="
+        mt-4
+        flex
+        items-start
+        gap-2.5
+        rounded-xl
+        bg-slate-50
+        px-3
+        py-3
+      "
             >
               <ShieldCheck
-                size={17}
-                strokeWidth={2}
+                aria-hidden="true"
                 className="
-                  mt-0.5
-                  shrink-0
-                  text-indigo-100
-                "
+          mt-0.5
+          h-4
+          w-4
+          shrink-0
+          text-slate-500
+        "
               />
 
               <p
-                className="
-                  text-[11px]
-                  leading-5
-                  text-indigo-100
-                "
-              >
-                Membuat dan mengedit draft
-                gratis. Biaya publikasi tidak
-                diproses pada tahap ini.
+                className="text-[11px] leading-5 text-slate-500">
+                Menyimpan draft gratis dan tidak memulai proses pembayaran atau
+                publikasi.
               </p>
             </div>
           </div>
@@ -336,48 +480,24 @@ export default function CreateServiceListingPageUI({
           formId="create-service-listing-form"
           values={values}
           loading={submitting}
-          submitLabel="Simpan Draft"
-          loadingLabel="Menyimpan draft..."
+          submitLabel="Simpan & Lanjut"
+          loadingLabel="Menyimpan..."
           media={EMPTY_MEDIA}
           mediaEnabled={false}
           mediaBusy={false}
-          onTitleChange={
-            onTitleChange
-          }
-          onCategoryChange={
-            onCategoryChange
-          }
-          onDescriptionChange={
-            onDescriptionChange
-          }
-          onDeliverablesChange={
-            onDeliverablesChange
-          }
-          onCustomerPreparationChange={
-            onCustomerPreparationChange
-          }
-          onPriceFromChange={
-            onPriceFromChange
-          }
-          onNegotiableChange={
-            onNegotiableChange
-          }
-          onServiceModeChange={
-            onServiceModeChange
-          }
-          onLocationNameChange={
-            onLocationNameChange
-          }
+          onTitleChange={onTitleChange}
+          onCategoryChange={onCategoryChange}
+          onDescriptionChange={onDescriptionChange}
+          onDeliverablesChange={onDeliverablesChange}
+          onCustomerPreparationChange={onCustomerPreparationChange}
+          onPriceFromChange={onPriceFromChange}
+          onNegotiableChange={onNegotiableChange}
+          onServiceModeChange={onServiceModeChange}
+          onLocationNameChange={onLocationNameChange}
           onSubmit={onSubmit}
-          onUploadCover={
-            onUnavailableMedia
-          }
-          onUploadPortfolio={
-            onUnavailableMedia
-          }
-          onDeleteImage={
-            onUnavailableMedia
-          }
+          onUploadCover={onUnavailableMedia}
+          onUploadPortfolio={onUnavailableMedia}
+          onDeleteImage={onUnavailableMedia}
         />
       </div>
     </main>

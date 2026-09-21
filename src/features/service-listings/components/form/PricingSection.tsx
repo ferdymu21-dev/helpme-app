@@ -21,125 +21,167 @@ export default function PricingSection({
   return (
     <section
       className="
-        rounded-3xl
-        border
-        border-slate-200/80
-        bg-white
-        p-5
-        shadow-sm
-        sm:p-6
-      "
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-5
+    sm:p-6
+  "
     >
       <div>
         <p
           className="
-            text-[11px]
-            font-bold
-            uppercase
-            tracking-[0.16em]
-            text-indigo-600
-          "
+        text-[10px]
+        font-black
+        tracking-[0.14em]
+        text-indigo-600
+        uppercase
+      "
         >
           Harga
         </p>
 
         <h2
           className="
-            mt-1
-            text-lg
-            font-bold
-            tracking-tight
-            text-slate-950
-          "
+        mt-1
+        text-lg
+        font-black
+        tracking-tight
+        text-slate-950
+      "
         >
-          Tentukan harga mulai
+          Tentukan harga layanan
         </h2>
 
         <p
           className="
-            mt-1
-            text-sm
-            leading-5
-            text-slate-500
-          "
+        mt-1
+        text-sm
+        leading-5
+        text-slate-500
+      "
         >
-          Cantumkan harga awal yang realistis
-          untuk membantu pelanggan menilai
-          layanan Anda.
+          Harga ini menjadi nilai awal yang ditampilkan kepada pelanggan.
         </p>
       </div>
 
       <div className="mt-6">
-        <CurrencyInput
-          label="Harga mulai"
-          value={priceFrom}
-          onChange={onPriceFromChange}
-          placeholder="50.000"
-          prefix="Rp"
-          required
-        />
+        <div
+          className="
+        rounded-2xl
+        bg-slate-50
+        p-4
+      "
+        >
+          <CurrencyInput
+            label="Harga mulai"
+            value={priceFrom}
+            onChange={onPriceFromChange}
+            placeholder="50.000"
+            prefix="Rp"
+            required
+          />
+
+          <p
+            className="
+          mt-2
+          text-[11px]
+          leading-5
+          text-slate-400
+        "
+          >
+            Masukkan harga awal yang realistis untuk layanan ini.
+          </p>
+        </div>
 
         <label
-          className="
-            mt-5
-            flex
-            cursor-pointer
-            items-start
-            gap-3
-            rounded-2xl
-            border
-            border-slate-200
-            bg-slate-50/70
-            p-4
-            transition
-            hover:border-indigo-200
-            hover:bg-indigo-50/40
-          "
+          className={`
+        mt-4
+        flex
+        cursor-pointer
+        items-center
+        justify-between
+        gap-4
+        rounded-2xl
+        border
+        p-4
+        transition
+
+        ${
+          isNegotiable
+            ? `
+              border-indigo-200
+              bg-indigo-50/60
+            `
+            : `
+              border-slate-200
+              bg-white
+              hover:border-slate-300
+              hover:bg-slate-50
+            `
+        }
+      `}
         >
           <input
             type="checkbox"
             checked={isNegotiable}
-            onChange={(event) =>
-              onNegotiableChange(
-                event.target.checked,
-              )
-            }
-            className="
-              mt-0.5
-              h-4
-              w-4
-              rounded
-              border-slate-300
-              text-indigo-600
-              accent-indigo-600
-            "
+            onChange={(event) => onNegotiableChange(event.target.checked)}
+            className="sr-only"
           />
 
-          <span>
+          <span className="min-w-0">
             <span
               className="
-                block
-                text-sm
-                font-semibold
-                text-slate-800
-              "
+            block
+            text-sm
+            font-bold
+            text-slate-800
+          "
             >
               Harga dapat dinegosiasikan
             </span>
 
             <span
               className="
-                mt-1
-                block
-                text-xs
-                leading-5
-                text-slate-500
-              "
+            mt-1
+            block
+            text-xs
+            leading-5
+            text-slate-500
+          "
             >
-              Pelanggan dapat mendiskusikan
-              harga berdasarkan kebutuhan
+              Pelanggan dapat mendiskusikan harga berdasarkan kebutuhan
               pekerjaan.
             </span>
+          </span>
+
+          <span
+            aria-hidden="true"
+            className={`
+          relative
+          h-6
+          w-11
+          shrink-0
+          rounded-full
+          transition
+
+          ${isNegotiable ? "bg-indigo-600" : "bg-slate-300"}
+        `}
+          >
+            <span
+              className={`
+            absolute
+            top-0.5
+            h-5
+            w-5
+            rounded-full
+            bg-white
+            shadow-sm
+            transition-transform
+            ${isNegotiable ? "translate-x-5" : "translate-x-0.5"}
+          `}
+            />
           </span>
         </label>
       </div>
