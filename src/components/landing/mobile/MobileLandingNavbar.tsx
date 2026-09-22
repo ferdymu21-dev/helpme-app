@@ -17,6 +17,9 @@ import {
   UserPlus,
   Workflow,
   X,
+  BriefcaseBusiness,
+  Search,
+  WalletCards,
 } from "lucide-react";
 
 const navigationItems = [
@@ -29,6 +32,21 @@ const navigationItems = [
     href: "#kategori-mobile",
     label: "Kategori",
     icon: Grid2X2,
+  },
+  {
+    href: "/services",
+    label: "Cari Jasa",
+    icon: Search,
+  },
+  {
+    href: "/my-services/new",
+    label: "Tawarkan Jasa",
+    icon: BriefcaseBusiness,
+  },
+  {
+    href: "#pembayaran-mobile",
+    label: "Pembayaran",
+    icon: WalletCards,
   },
   {
     href: "#keamanan-mobile",

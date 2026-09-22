@@ -2,11 +2,17 @@ import DesktopNavbar from "./DesktopNavbar";
 
 import HeroSection from "./HeroSection";
 
+import LandingHelpPaths from "../shared/LandingHelpPaths";
+
 import DesktopHowItWorks from "./DesktopHowItWorks";
 
 import PopularServicesSection from "./DesktopPopularCategories";
 
+import LandingPaymentTransparency from "../shared/LandingPaymentTransparency";
+
 import DesktopSecuritySection from "./DesktopSecuritySection";
+
+import LandingProviderCTA from "../shared/LandingProviderCTA";
 
 import DesktopFinalCTA from "./DesktopFinalCTA";
 
@@ -14,23 +20,55 @@ import DesktopFAQSection from "./DesktopFAQSection";
 
 import DesktopFooter from "./DesktopFooter";
 
+import LandingReveal from "../shared/LandingReveal";
+
+import motionStyles from "../shared/LandingSectionMotion.module.css";
+
 export default function DesktopLandingPage() {
   return (
     <div className="hidden lg:block">
-      <main className="min-h-screen bg-white">
+      <main
+        className={`
+          ${motionStyles.motionRoot}
+          min-h-screen
+        bg-white
+       `}
+      >
         <DesktopNavbar />
 
         <HeroSection />
 
-        <DesktopHowItWorks />
+        <LandingReveal>
+          <LandingHelpPaths />
+        </LandingReveal>
 
-        <PopularServicesSection />
+        <LandingReveal>
+          <DesktopHowItWorks />
+        </LandingReveal>
 
-        <DesktopSecuritySection />
+        <LandingReveal>
+          <PopularServicesSection />
+        </LandingReveal>
 
-        <DesktopFinalCTA />
+        <LandingReveal>
+          <LandingPaymentTransparency sectionId="pembayaran" />
+        </LandingReveal>
 
-        <DesktopFAQSection />
+        <LandingReveal>
+          <DesktopSecuritySection />
+        </LandingReveal>
+
+        <LandingReveal>
+          <LandingProviderCTA />
+        </LandingReveal>
+
+        <LandingReveal>
+          <DesktopFinalCTA />
+        </LandingReveal>
+
+        <LandingReveal>
+          <DesktopFAQSection />
+        </LandingReveal>
 
         <DesktopFooter />
       </main>

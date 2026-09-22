@@ -2,604 +2,291 @@ import Link from "next/link";
 
 import {
   ArrowRight,
-  CheckCircle2,
-  FileText,
-  LockKeyhole,
   MapPin,
   MessageCircle,
   ShieldCheck,
-  ShoppingBag,
-  Star,
-  UserRound,
 } from "lucide-react";
+
+import LandingHeroVisual from "../shared/LandingHeroVisual";
+
+import styles from "../shared/LandingHeroMotion.module.css";
 
 export default function MobileHero() {
   return (
     <section
       className="
+        relative
         overflow-hidden
         border-b
         border-slate-100
         bg-white
         px-5
-        pb-8
-        pt-7
+        pb-10
+        pt-6
       "
     >
-      {/* BADGE */}
       <div
+        aria-hidden="true"
         className="
-          inline-flex
-          items-center
-          gap-2
+          pointer-events-none
+          absolute
+          -right-20
+          -top-24
+          h-64
+          w-64
           rounded-full
-          border
-          border-indigo-100
-          bg-indigo-50
-          px-3
-          py-2
-          text-[11px]
-          font-bold
-          text-indigo-700
+          bg-indigo-100/60
+          blur-3xl
         "
-      >
-        <MapPin
-          className="h-3.5 w-3.5"
-        />
+      />
 
-        Bantuan harian di sekitarmu
-      </div>
-
-      {/* TITLE */}
-      <h1
-        className="
-          mt-5
-          text-[30px]
-          font-black
-          leading-[1.12]
-          tracking-[-0.035em]
-          text-slate-950
-        "
-      >
-        Butuh bantuan untuk task harian? Temukan{" "}
-        <span className="text-indigo-600">
-          Helper terpercaya
-        </span>{" "}
-        dalam hitungan menit.
-      </h1>
-
-      {/* DESCRIPTION */}
-      <p
-        className="
-          mt-5
-          text-sm
-          leading-6
-          text-slate-500
-        "
-      >
-        Buat task seperti antre, titip beli,
-        ambil dokumen, bantuan kampus,
-        pindahan ringan, dan kebutuhan harian
-        lainnya.
-      </p>
-
-      {/* CTA */}
-      <div className="mt-7 grid gap-2.5">
-        <Link
-          href="/register"
-          className="
-            flex
-            h-12
+      <div className="relative">
+        <div
+          className={`
+            inline-flex
             items-center
-            justify-center
             gap-2
-            rounded-2xl
-            bg-indigo-600
-            px-5
-            text-sm
-            font-bold
-            text-white
-            shadow-lg
-            shadow-indigo-600/20
-            transition
-            active:scale-[0.99]
-          "
-        >
-          Buat Task Sekarang
-
-          <ArrowRight
-            className="h-4 w-4"
-          />
-        </Link>
-
-        <Link
-          href="/register"
-          className="
-            flex
-            h-12
-            items-center
-            justify-center
-            gap-2
-            rounded-2xl
+            rounded-full
             border
-            border-slate-200
-            bg-white
-            px-5
+            border-indigo-100
+            bg-indigo-50
+            px-3
+            py-2
+            text-[10px]
+            font-black
+            uppercase
+            tracking-[0.08em]
+            text-indigo-700
+            ${styles.heroEnter}
+          `}
+        >
+          <MapPin
+            aria-hidden="true"
+            className="h-3.5 w-3.5"
+            strokeWidth={2.2}
+          />
+
+          Bantuan & jasa di sekitarmu
+        </div>
+
+        <h1
+          className={`
+            mt-5
+            max-w-md
+            text-[32px]
+            font-black
+            leading-[1.08]
+            tracking-[-0.04em]
+            text-slate-950
+            ${styles.heroEnterDelayed}
+          `}
+        >
+          Bantuan sehari-hari,{" "}
+          <span className="text-indigo-600">
+            lebih mudah ditemukan.
+          </span>
+        </h1>
+
+        <p
+          className={`
+            mt-4
+            max-w-md
             text-sm
-            font-bold
-            text-slate-700
-            transition
-            active:scale-[0.99]
-          "
+            leading-6
+            text-slate-500
+            ${styles.heroEnterMoreDelayed}
+          `}
         >
-          <UserRound
-            className="
-              h-4
-              w-4
-              text-emerald-600
-            "
-          />
-
-          Jadi Helper
-        </Link>
-      </div>
-
-      {/* TRUST */}
-      <div
-        className="
-          mt-5
-          grid
-          grid-cols-3
-          divide-x
-          divide-slate-100
-          rounded-2xl
-          border
-          border-slate-100
-          bg-slate-50/70
-          py-3
-        "
-      >
-        <div
-          className="
-            flex
-            items-center
-            justify-center
-            gap-1.5
-            px-2
-          "
-        >
-          <ShieldCheck
-            className="
-              h-4
-              w-4
-              shrink-0
-              text-indigo-600
-            "
-          />
-
-          <span
-            className="
-              text-[9px]
-              font-bold
-              text-slate-600
-            "
-          >
-            Verifikasi
-          </span>
-        </div>
+          Buat permintaan bantuan atau temukan jasa yang
+          siap membantu kebutuhanmu, mulai dari antre,
+          antar jemput, titip ambil, hingga kebutuhan
+          sehari-hari lainnya.
+        </p>
 
         <div
-          className="
-            flex
-            items-center
-            justify-center
-            gap-1.5
-            px-2
-          "
+          className={`
+            mt-6
+            grid
+            grid-cols-2
+            gap-2.5
+            ${styles.heroEnterMoreDelayed}
+          `}
         >
-          <LockKeyhole
-            className="
-              h-4
-              w-4
-              shrink-0
-              text-emerald-600
-            "
-          />
-
-          <span
-            className="
-              text-[9px]
-              font-bold
-              text-slate-600
-            "
-          >
-            Transaksi
-          </span>
-        </div>
-
-        <div
-          className="
-            flex
-            items-center
-            justify-center
-            gap-1.5
-            px-2
-          "
-        >
-          <Star
-            className="
-              h-4
-              w-4
-              shrink-0
-              text-amber-500
-            "
-          />
-
-          <span
-            className="
-              text-[9px]
-              font-bold
-              text-slate-600
-            "
-          >
-            Review
-          </span>
-        </div>
-      </div>
-
-      {/* =========================
-          PRODUCT VISUAL
-      ========================= */}
-      <div
-        className="
-          relative
-          mt-8
-          overflow-hidden
-          rounded-4xl
-          border
-          border-indigo-100
-          bg-linear-to-br
-          from-indigo-50
-          via-violet-50/60
-          to-white
-          p-4
-          pb-6
-        "
-      >
-        <div
-          className="
-            flex
-            items-center
-            justify-between
-          "
-        >
-          <div>
-            <p
-              className="
-                text-xs
-                font-black
-                text-slate-900
-              "
-            >
-              Task di Sekitarmu
-            </p>
-
-            <p
-              className="
-                mt-1
-                text-[9px]
-                text-slate-400
-              "
-            >
-              Temukan task terdekat
-            </p>
-          </div>
-
-          <div
+          <Link
+            href="/tasks/create"
             className="
               flex
-              h-9
-              w-9
+              min-h-12
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              bg-indigo-600
+              px-3
+              text-sm
+              font-bold
+              text-white
+              shadow-sm
+              transition
+              active:scale-[0.98]
+            "
+          >
+            Butuh Bantuan
+
+            <ArrowRight
+              aria-hidden="true"
+              className="h-4 w-4"
+              strokeWidth={2.2}
+            />
+          </Link>
+
+          <Link
+            href="/services"
+            className="
+              flex
+              min-h-12
               items-center
               justify-center
               rounded-xl
-              bg-indigo-600
-              text-white
-              shadow-md
-              shadow-indigo-600/20
+              border
+              border-slate-200
+              bg-white
+              px-3
+              text-sm
+              font-bold
+              text-slate-700
+              transition
+              active:scale-[0.98]
             "
           >
-            <MapPin
-              className="h-4 w-4"
-            />
-          </div>
+            Cari Jasa
+          </Link>
         </div>
 
-        {/* TASKS */}
-        <div className="mt-4 space-y-2">
-          <div
-            className="
-              flex
-              items-center
-              gap-3
-              rounded-2xl
-              border
-              border-white
-              bg-white
-              p-3
-              shadow-sm
-            "
-          >
-            <div
-              className="
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-xl
-                bg-blue-100
-                text-blue-600
-              "
-            >
-              <FileText
-                className="h-4 w-4"
-              />
-            </div>
+        <Link
+          href="/my-services/new"
+          className={`
+            mt-3
+            inline-flex
+            items-center
+            gap-1.5
+            text-xs
+            font-bold
+            text-indigo-600
+            transition
+            active:opacity-70
+            ${styles.heroEnterMoreDelayed}
+          `}
+        >
+          Punya waktu atau keahlian? Tawarkan Jasa
 
-            <div className="min-w-0 flex-1">
-              <p
-                className="
-                  truncate
-                  text-[11px]
-                  font-bold
-                  text-slate-800
-                "
-              >
-                Antar Dokumen
-              </p>
+          <ArrowRight
+            aria-hidden="true"
+            className="h-3.5 w-3.5"
+          />
+        </Link>
 
-              <p
-                className="
-                  mt-0.5
-                  text-[9px]
-                  text-slate-400
-                "
-              >
-                Bantuan pengantaran
-              </p>
-            </div>
-
-            <p
-              className="
-                text-[10px]
-                font-black
-                text-emerald-600
-              "
-            >
-              Rp25K
-            </p>
-          </div>
-
-          <div
-            className="
-              flex
-              items-center
-              gap-3
-              rounded-2xl
-              border
-              border-white
-              bg-white
-              p-3
-              shadow-sm
-            "
-          >
-            <div
-              className="
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-xl
-                bg-emerald-100
-                text-emerald-600
-              "
-            >
-              <ShoppingBag
-                className="h-4 w-4"
-              />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p
-                className="
-                  truncate
-                  text-[11px]
-                  font-bold
-                  text-slate-800
-                "
-              >
-                Titip Beli
-              </p>
-
-              <p
-                className="
-                  mt-0.5
-                  text-[9px]
-                  text-slate-400
-                "
-              >
-                Belanja kebutuhan
-              </p>
-            </div>
-
-            <p
-              className="
-                text-[10px]
-                font-black
-                text-emerald-600
-              "
-            >
-              Rp20K
-            </p>
-          </div>
-        </div>
-
-        {/* HELPER */}
         <div
           className="
-            mt-3
+            mt-6
+            grid
+            grid-cols-3
+            divide-x
+            divide-slate-100
             rounded-2xl
             border
-            border-white
-            bg-white
-            p-3
-            shadow-sm
+            border-slate-100
+            bg-slate-50/70
+            py-3
           "
         >
           <div
             className="
               flex
+              flex-col
               items-center
-              gap-3
+              gap-1.5
+              px-2
+              text-center
             "
           >
-            <div
+            <ShieldCheck
+              aria-hidden="true"
+              className="h-4 w-4 text-indigo-600"
+              strokeWidth={2}
+            />
+
+            <span
               className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-full
-                bg-indigo-100
-                text-indigo-600
+                text-[9px]
+                font-bold
+                leading-3
+                text-slate-600
               "
             >
-              <UserRound
-                className="h-5 w-5"
-              />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-1
-                "
-              >
-                <p
-                  className="
-                    text-[11px]
-                    font-black
-                    text-slate-800
-                  "
-                >
-                  Helper
-                </p>
-
-                <CheckCircle2
-                  className="
-                    h-3.5
-                    w-3.5
-                    text-indigo-600
-                  "
-                />
-              </div>
-
-              <p
-                className="
-                  mt-0.5
-                  text-[9px]
-                  text-slate-400
-                "
-              >
-                Profil terverifikasi
-              </p>
-            </div>
-
-            <ShieldCheck
-              className="
-                h-5
-                w-5
-                text-emerald-600
-              "
-            />
+              Profil & verifikasi
+            </span>
           </div>
-        </div>
 
-        {/* SMALL FEATURES */}
-        <div
-          className="
-            mt-3
-            grid
-            grid-cols-2
-            gap-2
-          "
-        >
           <div
             className="
               flex
+              flex-col
               items-center
-              gap-2
-              rounded-xl
-              bg-white/80
-              px-3
-              py-2.5
+              gap-1.5
+              px-2
+              text-center
             "
           >
             <MessageCircle
-              className="
-                h-4
-                w-4
-                text-indigo-600
-              "
+              aria-hidden="true"
+              className="h-4 w-4 text-indigo-600"
+              strokeWidth={2}
             />
 
             <span
               className="
                 text-[9px]
                 font-bold
+                leading-3
                 text-slate-600
               "
             >
-              Chat Real-time
+              Chat & kesepakatan
             </span>
           </div>
 
           <div
             className="
               flex
+              flex-col
               items-center
-              gap-2
-              rounded-xl
-              bg-white/80
-              px-3
-              py-2.5
+              gap-1.5
+              px-2
+              text-center
             "
           >
-            <LockKeyhole
-              className="
-                h-4
-                w-4
-                text-emerald-600
-              "
+            <MapPin
+              aria-hidden="true"
+              className="h-4 w-4 text-indigo-600"
+              strokeWidth={2}
             />
 
             <span
               className="
                 text-[9px]
                 font-bold
+                leading-3
                 text-slate-600
               "
             >
-              Pembayaran
+              Berbasis lokasi
             </span>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <LandingHeroVisual />
         </div>
       </div>
     </section>
