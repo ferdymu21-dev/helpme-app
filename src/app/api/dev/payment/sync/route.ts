@@ -76,11 +76,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = paymentRecord.payment["user_id"];
+    const scopeUserId =
+      paymentRecord.paymentType === "SERVICE_LISTING"
+        ? paymentRecord.payment["provider_id"]
+        : paymentRecord.payment["user_id"];
 
     const beforeStatus = paymentRecord.payment["payment_status"];
 
-    if (typeof userId !== "string" || typeof beforeStatus !== "string") {
+    if (typeof scopeUserId !== "string" || typeof beforeStatus !== "string") {
       throw new Error("Data payment HelpMe tidak valid.");
     }
 
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
      * Tool ini TIDAK menentukan status.
      */
     const reconciled = await fetchPaymentStatus(
-      userId,
+      scopeUserId,
 
       orderId,
     );
