@@ -116,7 +116,7 @@ export default function ServiceRequestChatProposalCard({
   return (
     <div
       className="
-        my-5
+        my-4
         flex
         w-full
         justify-center
@@ -125,11 +125,11 @@ export default function ServiceRequestChatProposalCard({
       <article
         className="
           w-full
-          max-w-xl
+          max-w-2xl
           overflow-hidden
           rounded-2xl
           border
-          border-indigo-100
+          border-slate-200
           bg-white
           shadow-sm
         "
@@ -138,9 +138,9 @@ export default function ServiceRequestChatProposalCard({
           className="
             border-b
             border-slate-100
-            bg-indigo-50/50
+            bg-indigo-50/80
             px-4
-            py-4
+            py-3
           "
         >
           <div
@@ -162,15 +162,14 @@ export default function ServiceRequestChatProposalCard({
               <span
                 className="
                   flex
-                  h-9
-                  w-9
+                  h-8
+                  w-8
                   shrink-0
                   items-center
                   justify-center
-                  rounded-xl
-                  bg-white
+                  rounded-lg
+                  bg-indigo-50
                   text-indigo-600
-                  shadow-sm
                 "
               >
                 <FileText
@@ -183,10 +182,10 @@ export default function ServiceRequestChatProposalCard({
               <div className="min-w-0">
                 <p
                   className="
-                    text-[9px]
+                    text-[10px]
                     font-black
                     uppercase
-                    tracking-[0.14em]
+                    tracking-[0.12em]
                     text-indigo-600
                   "
                 >
@@ -195,7 +194,7 @@ export default function ServiceRequestChatProposalCard({
 
                 <h3
                   className="
-                    mt-1
+                    mt-0.5
                     text-sm
                     font-black
                     text-slate-950
@@ -209,10 +208,10 @@ export default function ServiceRequestChatProposalCard({
             <span
               className={`
                 shrink-0
-                rounded-lg
+                rounded-md
                 border
-                px-2.5
-                py-1.5
+                px-2
+                py-1
                 text-[9px]
                 font-black
                 ${getAgreementStatusClassName(
@@ -244,7 +243,7 @@ export default function ServiceRequestChatProposalCard({
             <p
               className="
                 mt-1
-                text-xl
+                text-lg
                 font-black
                 tracking-tight
                 text-slate-950
@@ -258,17 +257,19 @@ export default function ServiceRequestChatProposalCard({
 
           <div
             className="
-              mt-4
+              mt-3
               grid
-              grid-cols-2
-              gap-3
+              grid-cols-1
+              gap-2
+              sm:grid-cols-2
             "
           >
             <div
               className="
-                rounded-xl
-                bg-slate-50
-                p-3
+                rounded-lg
+                bg-slate-50/80
+                px-3
+                py-2.5
               "
             >
               <p
@@ -308,9 +309,10 @@ export default function ServiceRequestChatProposalCard({
 
             <div
               className="
-                rounded-xl
-                bg-slate-50
-                p-3
+                rounded-lg
+                bg-slate-50/80
+                px-3
+                py-2.5
               "
             >
               <p
@@ -351,10 +353,10 @@ export default function ServiceRequestChatProposalCard({
 
           <div
             className="
-              mt-4
+              mt-3
               border-t
               border-slate-100
-              pt-4
+              pt-3
             "
           >
             <p
@@ -387,14 +389,14 @@ export default function ServiceRequestChatProposalCard({
               requestId,
             )}`}
             className="
-              mt-4
+              mt3
               flex
-              min-h-10
+              min-h-9
               w-full
               items-center
               justify-center
               gap-2
-              rounded-xl
+              rounded-lg
               border
               border-indigo-200
               bg-white
@@ -418,7 +420,7 @@ export default function ServiceRequestChatProposalCard({
 
           <p
             className="
-              mt-3
+              mt-2.5
               text-center
               text-[9px]
               text-slate-400

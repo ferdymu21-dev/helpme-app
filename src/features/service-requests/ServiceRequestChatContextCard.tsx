@@ -26,13 +26,13 @@ export default function ServiceRequestChatContextCard({
     <div
       className="
         mx-auto
-        mb-6
+        mb-4
         w-full
-        max-w-2xl
+        max-w-3xl
         overflow-hidden
         rounded-2xl
         border
-        border-indigo-100
+        border-indigo-200
         bg-white
         shadow-sm
       "
@@ -44,23 +44,22 @@ export default function ServiceRequestChatContextCard({
           gap-3
           border-b
           border-slate-100
-          bg-indigo-50/50
+          bg-indigo-50/80
           px-4
-          py-3.5
+          py-3
         "
       >
         <span
           className="
             flex
-            h-9
-            w-9
+            h-8
+            w-8
             shrink-0
             items-center
             justify-center
-            rounded-xl
-            bg-white
+            rounded-lg
+            bg-indigo-50
             text-indigo-600
-            shadow-sm
           "
         >
           <BriefcaseBusiness
@@ -73,10 +72,10 @@ export default function ServiceRequestChatContextCard({
         <div className="min-w-0">
           <p
             className="
-              text-[9px]
+              text-[10px]
               font-black
               uppercase
-              tracking-[0.14em]
+              tracking-[0.12em]
               text-indigo-600
             "
           >
@@ -85,7 +84,7 @@ export default function ServiceRequestChatContextCard({
 
           <h2
             className="
-              mt-1
+              mt-0.5
               truncate
               text-sm
               font-black
@@ -108,7 +107,7 @@ export default function ServiceRequestChatContextCard({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-3.5">
         <div
           className="
             grid
@@ -118,9 +117,10 @@ export default function ServiceRequestChatContextCard({
         >
           <div
             className="
-              rounded-xl
-              bg-slate-50
-              p-3
+              rounded-lg
+              bg-slate-50/80
+              px-3
+              py-2.5
             "
           >
             <p
@@ -138,9 +138,9 @@ export default function ServiceRequestChatContextCard({
             <p
               className="
                 mt-1
-                text-xs
+                text-[14px]
                 font-black
-                text-slate-900
+                text-green-600
               "
             >
               {formatServiceRequestBudget(detail.budget)}
@@ -149,9 +149,10 @@ export default function ServiceRequestChatContextCard({
 
           <div
             className="
-              rounded-xl
-              bg-slate-50
-              p-3
+              rounded-lg
+              bg-slate-50/80
+              px-3
+              py-2.5
             "
           >
             <p
@@ -184,18 +185,18 @@ export default function ServiceRequestChatContextCard({
     mt-3
     grid
     gap-2
-    ${canCreateProposal && onCreateProposal ? "grid-cols-2" : "grid-cols-1"}
+    ${canCreateProposal && onCreateProposal ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}
   `}
         >
           <Link
             href={`/service-requests/${encodeURIComponent(detail.id)}`}
             className="
       flex
-      min-h-10
+      min-h-9
       items-center
       justify-center
       gap-2
-      rounded-xl
+      rounded-lg
       border
       border-slate-200
       bg-white
@@ -223,8 +224,8 @@ export default function ServiceRequestChatContextCard({
               type="button"
               onClick={onCreateProposal}
               className="
-          min-h-10
-          rounded-xl
+          min-h-9
+          rounded-lg
           bg-indigo-600
           px-3
           text-xs

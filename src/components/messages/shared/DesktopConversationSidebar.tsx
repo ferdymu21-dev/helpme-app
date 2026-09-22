@@ -100,45 +100,59 @@ export default function DesktopConversationSidebar({
         flex
         h-full
         min-h-0
-        w-95
+        w-85
         shrink-0
         flex-col
         border-r
-        border-slate-200
+        border-slate-200/80
         bg-white
       "
     >
       {/* HEADER */}
       <div
-        className="
-          shrink-0
-          border-b
-          border-slate-200
-          px-6
-          py-6
-        "
-      >
-        <h1
-          className="
-            text-3xl
-            font-black
-            tracking-tight
-            text-slate-900
-          "
-        >
-          Messages
-        </h1>
+  className="
+    shrink-0
+    border-b
+    border-slate-200/80
+    px-5
+    py-5
+  "
+>
+  <p
+    className="
+      text-[10px]
+      font-black
+      uppercase
+      tracking-[0.14em]
+      text-indigo-600
+    "
+  >
+    Kotak Masuk
+  </p>
 
-        <p
-          className="
-            mt-1
-            text-sm
-            text-slate-500
-          "
-        >
-          Percakapan terbaru Anda
-        </p>
-      </div>
+  <h1
+    className="
+      mt-1
+      text-xl
+      font-black
+      tracking-tight
+      text-slate-950
+    "
+  >
+    Pesan
+  </h1>
+
+  <p
+    className="
+      mt-1
+      text-xs
+      leading-5
+      text-slate-500
+    "
+  >
+    Percakapan task dan jasa terbaru Anda.
+  </p>
+</div>
 
       {/* SCROLLABLE LIST */}
       <div
@@ -147,46 +161,59 @@ export default function DesktopConversationSidebar({
           flex-1
           overflow-y-auto
           overscroll-contain
-          p-4
+          p-3
         "
       >
         {groupedConversations.length === 0 ? (
           <div
-            className="
-              flex
-              h-full
-              min-h-40
-              items-center
-              justify-center
-              px-6
-              text-center
-            "
-          >
-            <div>
-              <p
-                className="
-                  text-sm
-                  font-semibold
-                  text-slate-700
-                "
-              >
-                Belum ada percakapan
-              </p>
+  className="
+    flex
+    h-full
+    min-h-48
+    items-start
+    justify-center
+    pt-8
+    text-center
+  "
+>
+  <div
+    className="
+      w-full
+      rounded-2xl
+      border
+      border-dashed
+      border-slate-200
+      bg-slate-50/70
+      px-5
+      py-8
+    "
+  >
+    <p
+      className="
+        text-sm
+        font-bold
+        text-slate-700
+      "
+    >
+      Belum ada percakapan
+    </p>
 
-              <p
-                className="
-                  mt-1
-                  text-xs
-                  leading-5
-                  text-slate-400
-                "
-              >
-                Percakapan dengan helper atau pemilik task akan muncul di sini.
-              </p>
-            </div>
-          </div>
+    <p
+      className="
+        mx-auto
+        mt-1
+        max-w-55
+        text-xs
+        leading-5
+        text-slate-400
+      "
+    >
+      Percakapan task dan jasa akan muncul di sini.
+    </p>
+  </div>
+</div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {groupedConversations.map((group) => {
               const conversation = group.latestConversation;
 
@@ -218,30 +245,31 @@ export default function DesktopConversationSidebar({
                   href={`/messages/${conversation.id}`}
                   aria-current={isActive ? "page" : undefined}
                   className={`
-                      flex
-                      items-center
-                      gap-4
-                      rounded-3xl
-                      border
-                      p-4
-                      transition-all
-                      duration-200
+  flex
+  items-center
+  gap-3
+  rounded-2xl
+  border
+  px-3
+  py-3
+  transition
+  duration-150
 
-                      ${
-                        isActive
-                          ? `
-                            border-indigo-200
-                            bg-indigo-50
-                            shadow-sm
-                          `
-                          : `
-                            border-slate-200
-                            bg-white
-                            hover:border-slate-300
-                            hover:bg-slate-50
-                          `
-                      }
-                    `}
+  ${
+    isActive
+      ? `
+        border-indigo-200
+        bg-indigo-50/80
+        shadow-sm
+      `
+      : `
+        border-transparent
+        bg-white
+        hover:border-slate-200
+        hover:bg-slate-50
+      `
+  }
+`}
                 >
                   {/* AVATAR */}
                   <div className="relative shrink-0">
@@ -250,8 +278,8 @@ export default function DesktopConversationSidebar({
                         src={otherUser.avatar_url}
                         alt={otherUser.full_name || "User"}
                         className="
-                            h-14
-                            w-14
+                            h-11
+                            w-11
                             rounded-full
                             border
                             border-slate-200
@@ -262,14 +290,14 @@ export default function DesktopConversationSidebar({
                       <div
                         className="
                             flex
-                            h-14
-                            w-14
+                            h-11
+                            w-11
                             items-center
                             justify-center
                             rounded-full
                             bg-indigo-100
-                            text-lg
-                            font-bold
+                            text-sm
+                            font-black
                             text-indigo-700
                           "
                       >
@@ -348,15 +376,15 @@ export default function DesktopConversationSidebar({
                           <div
                             className="
                                 flex
-                                h-6
-                                min-w-6
+                                h-5
+                                min-w-5
                                 items-center
                                 justify-center
                                 rounded-full
                                 bg-indigo-600
-                                px-2
-                                text-xs
-                                font-bold
+                                px-1.5
+                                text-[10px]
+                                font-black
                                 text-white
                               "
                           >
@@ -369,13 +397,14 @@ export default function DesktopConversationSidebar({
                     {/* LAST MESSAGE */}
                     <p
                       className={`
-                          mt-1
+                          mt-0.5
                           truncate
-                          text-xs
+                          text-[11px]
+                          leading-4
 
                           ${
                             isActive
-                              ? "font-medium text-indigo-500"
+                              ? "font-medium text-indigo-600"
                               : "text-slate-500"
                           }
                         `}
@@ -386,7 +415,7 @@ export default function DesktopConversationSidebar({
                     {/* TASK / SESSION */}
                     <div
                       className="
-                          mt-1.5
+                          mt-1
                           flex
                           min-w-0
                           items-center
@@ -400,7 +429,8 @@ export default function DesktopConversationSidebar({
                           className="
                               min-w-0
                               truncate
-                              text-[11px]
+                              text-[10px]
+                              font-medium
                               text-slate-400
                             "
                         >
@@ -416,12 +446,12 @@ export default function DesktopConversationSidebar({
                         <span
                           className="
                               shrink-0
-                              rounded-full
+                              rounded-md
                               bg-slate-100
-                              px-2
+                              px-1.5
                               py-0.5
-                              text-[10px]
-                              font-semibold
+                              text-[9px]
+                              font-bold
                               text-slate-500
                             "
                         >
