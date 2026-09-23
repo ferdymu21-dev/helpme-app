@@ -17,7 +17,7 @@ interface Context {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: Context,
 ) {
   try {
@@ -66,11 +66,28 @@ export async function GET(
       );
     }
 
-    const result =
-      await paymentStatusController(
-        user.id,
-        normalizedOrderId,
+    const requestUrl = new URL(request.url);
+
+    const transactionIdParam = requestUrl.searchParams.get("transactionId");
+
+    const normalizedTransactionId = transactionIdParam?.trim() || undefined;
+
+    if (normalizedTransactionId && normalizedTransactionId.length > 200) {
+      return NextResponse.json(
+        {
+          message: "Transaction ID tidak valid.",
+        },
+        {
+          status: 400,
+        },
       );
+    }
+
+    const result = await paymentStatusController(
+      user.id,
+      normalizedOrderId,
+      normalizedTransactionId,
+    );
 
     return NextResponse.json(
       result,

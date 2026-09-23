@@ -15,6 +15,9 @@ export interface PaymentStatusSnapshot {
   paymentExpiresAt:
     string | null;
 
+  midtransTransactionId:
+    string | null;
+
   taskId?: string | null;
 
   serviceListingId?:
@@ -43,7 +46,8 @@ export async function getPaymentStatus(
       .select(`
         payment_status,
         amount,
-        payment_expires_at
+        payment_expires_at,
+        midtrans_transaction_id
       `)
       .eq(
         "midtrans_order_id",
@@ -72,6 +76,10 @@ export async function getPaymentStatus(
 
       paymentExpiresAt:
         donation.payment_expires_at,
+
+      midtransTransactionId:
+        donation
+          .midtrans_transaction_id,
     };
   }
 
@@ -93,6 +101,7 @@ export async function getPaymentStatus(
         payment_status,
         amount,
         payment_expires_at,
+        midtrans_transaction_id,
         task_id
       `)
       .eq(
@@ -124,6 +133,10 @@ export async function getPaymentStatus(
         taskPayment
           .payment_expires_at,
 
+      midtransTransactionId:
+        taskPayment
+          .midtrans_transaction_id,
+
       taskId:
         taskPayment.task_id,
     };
@@ -150,6 +163,7 @@ export async function getPaymentStatus(
         payment_status,
         amount,
         payment_expires_at,
+        midtrans_transaction_id,
         service_listing_id
       `)
       .eq(
@@ -186,6 +200,10 @@ export async function getPaymentStatus(
       paymentExpiresAt:
         serviceListingPayment
           .payment_expires_at,
+
+      midtransTransactionId:
+        serviceListingPayment
+          .midtrans_transaction_id,
 
       serviceListingId:
         serviceListingPayment

@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  clearMidtransTransactionLookup,
+  getMidtransTransactionLookup,
+} from "../utils/midtransTransactionLookup.client";
+
 export type PaymentStatus =
   | "PENDING"
   | "PAID"
@@ -66,13 +71,27 @@ export function usePaymentStatus({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/payments/status/${orderId}`);
+      const transactionId = getMidtransTransactionLookup(orderId);
+
+      const transactionQuery = transactionId
+        ? `?transactionId=${encodeURIComponent(transactionId)}`
+        : "";
+
+      const response = await fetch(
+        `/api/payments/status/${encodeURIComponent(
+          orderId,
+        )}${transactionQuery}`,
+      );
 
       if (!response.ok) {
         return;
       }
 
       const data = (await response.json()) as PaymentStatusResponse;
+
+      if (data.status !== "PENDING") {
+        clearMidtransTransactionLookup(orderId);
+      }
 
       /*
        * Status selalu disimpan bersama

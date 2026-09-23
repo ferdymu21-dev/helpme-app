@@ -34,6 +34,7 @@ export async function listPendingPaymentCandidates(
         payment_status,
         amount,
         payment_expires_at,
+        midtrans_transaction_id,
         created_at
       `,
     )
@@ -58,6 +59,7 @@ export async function listPendingPaymentCandidates(
         payment_status,
         amount,
         payment_expires_at,
+        midtrans_transaction_id,
         task_id,
         created_at
       `,
@@ -83,6 +85,7 @@ export async function listPendingPaymentCandidates(
         payment_status,
         amount,
         payment_expires_at,
+        midtrans_transaction_id,
         service_listing_id,
         created_at
       `,
@@ -123,6 +126,8 @@ export async function listPendingPaymentCandidates(
         amount: donation.amount,
 
         paymentExpiresAt: donation.payment_expires_at,
+
+        midtransTransactionId: donation.midtrans_transaction_id,
       },
     });
   }
@@ -148,6 +153,8 @@ export async function listPendingPaymentCandidates(
         amount: payment.amount,
 
         paymentExpiresAt: payment.payment_expires_at,
+
+        midtransTransactionId: payment.midtrans_transaction_id,
 
         taskId: payment.task_id,
       },
@@ -175,6 +182,8 @@ export async function listPendingPaymentCandidates(
         amount: payment.amount,
 
         paymentExpiresAt: payment.payment_expires_at,
+
+        midtransTransactionId: payment.midtrans_transaction_id,
 
         serviceListingId: payment.service_listing_id,
       },

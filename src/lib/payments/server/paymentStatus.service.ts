@@ -64,6 +64,8 @@ export async function fetchPaymentStatus(
   userId: string,
 
   orderId: string,
+
+  transactionIdHint?: string,
 ) {
   const current =
     await getPaymentStatus(
@@ -116,6 +118,10 @@ export async function fetchPaymentStatus(
         current,
 
         orderId,
+
+        false,
+
+        transactionIdHint,
       );
     } else {
       /*
@@ -133,6 +139,8 @@ export async function fetchPaymentStatus(
         current,
 
         orderId,
+
+        transactionIdHint,
       );
     }
   } catch (error) {

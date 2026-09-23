@@ -5,6 +5,10 @@ import {
   useRef,
 } from "react";
 
+import {
+  rememberMidtransTransactionLookup,
+} from "../utils/midtransTransactionLookup.client";
+
 interface OpenPaymentOptions {
   snapToken: string;
 
@@ -132,6 +136,10 @@ export function useMidtrans() {
                   onSuccess(
                     result,
                   ) {
+                    rememberMidtransTransactionLookup(
+                      result,
+                    );
+
                     options.onSuccess?.(
                       result,
                     );
@@ -144,6 +152,10 @@ export function useMidtrans() {
                   onPending(
                     result,
                   ) {
+                    rememberMidtransTransactionLookup(
+                      result,
+                    );
+
                     options.onPending?.(
                       result,
                     );
@@ -156,6 +168,10 @@ export function useMidtrans() {
                   onError(
                     result,
                   ) {
+                    rememberMidtransTransactionLookup(
+                      result,
+                    );
+
                     console.error(
                       "MIDTRANS SNAP ERROR",
                       result,

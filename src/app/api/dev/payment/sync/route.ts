@@ -52,6 +52,25 @@ export async function POST(request: NextRequest) {
 
     const orderId = body.orderId.trim();
 
+    const transactionId =
+      typeof body.transactionId === "string"
+        ? body.transactionId.trim()
+        : undefined;
+
+    if (
+      body.transactionId !== undefined &&
+      (!transactionId || transactionId.length > 200)
+    ) {
+      return NextResponse.json(
+        {
+          message: "Transaction ID tidak valid.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (!orderId) {
       return NextResponse.json(
         {
@@ -97,6 +116,8 @@ export async function POST(request: NextRequest) {
       scopeUserId,
 
       orderId,
+
+      transactionId,
     );
 
     /*
@@ -106,7 +127,9 @@ export async function POST(request: NextRequest) {
     let midtransStatus = "UNKNOWN";
 
     try {
-      const rawStatus = await getMidtransTransactionStatus(orderId);
+      const rawStatus = await getMidtransTransactionStatus(
+        transactionId ?? orderId,
+      );
 
       const status = parseMidtransStatusResponse(rawStatus);
 

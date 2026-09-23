@@ -5,9 +5,11 @@ import {
 export async function paymentStatusController(
   userId: string,
   orderId: string,
+  transactionId?: string,
 ) {
   return await fetchPaymentStatus(
     userId,
     orderId,
+    transactionId,
   );
 }

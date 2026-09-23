@@ -42,6 +42,96 @@ interface ReconciliationPayload {
   expiredAt?: string;
 }
 
+function normalizeTransactionId(
+  value:
+    | string
+    | null
+    | undefined,
+): string | undefined {
+  const normalized =
+    value?.trim();
+
+  return normalized
+    ? normalized
+    : undefined;
+}
+
+async function getMidtransStatusForReconciliation(
+  snapshot:
+    PaymentStatusSnapshot,
+  orderId: string,
+  transactionIdHint?: string,
+): Promise<MidtransStatusResponse> {
+  const transactionId =
+    normalizeTransactionId(
+      transactionIdHint,
+    ) ??
+    normalizeTransactionId(
+      snapshot
+        .midtransTransactionId,
+    );
+
+  /*
+   * DANA / BI SNAP dapat memerlukan
+   * transaction_id untuk Get Status.
+   *
+   * Browser hanya memberikan lookup
+   * hint. Response authoritative tetap
+   * berasal langsung dari Midtrans.
+   */
+  if (transactionId) {
+    try {
+      const rawStatus =
+        await getMidtransTransactionStatus(
+          transactionId,
+        );
+
+      const status =
+        parseMidtransStatusResponse(
+          rawStatus,
+        );
+
+      /*
+       * Jangan menerima transaction_id
+       * yang menunjuk order lain.
+       */
+      if (
+        status.order_id !==
+        orderId
+      ) {
+        throw new Error(
+          "Order ID response Midtrans tidak sesuai.",
+        );
+      }
+
+      return status;
+    } catch (error) {
+      /*
+       * Lookup hint yang tidak ditemukan
+       * tidak boleh mematikan fallback
+       * order_id untuk metode pembayaran
+       * lain.
+       */
+      if (
+        getMidtransHttpStatusCode(
+          error,
+        ) !== 404
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  const rawStatus =
+    await getMidtransTransactionStatus(
+      orderId,
+    );
+
+  return parseMidtransStatusResponse(
+    rawStatus,
+  );
+}
+
 async function dispatchPaymentStatus(
   paymentType: PaymentStatusSnapshot["paymentType"],
 
@@ -147,10 +237,15 @@ export async function reconcilePendingPayment(
   orderId: string,
 
   afterDeadline = false,
-) {
-  const rawStatus = await getMidtransTransactionStatus(orderId);
 
-  const status = parseMidtransStatusResponse(rawStatus);
+  transactionIdHint?: string,
+) {
+  const status =
+    await getMidtransStatusForReconciliation(
+      snapshot,
+      orderId,
+      transactionIdHint,
+    );
 
   return await applyMidtransStatus(
     snapshot,
@@ -167,6 +262,8 @@ export async function reconcileExpiredPendingPayment(
   snapshot: PaymentStatusSnapshot,
 
   orderId: string,
+
+  transactionIdHint?: string,
 ) {
   /*
    * STEP 1
@@ -175,9 +272,11 @@ export async function reconcileExpiredPendingPayment(
   let initialStatus: MidtransStatusResponse;
 
   try {
-    const rawStatus = await getMidtransTransactionStatus(orderId);
-
-    initialStatus = parseMidtransStatusResponse(rawStatus);
+    initialStatus = await getMidtransStatusForReconciliation(
+      snapshot,
+      orderId,
+      transactionIdHint,
+    );
   } catch (error) {
     /*
      * Order ID berasal dari database
@@ -267,6 +366,8 @@ export async function reconcileExpiredPendingPayment(
       orderId,
 
       true,
+
+      transactionIdHint,
     );
 
     return;
@@ -311,5 +412,7 @@ export async function reconcileExpiredPendingPayment(
     orderId,
 
     true,
+
+    transactionIdHint,
   );
 }
