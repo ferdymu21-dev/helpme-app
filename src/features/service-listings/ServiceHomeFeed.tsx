@@ -7,11 +7,26 @@ import {
   ArrowRight,
   CircleCheck,
   Globe2,
+  GraduationCap,
+  HandHeart,
+  Home,
+  LayoutGrid,
   MapPin,
+  MoreHorizontal,
+  Palette,
   RefreshCw,
+  ShoppingBag,
   Star,
   Store,
+  Truck,
+  Wrench,
 } from "lucide-react";
+
+import {
+  getServiceCategoryDefinition,
+  HOME_SERVICE_CATEGORY_VALUES,
+  SERVICE_CATEGORY_VALUES,
+} from "./constants/service-categories";
 
 import { ServiceMode } from "./constants/service-mode";
 
@@ -30,6 +45,32 @@ const PRICE_FORMATTER = new Intl.NumberFormat("id-ID", {
   currency: "IDR",
   maximumFractionDigits: 0,
 });
+
+const HOME_CATEGORY_ICON_BY_VALUE = {
+  [SERVICE_CATEGORY_VALUES.HOME_CLEANING]:
+    Home,
+
+  [SERVICE_CATEGORY_VALUES.REPAIR_INSTALLATION]:
+    Wrench,
+
+  [SERVICE_CATEGORY_VALUES.SHOPPING_QUEUE]:
+    ShoppingBag,
+
+  [SERVICE_CATEGORY_VALUES.DELIVERY_MOVING]:
+    Truck,
+
+  [SERVICE_CATEGORY_VALUES.DAILY_ASSISTANCE]:
+    HandHeart,
+
+  [SERVICE_CATEGORY_VALUES.TUTOR_EDUCATION]:
+    GraduationCap,
+
+  [SERVICE_CATEGORY_VALUES.DIGITAL_CREATIVE]:
+    Palette,
+
+  [SERVICE_CATEGORY_VALUES.OTHER]:
+    MoreHorizontal,
+} as const;
 
 function getServiceModeLabel(serviceMode: ServiceModeValue): string {
   switch (serviceMode) {
@@ -149,6 +190,166 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
             className="h-3.5 w-3.5"
           />
         </Link>
+      </div>
+
+      <div
+        className={
+          isDesktop
+            ? "mt-5 flex flex-wrap gap-2"
+            : `
+                mt-4
+                -mx-5
+                flex
+                gap-2
+                overflow-x-auto
+                px-5
+                pb-1
+                [&::-webkit-scrollbar]:hidden
+              `
+        }
+      >
+        <button
+          type="button"
+          aria-pressed={
+            serviceFeed.category === null
+          }
+          onClick={() =>
+            serviceFeed.onCategoryChange(
+              null,
+            )
+          }
+          className={
+            serviceFeed.category === null
+              ? `
+                  inline-flex
+                  shrink-0
+                  items-center
+                  gap-1.5
+                  rounded-full
+                  border
+                  border-indigo-600
+                  bg-indigo-600
+                  px-3.5
+                  py-2
+                  text-[11px]
+                  font-bold
+                  text-white
+                  shadow-sm
+                  transition
+                `
+              : `
+                  inline-flex
+                  shrink-0
+                  items-center
+                  gap-1.5
+                  rounded-full
+                  border
+                  border-slate-200
+                  bg-white
+                  px-3.5
+                  py-2
+                  text-[11px]
+                  font-bold
+                  text-slate-600
+                  transition
+                  hover:border-indigo-200
+                  hover:text-indigo-700
+                `
+          }
+        >
+          <LayoutGrid
+            aria-hidden="true"
+            className="
+              h-3.5
+              w-3.5
+            "
+          />
+
+          Semua
+        </button>
+
+        {HOME_SERVICE_CATEGORY_VALUES.map(
+          (categoryValue) => {
+            const definition =
+              getServiceCategoryDefinition(
+                categoryValue,
+              );
+
+            if (!definition) {
+              return null;
+            }
+
+            const selected =
+              serviceFeed.category ===
+              definition.value;
+
+            const Icon =
+              HOME_CATEGORY_ICON_BY_VALUE[
+                categoryValue
+              ];
+
+            return (
+              <button
+                key={definition.value}
+                type="button"
+                aria-pressed={selected}
+                onClick={() =>
+                  serviceFeed.onCategoryChange(
+                    definition.value,
+                  )
+                }
+                className={
+                  selected
+                    ? `
+                        inline-flex
+                        shrink-0
+                        items-center
+                        gap-1.5
+                        rounded-full
+                        border
+                        border-indigo-600
+                        bg-indigo-600
+                        px-3.5
+                        py-2
+                        text-[11px]
+                        font-bold
+                        text-white
+                        shadow-sm
+                        transition
+                      `
+                    : `
+                        inline-flex
+                        shrink-0
+                        items-center
+                        gap-1.5
+                        rounded-full
+                        border
+                        border-slate-200
+                        bg-white
+                        px-3.5
+                        py-2
+                        text-[11px]
+                        font-bold
+                        text-slate-600
+                        transition
+                        hover:border-indigo-200
+                        hover:text-indigo-700
+                      `
+                }
+              >
+                <Icon
+                  aria-hidden="true"
+                  className="
+                    h-3.5
+                    w-3.5
+                  "
+                />
+
+                {definition.homeLabel}
+              </button>
+            );
+          },
+        )}
       </div>
 
         {serviceFeed.error ? (

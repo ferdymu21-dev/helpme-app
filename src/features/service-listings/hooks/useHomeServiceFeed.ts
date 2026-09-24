@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import type {
+  ServiceCategoryValue,
+} from "../constants/service-categories";
+
 import { getPublicServiceListingsService } from "../services/get-public-service-listings.service";
 
 import type { PublicServiceListingCard } from "../types/service-listing-read.types";
@@ -17,6 +21,11 @@ function getLoadErrorMessage(error: unknown): string {
 }
 
 export function useHomeServiceFeed() {
+  const [category, setCategory] =
+    useState<ServiceCategoryValue | null>(
+      null,
+    );
+
   const [items, setItems] = useState<PublicServiceListingCard[]>([]);
 
   const [totalCount, setTotalCount] = useState<number | null>(0);
@@ -38,6 +47,8 @@ export function useHomeServiceFeed() {
       page: 1,
 
       pageSize: HOME_SERVICE_PAGE_SIZE,
+
+      category,
     })
       .then((result) => {
         if (cancelled || requestId !== requestIdRef.current) {
@@ -66,7 +77,24 @@ export function useHomeServiceFeed() {
     return () => {
       cancelled = true;
     };
-  }, [refreshVersion]);
+  }, [
+    category,
+    refreshVersion,
+  ]);
+
+  function changeCategory(
+    value: ServiceCategoryValue | null,
+  ) {
+    if (value === category) {
+      return;
+    }
+
+    setError(null);
+
+    setLoading(true);
+
+    setCategory(value);
+  }
 
   function refresh() {
     setError(null);
@@ -77,6 +105,8 @@ export function useHomeServiceFeed() {
   }
 
   return {
+    category,
+
     items,
 
     totalCount,
@@ -84,6 +114,9 @@ export function useHomeServiceFeed() {
     loading,
 
     error,
+
+    onCategoryChange:
+      changeCategory,
 
     refresh,
   };

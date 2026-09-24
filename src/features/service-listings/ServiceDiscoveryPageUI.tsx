@@ -6,21 +6,32 @@ import Link from "next/link";
 
 import {
   ArrowLeft,
+  Camera,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
+  FileText,
   Globe2,
+  GraduationCap,
+  HandHeart,
+  Home,
+  LayoutGrid,
   MapPin,
+  MoreHorizontal,
   Palette,
   RefreshCw,
   Search,
+  ShoppingBag,
   SlidersHorizontal,
   Star,
+  Truck,
   Users,
+  Wrench,
 } from "lucide-react";
 
 import {
   SERVICE_CATEGORIES,
+  SERVICE_CATEGORY_VALUES,
 } from "./constants/service-categories";
 
 import { ServiceMode } from "./constants/service-mode";
@@ -56,6 +67,41 @@ const MODE_OPTIONS: ModeOption[] = [
   },
 ];
 
+
+const SERVICE_CATEGORY_ICON_BY_VALUE = {
+  [SERVICE_CATEGORY_VALUES.HOME_CLEANING]:
+    Home,
+
+  [SERVICE_CATEGORY_VALUES.REPAIR_INSTALLATION]:
+    Wrench,
+
+  [SERVICE_CATEGORY_VALUES.SHOPPING_QUEUE]:
+    ShoppingBag,
+
+  [SERVICE_CATEGORY_VALUES.DELIVERY_MOVING]:
+    Truck,
+
+  [SERVICE_CATEGORY_VALUES.DAILY_ASSISTANCE]:
+    HandHeart,
+
+  [SERVICE_CATEGORY_VALUES.FIELD_ASSISTANCE]:
+    MapPin,
+
+  [SERVICE_CATEGORY_VALUES.TUTOR_EDUCATION]:
+    GraduationCap,
+
+  [SERVICE_CATEGORY_VALUES.DIGITAL_CREATIVE]:
+    Palette,
+
+  [SERVICE_CATEGORY_VALUES.ADMIN_WRITING]:
+    FileText,
+
+  [SERVICE_CATEGORY_VALUES.EVENT_DOCUMENTATION]:
+    Camera,
+
+  [SERVICE_CATEGORY_VALUES.OTHER]:
+    MoreHorizontal,
+} as const;
 
 const PRICE_FORMATTER = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -396,7 +442,10 @@ function ServiceDiscoveryPageContent() {
                         )
                       }
                       className={`
+                        inline-flex
                         shrink-0
+                        items-center
+                        gap-1.5
                         rounded-xl
                         border
                         px-3
@@ -412,6 +461,14 @@ function ServiceDiscoveryPageContent() {
                         }
                       `}
                     >
+                      <LayoutGrid
+                        aria-hidden="true"
+                        className="
+                          h-3.5
+                          w-3.5
+                        "
+                      />
+
                       Semua kategori
                     </button>
 
@@ -422,6 +479,11 @@ function ServiceDiscoveryPageContent() {
                         const selected =
                           discovery.category ===
                           categoryDefinition.value;
+
+                        const Icon =
+                          SERVICE_CATEGORY_ICON_BY_VALUE[
+                            categoryDefinition.value
+                          ];
 
                         return (
                           <button
@@ -438,7 +500,10 @@ function ServiceDiscoveryPageContent() {
                               )
                             }
                             className={`
+                              inline-flex
                               shrink-0
+                              items-center
+                              gap-1.5
                               rounded-xl
                               border
                               px-3
@@ -453,6 +518,14 @@ function ServiceDiscoveryPageContent() {
                               }
                             `}
                           >
+                            <Icon
+                              aria-hidden="true"
+                              className="
+                                h-3.5
+                                w-3.5
+                              "
+                            />
+
                             {
                               categoryDefinition.label
                             }
