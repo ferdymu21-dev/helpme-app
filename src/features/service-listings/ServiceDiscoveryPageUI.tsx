@@ -6,22 +6,22 @@ import Link from "next/link";
 
 import {
   ArrowLeft,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
-  FileText,
   Globe2,
-  GraduationCap,
   MapPin,
   Palette,
   RefreshCw,
   Search,
-  ShoppingBag,
   SlidersHorizontal,
   Star,
   Users,
 } from "lucide-react";
+
+import {
+  SERVICE_CATEGORIES,
+} from "./constants/service-categories";
 
 import { ServiceMode } from "./constants/service-mode";
 
@@ -56,33 +56,6 @@ const MODE_OPTIONS: ModeOption[] = [
   },
 ];
 
-const CATEGORY_SHORTCUTS = [
-  {
-    label: "Desain",
-    query: "Desain",
-    icon: Palette,
-  },
-  {
-    label: "Penulisan",
-    query: "Penulisan",
-    icon: FileText,
-  },
-  {
-    label: "Belanja",
-    query: "Belanja",
-    icon: ShoppingBag,
-  },
-  {
-    label: "Survey",
-    query: "Survey",
-    icon: BarChart3,
-  },
-  {
-    label: "Tutor",
-    query: "Tutor",
-    icon: GraduationCap,
-  },
-] as const;
 
 const PRICE_FORMATTER = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -284,7 +257,7 @@ function ServiceDiscoveryPageContent() {
                   onChange={(event) =>
                     discovery.onSearchChange(event.target.value)
                   }
-                  placeholder="Cari jasa, kategori, atau lokasi..."
+                  placeholder="Cari jasa atau lokasi..."
                   className="
               h-12
               w-full
@@ -384,85 +357,110 @@ function ServiceDiscoveryPageContent() {
                   })}
                 </div>
 
-                {/* CATEGORY SHORTCUTS */}
-                <div
-                  className="
-              mt-3
-              grid
-              grid-cols-5
-              gap-2
-            "
-                >
-                  {CATEGORY_SHORTCUTS.map((shortcut) => {
-                    const Icon = shortcut.icon;
+                {/* CATEGORY FILTER */}
+                <div className="mt-3">
+                  <p
+                    className="
+                      mb-2
+                      text-[10px]
+                      font-bold
+                      tracking-wide
+                      text-slate-400
+                      uppercase
+                    "
+                  >
+                    Kategori
+                  </p>
 
-                    const selected =
-                      discovery.searchInput.trim().toLowerCase() ===
-                      shortcut.query.toLowerCase();
-
-                    return (
-                      <button
-                        key={shortcut.label}
-                        type="button"
-                        aria-pressed={selected}
-                        onClick={() =>
-                          discovery.onSearchChange(
-                            selected ? "" : shortcut.query,
-                          )
-                        }
-                        className={`
-                      group
+                  <div
+                    className="
                       flex
-                      min-w-0
-                      flex-col
-                      items-center
-                      justify-center
-                      gap-1.5
-                      rounded-xl
-                      border
-                      px-1
-                      py-2.5
-                      text-center
-                      transition
-                      ${
-                        selected
-                          ? "border-indigo-200 bg-indigo-50 text-indigo-700"
-                          : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200 hover:text-indigo-700"
+                      gap-2
+                      overflow-x-auto
+                      pb-1
+                      scrollbar-none
+                      sm:flex-wrap
+                      sm:overflow-visible
+                      [&::-webkit-scrollbar]:hidden
+                    "
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={
+                        discovery.category ===
+                        null
                       }
-                    `}
-                      >
-                        <span
-                          className={`
-                        inline-flex
-                        h-7
-                        w-7
-                        items-center
-                        justify-center
-                        rounded-lg
+                      onClick={() =>
+                        discovery.onCategoryChange(
+                          null,
+                        )
+                      }
+                      className={`
+                        shrink-0
+                        rounded-xl
+                        border
+                        px-3
+                        py-2
+                        text-[10px]
+                        font-bold
+                        transition
                         ${
-                          selected
-                            ? "bg-white text-indigo-600"
-                            : "bg-slate-50 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600"
+                          discovery.category ===
+                          null
+                            ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-700"
                         }
                       `}
-                        >
-                          <Icon aria-hidden="true" className="h-4 w-4" />
-                        </span>
+                    >
+                      Semua kategori
+                    </button>
 
-                        <span
-                          className="
-                        w-full
-                        truncate
-                        text-[9px]
-                        font-bold
-                        sm:text-[10px]
-                      "
-                        >
-                          {shortcut.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                    {SERVICE_CATEGORIES.map(
+                      (
+                        categoryDefinition,
+                      ) => {
+                        const selected =
+                          discovery.category ===
+                          categoryDefinition.value;
+
+                        return (
+                          <button
+                            key={
+                              categoryDefinition.value
+                            }
+                            type="button"
+                            aria-pressed={
+                              selected
+                            }
+                            onClick={() =>
+                              discovery.onCategoryChange(
+                                categoryDefinition.value,
+                              )
+                            }
+                            className={`
+                              shrink-0
+                              rounded-xl
+                              border
+                              px-3
+                              py-2
+                              text-[10px]
+                              font-bold
+                              transition
+                              ${
+                                selected
+                                  ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
+                                  : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-700"
+                              }
+                            `}
+                          >
+                            {
+                              categoryDefinition.label
+                            }
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -712,7 +710,7 @@ function ServiceDiscoveryPageContent() {
               "
             >
               {discovery.hasActiveFilters
-                ? "Coba gunakan kata pencarian lain atau pilih mode layanan yang berbeda."
+                ? "Coba ubah kata pencarian, kategori, atau mode layanan."
                 : "Belum ada listing jasa aktif yang dapat ditampilkan saat ini."}
             </p>
 

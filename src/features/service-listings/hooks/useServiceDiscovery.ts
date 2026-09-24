@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
+import {
+  getCanonicalServiceCategory,
+} from "../constants/service-categories";
+
+import type {
+  ServiceCategoryValue,
+} from "../constants/service-categories";
+
 import { ServiceListingConfig } from "../constants/service-listing-config";
 
 import { ServiceMode } from "../constants/service-mode";
@@ -22,6 +30,8 @@ const DEFAULT_PAGE = ServiceListingConfig.pagination.defaultPage;
 
 interface DiscoveryUrlState {
   search: string;
+
+  category: ServiceCategoryValue | null;
 
   serviceMode: ServiceModeValue | null;
 
@@ -52,6 +62,18 @@ function parseServiceMode(value: string | null): ServiceModeValue | null {
   }
 }
 
+function parseCategory(
+  value: string | null,
+): ServiceCategoryValue | null {
+  if (!value) {
+    return null;
+  }
+
+  return getCanonicalServiceCategory(
+    value,
+  );
+}
+
 function parsePage(value: string | null): number {
   if (!value || !/^[1-9]\d*$/.test(value)) {
     return DEFAULT_PAGE;
@@ -68,6 +90,7 @@ function parsePage(value: string | null): number {
 
 function getDiscoveryUrl({
   search,
+  category,
   serviceMode,
   page,
 }: DiscoveryUrlState): string {
@@ -77,6 +100,13 @@ function getDiscoveryUrl({
 
   if (normalizedSearch.length > 0) {
     params.set("q", normalizedSearch);
+  }
+
+  if (category) {
+    params.set(
+      "category",
+      category,
+    );
   }
 
   if (serviceMode) {
@@ -100,6 +130,13 @@ export function useServiceDiscovery() {
   const searchParamsKey = searchParams.toString();
 
   const searchQuery = (searchParams.get("q") ?? "").trim();
+
+  const category =
+    parseCategory(
+      searchParams.get(
+        "category",
+      ),
+    );
 
   const serviceMode = parseServiceMode(searchParams.get("mode"));
 
@@ -139,6 +176,8 @@ export function useServiceDiscovery() {
     const canonicalUrl = getDiscoveryUrl({
       search: searchQuery,
 
+      category,
+
       serviceMode,
 
       page: currentPage,
@@ -155,7 +194,14 @@ export function useServiceDiscovery() {
     router.replace(canonicalUrl, {
       scroll: false,
     });
-  }, [currentPage, router, searchParamsKey, searchQuery, serviceMode]);
+  }, [
+    category,
+    currentPage,
+    router,
+    searchParamsKey,
+    searchQuery,
+    serviceMode,
+  ]);
 
   /*
    * Back/Forward or a deep-link can
@@ -225,6 +271,8 @@ export function useServiceDiscovery() {
 
       search: searchQuery,
 
+      category,
+
       serviceMode,
     })
       .then((result) => {
@@ -256,6 +304,8 @@ export function useServiceDiscovery() {
           router.replace(
             getDiscoveryUrl({
               search: searchQuery,
+
+              category,
 
               serviceMode,
 
@@ -297,7 +347,14 @@ export function useServiceDiscovery() {
 
       window.clearTimeout(loadingTimer);
     };
-  }, [currentPage, refreshVersion, router, searchQuery, serviceMode]);
+  }, [
+    category,
+    currentPage,
+    refreshVersion,
+    router,
+    searchQuery,
+    serviceMode,
+  ]);
 
   function handleSearchChange(value: string) {
     setSearchInput(value);
@@ -323,6 +380,8 @@ export function useServiceDiscovery() {
         getDiscoveryUrl({
           search: nextSearch,
 
+          category,
+
           serviceMode,
 
           page: DEFAULT_PAGE,
@@ -347,7 +406,36 @@ export function useServiceDiscovery() {
       getDiscoveryUrl({
         search: searchQuery,
 
+        category,
+
         serviceMode: value,
+
+        page: DEFAULT_PAGE,
+      }),
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function handleCategoryChange(
+    value: ServiceCategoryValue | null,
+  ) {
+    if (value === category) {
+      return;
+    }
+
+    setError(null);
+
+    setLoading(true);
+
+    router.push(
+      getDiscoveryUrl({
+        search: searchQuery,
+
+        category: value,
+
+        serviceMode,
 
         page: DEFAULT_PAGE,
       }),
@@ -369,6 +457,8 @@ export function useServiceDiscovery() {
     router.push(
       getDiscoveryUrl({
         search: searchQuery,
+
+        category,
 
         serviceMode,
 
@@ -392,6 +482,8 @@ export function useServiceDiscovery() {
     router.push(
       getDiscoveryUrl({
         search: searchQuery,
+
+        category,
 
         serviceMode,
 
@@ -434,6 +526,8 @@ export function useServiceDiscovery() {
 
     searchInput,
 
+    category,
+
     serviceMode,
 
     currentPage,
@@ -448,7 +542,10 @@ export function useServiceDiscovery() {
 
     error,
 
-    hasActiveFilters: searchQuery.length > 0 || serviceMode !== null,
+    hasActiveFilters:
+      searchQuery.length > 0 ||
+      category !== null ||
+      serviceMode !== null,
 
     canGoPrevious: currentPage > DEFAULT_PAGE,
 
@@ -457,6 +554,9 @@ export function useServiceDiscovery() {
     onSearchChange: handleSearchChange,
 
     onServiceModeChange: handleServiceModeChange,
+
+    onCategoryChange:
+      handleCategoryChange,
 
     onPreviousPage: handlePreviousPage,
 
