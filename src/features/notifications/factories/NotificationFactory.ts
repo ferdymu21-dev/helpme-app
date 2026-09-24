@@ -20,7 +20,7 @@ export const NotificationFactory = {
       userId,
 
       title:
-        "Donasi berhasil",
+        "Support berhasil",
 
       message:
         "Terima kasih telah mendukung HelpMe.",
@@ -42,7 +42,7 @@ export const NotificationFactory = {
         "Pembayaran kedaluwarsa",
 
       message:
-        "Batas waktu pembayaran donasi telah habis.",
+        "Batas waktu pembayaran support telah habis.",
 
       type:
         NotificationType.DONATION_EXPIRED,
@@ -66,7 +66,7 @@ export const NotificationFactory = {
         "Pembayaran gagal",
 
       message:
-        "Pembayaran donasi tidak berhasil diproses.",
+        "Pembayaran support tidak berhasil diproses.",
 
       type:
         NotificationType.DONATION_FAILED,
@@ -90,7 +90,7 @@ export const NotificationFactory = {
         "Pembayaran dibatalkan",
 
       message:
-        "Transaksi pembayaran donasi telah dibatalkan.",
+        "Transaksi pembayaran support telah dibatalkan.",
 
       type:
         NotificationType.DONATION_CANCELLED,

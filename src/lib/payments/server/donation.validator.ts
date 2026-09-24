@@ -18,7 +18,7 @@ export function validateDonationAmount(
 
         throw new Error(
 
-            "Invalid donation amount."
+            "Invalid support amount."
 
         );
 
@@ -34,7 +34,7 @@ export function validateDonationAmount(
 
         throw new Error(
 
-            `Minimum donation is Rp${PAYMENT_LIMIT.MIN_DONATION.toLocaleString("id-ID")}`
+            `Minimum support is Rp${PAYMENT_LIMIT.MIN_DONATION.toLocaleString("id-ID")}`
 
         );
 
@@ -50,7 +50,7 @@ export function validateDonationAmount(
 
         throw new Error(
 
-            `Maximum donation is Rp${PAYMENT_LIMIT.MAX_DONATION.toLocaleString("id-ID")}`
+            `Maximum support is Rp${PAYMENT_LIMIT.MAX_DONATION.toLocaleString("id-ID")}`
 
         );
 

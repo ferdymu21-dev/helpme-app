@@ -57,7 +57,7 @@ export default function DonateButton({
 
                         ? "Memproses..."
 
-                        : "Donasi Rp5.000"
+                        : "Support Rp5.000"
 
                 }
 

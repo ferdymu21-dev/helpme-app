@@ -54,7 +54,7 @@ export function mapPaymentDetail(
                     payment.tasks?.[0]?.title ??
                     "Layanan Prioritas"
                 )
-                : "Donasi HelpMe",
+                : "Support HelpMe",
 
         amount: payment.amount,
 

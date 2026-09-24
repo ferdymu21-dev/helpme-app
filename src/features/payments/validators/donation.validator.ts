@@ -18,7 +18,7 @@ export function validateDonationAmount(
 
     ) {
 
-        return "Masukkan nominal donasi.";
+        return "Masukkan nominal support.";
 
     }
 
@@ -28,7 +28,7 @@ export function validateDonationAmount(
 
     ) {
 
-        return "Masukkan nominal donasi.";
+        return "Masukkan nominal support.";
 
     }
 
@@ -40,7 +40,7 @@ export function validateDonationAmount(
 
     ) {
 
-        return `Minimum donasi adalah Rp${PAYMENT_LIMIT.MIN_DONATION.toLocaleString("id-ID")}`;
+        return `Minimum support adalah Rp${PAYMENT_LIMIT.MIN_DONATION.toLocaleString("id-ID")}`;
 
     }
 
@@ -52,7 +52,7 @@ export function validateDonationAmount(
 
     ) {
 
-        return `Maksimum donasi adalah Rp${PAYMENT_LIMIT.MAX_DONATION.toLocaleString("id-ID")}`;
+        return `Maksimum support adalah Rp${PAYMENT_LIMIT.MAX_DONATION.toLocaleString("id-ID")}`;
 
     }
 

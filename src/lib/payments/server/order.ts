@@ -32,6 +32,11 @@ export function generateOrderId(
 
         );
 
-    return `HELPME-${type}-${now}-${random}`;
+    const orderPrefix =
+        type === PaymentType.DONATION
+            ? "SUPPORT"
+            : type;
+
+    return `HELPME-${orderPrefix}-${now}-${random}`;
 
 }

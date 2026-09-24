@@ -30,7 +30,7 @@ export function mapDonationToTransaction(
 
         type: "DONATION",
 
-        title: "Donasi HelpMe",
+        title: "Support HelpMe",
 
         amount: donation.amount,
 

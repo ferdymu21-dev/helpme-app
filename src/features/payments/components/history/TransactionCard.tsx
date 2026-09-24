@@ -42,7 +42,7 @@ export default function TransactionCard({
 
             ? "Layanan Prioritas"
 
-            : "Donasi HelpMe";
+            : "Support HelpMe";
 
     
 
@@ -52,7 +52,7 @@ export default function TransactionCard({
 
             ? "Layanan Prioritas"
 
-            : "Donasi";
+            : "Support";
 
     return (
         <button

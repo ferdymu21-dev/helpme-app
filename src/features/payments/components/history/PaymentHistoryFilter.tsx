@@ -18,7 +18,7 @@ const LABELS = {
 
     ALL: "Semua",
 
-    DONATION: "Donasi",
+    DONATION: "Support",
 
     ESCROW: "Escrow",
 
