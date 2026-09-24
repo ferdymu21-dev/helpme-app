@@ -88,6 +88,9 @@ interface EditServiceListingPageUIProps {
   onCategoryChange:
     (value: string) => void;
 
+  onCustomCategoryChange:
+    (value: string) => void;
+
   onDescriptionChange:
     (value: string) => void;
 
@@ -159,6 +162,7 @@ export default function EditServiceListingPageUI({
   onDeleteImage,
   onTitleChange,
   onCategoryChange,
+  onCustomCategoryChange,
   onDescriptionChange,
   onDeliverablesChange,
   onCustomerPreparationChange,
@@ -626,6 +630,9 @@ export default function EditServiceListingPageUI({
           mediaBusy={mediaBusy}
           onTitleChange={onTitleChange}
           onCategoryChange={onCategoryChange}
+          onCustomCategoryChange={
+            onCustomCategoryChange
+          }
           onDescriptionChange={onDescriptionChange}
           onDeliverablesChange={onDeliverablesChange}
           onCustomerPreparationChange={onCustomerPreparationChange}

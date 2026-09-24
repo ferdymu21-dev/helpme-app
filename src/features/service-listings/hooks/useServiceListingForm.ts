@@ -5,6 +5,10 @@ import {
   useState,
 } from "react";
 
+import {
+  SERVICE_CATEGORY_VALUES,
+} from "../constants/service-categories";
+
 import type {
   ServiceModeValue,
 } from "../constants/service-mode";
@@ -60,7 +64,25 @@ export function useServiceListingForm(
     setValues(
       (current) => ({
         ...current,
+
         category,
+
+        customCategory:
+          category ===
+          SERVICE_CATEGORY_VALUES.OTHER
+            ? current.customCategory
+            : "",
+      }),
+    );
+  }
+
+  function setCustomCategory(
+    customCategory: string,
+  ) {
+    setValues(
+      (current) => ({
+        ...current,
+        customCategory,
       }),
     );
   }
@@ -162,6 +184,9 @@ export function useServiceListingForm(
 
     onCategoryChange:
       setCategory,
+
+    onCustomCategoryChange:
+      setCustomCategory,
 
     onDescriptionChange:
       setDescription,

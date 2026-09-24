@@ -1,4 +1,9 @@
 import {
+  getCanonicalServiceCategory,
+  SERVICE_CATEGORY_VALUES,
+} from "../constants/service-categories";
+
+import {
   ServiceMode,
 } from "../constants/service-mode";
 
@@ -119,11 +124,32 @@ export function validateAndNormalizeServiceListingEditableFields(
       "Judul jasa",
     );
 
-  const category =
+  const categoryInput =
     normalizeRequiredText(
       payload.category,
       "Kategori jasa",
     );
+
+  const category =
+    getCanonicalServiceCategory(
+      categoryInput,
+    );
+
+  if (category === null) {
+    throw new Error(
+      "Kategori jasa tidak valid.",
+    );
+  }
+
+  const customCategory =
+    category ===
+    SERVICE_CATEGORY_VALUES.OTHER
+      ? normalizeRequiredText(
+          payload.customCategory ??
+            "",
+          "Jenis jasa lainnya",
+        )
+      : null;
 
   const description =
     normalizeRequiredText(
@@ -182,6 +208,8 @@ export function validateAndNormalizeServiceListingEditableFields(
     title,
 
     category,
+
+    customCategory,
 
     description,
 

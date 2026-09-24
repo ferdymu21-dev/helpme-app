@@ -1,4 +1,8 @@
 import {
+  getCanonicalServiceCategory,
+} from "../constants/service-categories";
+
+import {
   ServiceMode,
 } from "../constants/service-mode";
 
@@ -20,6 +24,9 @@ export function createEmptyServiceListingFormValues(): ServiceListingFormValues 
       "",
 
     category:
+      "",
+
+    customCategory:
       "",
 
     description:
@@ -48,12 +55,22 @@ export function createEmptyServiceListingFormValues(): ServiceListingFormValues 
 export function createServiceListingFormValuesFromListing(
   listing: ProviderServiceListing,
 ): ServiceListingFormValues {
+  const canonicalCategory =
+    getCanonicalServiceCategory(
+      listing.category,
+    );
+
   return {
     title:
       listing.title,
 
     category:
+      canonicalCategory ??
       listing.category,
+
+    customCategory:
+      listing.customCategory ??
+      "",
 
     description:
       listing.description,
@@ -102,6 +119,9 @@ export function createServiceListingEditableFieldsFromForm(
     category:
       values.category,
 
+    customCategory:
+      values.customCategory,
+
     description:
       values.description,
 
@@ -133,6 +153,8 @@ export function areServiceListingFormValuesEqual(
       second.title &&
     first.category ===
       second.category &&
+    first.customCategory ===
+      second.customCategory &&
     first.description ===
       second.description &&
     first.deliverables ===

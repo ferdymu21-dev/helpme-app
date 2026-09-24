@@ -51,6 +51,9 @@ interface CreateServiceListingPageUIProps {
   onCategoryChange:
     (value: string) => void;
 
+  onCustomCategoryChange:
+    (value: string) => void;
+
   onDescriptionChange:
     (value: string) => void;
 
@@ -88,6 +91,7 @@ export default function CreateServiceListingPageUI({
   onSubmit,
   onTitleChange,
   onCategoryChange,
+  onCustomCategoryChange,
   onDescriptionChange,
   onDeliverablesChange,
   onCustomerPreparationChange,
@@ -487,6 +491,9 @@ export default function CreateServiceListingPageUI({
           mediaBusy={false}
           onTitleChange={onTitleChange}
           onCategoryChange={onCategoryChange}
+          onCustomCategoryChange={
+            onCustomCategoryChange
+          }
           onDescriptionChange={onDescriptionChange}
           onDeliverablesChange={onDeliverablesChange}
           onCustomerPreparationChange={onCustomerPreparationChange}

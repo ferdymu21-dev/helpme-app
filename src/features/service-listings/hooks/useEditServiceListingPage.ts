@@ -310,6 +310,9 @@ export function useEditServiceListingPage(listingId: string) {
 
     onCategoryChange: form.onCategoryChange,
 
+    onCustomCategoryChange:
+      form.onCustomCategoryChange,
+
     onDescriptionChange: form.onDescriptionChange,
 
     onDeliverablesChange: form.onDeliverablesChange,

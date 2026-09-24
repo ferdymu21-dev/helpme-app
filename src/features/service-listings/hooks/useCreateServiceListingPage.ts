@@ -132,6 +132,9 @@ export function useCreateServiceListingPage() {
     onCategoryChange:
       form.onCategoryChange,
 
+    onCustomCategoryChange:
+      form.onCustomCategoryChange,
+
     onDescriptionChange:
       form.onDescriptionChange,
 

@@ -50,6 +50,9 @@ interface ServiceListingFormProps {
   onCategoryChange:
     (value: string) => void;
 
+  onCustomCategoryChange:
+    (value: string) => void;
+
   onDescriptionChange:
     (value: string) => void;
 
@@ -101,6 +104,7 @@ export default function ServiceListingForm({
   mediaBusy,
   onTitleChange,
   onCategoryChange,
+  onCustomCategoryChange,
   onDescriptionChange,
   onDeliverablesChange,
   onCustomerPreparationChange,
@@ -137,9 +141,15 @@ export default function ServiceListingForm({
         <BasicInformationSection
           title={values.title}
           category={values.category}
+          customCategory={
+            values.customCategory
+          }
           description={values.description}
           onTitleChange={onTitleChange}
           onCategoryChange={onCategoryChange}
+          onCustomCategoryChange={
+            onCustomCategoryChange
+          }
           onDescriptionChange={
             onDescriptionChange
           }

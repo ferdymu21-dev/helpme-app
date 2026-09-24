@@ -259,7 +259,10 @@ function readBlockedFromStatus(
 
 function parseMyServiceListingDetailRecord(
   row: Record<string, unknown>,
-): MyServiceListingDetailRpcRow {
+): Omit<
+  MyServiceListingRpcRow,
+  "total_count"
+> {
   return {
     id:
       readString(
@@ -404,9 +407,17 @@ export function parseMyServiceListingDetailRpcRow(
       "get_my_service_listing_detail row",
     );
 
-  return parseMyServiceListingDetailRecord(
-    row,
-  );
+  return {
+    ...parseMyServiceListingDetailRecord(
+      row,
+    ),
+
+    custom_category:
+      readNullableString(
+        row,
+        "custom_category",
+      ),
+  };
 }
 
 export function parseMyServiceListingRpcRow(
@@ -796,6 +807,9 @@ export function mapMyServiceListingDetailRpcRow(
     category:
       row.category,
 
+    customCategory:
+      row.custom_category,
+
     description:
       row.description,
 
@@ -859,7 +873,12 @@ export function mapMyServiceListingRpcRow(
   row: MyServiceListingRpcRow,
 ): ProviderServiceListing {
   return mapMyServiceListingDetailRpcRow(
-    row,
+    {
+      ...row,
+
+      custom_category:
+        null,
+    },
   );
 }
 

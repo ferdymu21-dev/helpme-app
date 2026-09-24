@@ -26,6 +26,9 @@ export function validateAndNormalizeServiceListingUpdate(
     category:
       payload.category,
 
+    customCategory:
+      payload.customCategory,
+
     description:
       payload.description,
 

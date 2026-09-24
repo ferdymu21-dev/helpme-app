@@ -24,6 +24,8 @@ export interface ServiceListingEditableFields {
 
   category: string;
 
+  customCategory: string | null;
+
   description: string;
 
   deliverables: string;

@@ -7,6 +7,8 @@ export interface ServiceListingFormValues {
 
   category: string;
 
+  customCategory: string;
+
   description: string;
 
   deliverables: string;

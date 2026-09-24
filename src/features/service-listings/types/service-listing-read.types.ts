@@ -18,6 +18,8 @@ export interface ProviderServiceListing {
 
   category: string;
 
+  customCategory: string | null;
+
   description: string;
 
   deliverables: string;
@@ -265,7 +267,9 @@ export type MyServiceListingDetailRpcRow =
   Omit<
     MyServiceListingRpcRow,
     "total_count"
-  >;
+  > & {
+    custom_category: string | null;
+  };
 
 /**
  * Normalized raw row returned by

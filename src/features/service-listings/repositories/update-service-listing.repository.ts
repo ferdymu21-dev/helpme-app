@@ -49,6 +49,9 @@ export async function updateServiceListingRepository(
       p_category:
         payload.category,
 
+      p_custom_category:
+        payload.customCategory,
+
       p_description:
         payload.description,
 
