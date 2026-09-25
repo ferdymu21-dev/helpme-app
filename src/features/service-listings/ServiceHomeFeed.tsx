@@ -142,8 +142,8 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
           <h2
             className={
               isDesktop
-                ? "text-2xl font-black tracking-tight text-slate-950"
-                : "text-xl font-black tracking-tight text-slate-950"
+                ? "text-xl font-black tracking-tight text-slate-950"
+                : "text-base font-black tracking-tight text-slate-950"
             }
           >
             Jasa untukmu
@@ -153,12 +153,10 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
             className={
               isDesktop
                 ? "mt-1.5 max-w-xl text-sm leading-6 text-slate-500"
-                : "mt-1 max-w-xs text-xs leading-5 text-slate-500"
+                : "mt-1 max-w-xs text-[10px] leading-4 text-slate-500"
             }
           >
-            Temukan layanan dari
-            provider HelpMe sesuai
-            kebutuhanmu.
+            Temukan layanan yang sesuai dengan kebutuhanmu.
           </p>
         </div>
 
@@ -166,18 +164,21 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
           href="/services"
           className="
             inline-flex
-            min-h-9
+            min-h-7.5
             shrink-0
             items-center
             gap-1.5
             rounded-full
             border
             border-slate-200
-            bg-white
+            bg-linear-to-r
+            from-indigo-600
+            via-violet-600
+            to-fuchsia-600
             px-3
-            text-xs
-            font-bold
-            text-slate-700
+            text-[10px]
+            font-semibold
+            text-white
             transition
             hover:border-indigo-200
             hover:text-indigo-700
@@ -524,7 +525,7 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
           <div
             className={
               isDesktop
-                ? "mt-7 grid grid-cols-2 gap-5 xl:grid-cols-3 2xl:grid-cols-4"
+                ? "mt-7 grid grid-cols-1 gap-5 xl:grid-cols-2"
                 : "mt-4 space-y-3"
             }
           >
@@ -551,314 +552,457 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
                   key={listing.id}
                   href={`/services/${listing.id}`}
                   className="
-  group
-  overflow-hidden
-  rounded-3xl
-  border
-  border-slate-200/90
-  bg-white
-  transition
-  duration-200
-  hover:-translate-y-0.5
-  hover:border-indigo-200
-  hover:shadow-md
-"
+                    group
+                    flex
+                    min-w-0
+                    overflow-hidden
+                    rounded-3xl
+                    border
+                    border-slate-200/80
+                    bg-white
+                    shadow-[0_10px_30px_rgba(15,23,42,0.06)]
+                    transition
+                    duration-200
+                    hover:-translate-y-0.5
+                    hover:border-indigo-200
+                    hover:shadow-[0_16px_36px_rgba(79,70,229,0.12)]
+                  "
                 >
                   <div
-                    className="
-                        relative
-                        aspect-video
-                        overflow-hidden
-                        bg-slate-100
-                      "
+                    className={
+                      isDesktop
+                        ? `
+                            relative
+                            m-3
+                            mr-0
+                            w-44
+                            shrink-0
+                            overflow-hidden
+                            rounded-2xl
+                            bg-slate-100
+                          `
+                        : `
+                            relative
+                            m-3
+                            mr-0
+                            w-28
+                            shrink-0
+                            overflow-hidden
+                            rounded-2xl
+                            bg-slate-100
+                          `
+                    }
                   >
                     {coverUrl ? (
                       <Image
                         src={coverUrl}
-                        unoptimized={process.env.NODE_ENV === "development"}
+                        unoptimized={
+                          process.env.NODE_ENV ===
+                          "development"
+                        }
                         alt={listing.title}
                         fill
                         sizes={
-                          isDesktop ? "(max-width: 1280px) 50vw, 25vw" : "100vw"
+                          isDesktop
+                            ? "176px"
+                            : "112px"
                         }
                         className="
-                            object-cover
-                            transition
-                            duration-300
-                            group-hover:scale-[1.02]
-                          "
+                          object-cover
+                          transition
+                          duration-300
+                          group-hover:scale-[1.03]
+                        "
                       />
                     ) : (
                       <div
                         className="
-                            flex
-                            h-full
-                            items-center
-                            justify-center
-                            text-xs
-                            font-bold
-                            text-slate-400
-                          "
+                          flex
+                          h-full
+                          min-h-44
+                          items-center
+                          justify-center
+                          px-3
+                          text-center
+                          text-[10px]
+                          font-bold
+                          text-slate-400
+                        "
                       >
                         HelpMe Jasa
                       </div>
                     )}
-
-                    <span
-                      className="
-  absolute
-  top-3
-  left-3
-  max-w-[75%]
-  truncate
-  rounded-full
-  border
-  border-white/70
-  bg-white/90
-  px-2.5
-  py-1.5
-  text-[9px]
-  font-bold
-  text-slate-700
-  backdrop-blur
-"
-                    >
-                      {listing.category}
-                    </span>
                   </div>
 
                   <div
-  className={
-    isDesktop
-      ? "p-5"
-      : "p-4"
-  }
->
-  <h3
-    className="
-      line-clamp-2
-      text-base
-      font-black
-      leading-6
-      tracking-tight
-      text-slate-950
-      transition
-      group-hover:text-indigo-700
-    "
-  >
-    {listing.title}
-  </h3>
+                    className={
+                      isDesktop
+                        ? `
+                            flex
+                            min-w-0
+                            flex-1
+                            flex-col
+                            p-5
+                          `
+                        : `
+                            flex
+                            min-w-0
+                            flex-1
+                            flex-col
+                            p-3.5
+                          `
+                    }
+                  >
+                    <div
+                      className="
+                        flex
+                        min-w-0
+                        items-start
+                        justify-between
+                        gap-3
+                      "
+                    >
+                      <h3
+                        className={
+                          isDesktop
+                            ? `
+                                line-clamp-2
+                                min-w-0
+                                flex-1
+                                text-lg
+                                font-black
+                                leading-6
+                                tracking-tight
+                                text-slate-950
+                                transition
+                                group-hover:text-indigo-700
+                              `
+                            : `
+                                line-clamp-2
+                                min-w-0
+                                flex-1
+                                text-[12px]
+                                font-black
+                                leading-4.5
+                                tracking-tight
+                                text-slate-950
+                              `
+                        }
+                      >
+                        {listing.title}
+                      </h3>
 
-  <div
-    className="
-      mt-3
-      flex
-      min-w-0
-      items-center
-      gap-1.5
-    "
-  >
-    <span
-      className="
-        truncate
-        text-xs
-        font-bold
-        text-slate-700
-      "
-    >
-      {providerName}
-    </span>
+                      {listing.provider.rating !==
+                        null && (
+                        <span
+                          className="
+                            inline-flex
+                            shrink-0
+                            items-center
+                            gap-1
+                            whitespace-nowrap
+                            text-[11px]
+                            font-bold
+                            text-slate-600
+                          "
+                        >
+                          <Star
+                            aria-hidden="true"
+                            className="
+                              h-4
+                              w-4
+                              fill-amber-400
+                              text-amber-400
+                            "
+                          />
 
-    {verified && (
-      <CircleCheck
-        aria-label="Provider terverifikasi"
-        className="
-          h-4
-          w-4
-          shrink-0
-          text-indigo-600
-        "
-      />
-    )}
-  </div>
+                          {listing.provider.rating.toFixed(
+                            1,
+                          )}
 
-  <div
-    className="
-      mt-3
-      flex
-      flex-wrap
-      items-center
-      gap-x-2
-      gap-y-1.5
-      text-[11px]
-      text-slate-500
-    "
-  >
-    <span
-      className="
-        inline-flex
-        items-center
-        gap-1
-      "
-    >
-      {listing.serviceMode ===
-      ServiceMode.OFFLINE ? (
-        <MapPin
-          aria-hidden="true"
-          className="h-3.5 w-3.5"
-        />
-      ) : (
-        <Globe2
-          aria-hidden="true"
-          className="h-3.5 w-3.5"
-        />
-      )}
+                          {listing.provider
+                            .totalReviews !==
+                            null && (
+                            <span className="font-medium text-slate-400">
+                              (
+                              {
+                                listing.provider
+                                  .totalReviews
+                              }
+                              )
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
 
-      {getServiceModeLabel(
-        listing.serviceMode,
-      )}
-    </span>
+                    <div
+                      className="
+                        mt-2.5
+                        flex
+                        min-w-0
+                        items-center
+                        gap-2
+                      "
+                    >
+                      {listing.provider
+                        .avatarUrl ? (
+                        <div
+                          role="img"
+                          aria-label={`Foto ${providerName}`}
+                          style={{
+                            backgroundImage: `url(${JSON.stringify(
+                              listing.provider
+                                .avatarUrl,
+                            )})`,
+                          }}
+                          className="
+                            h-8
+                            w-8
+                            shrink-0
+                            rounded-full
+                            bg-slate-100
+                            bg-cover
+                            bg-center
+                            ring-1
+                            ring-slate-200
+                          "
+                        />
+                      ) : (
+                        <div
+                          className="
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-indigo-100
+                            text-[11px]
+                            font-black
+                            text-indigo-700
+                          "
+                        >
+                          {providerName
+                            .charAt(0)
+                            .toUpperCase() ||
+                            "H"}
+                        </div>
+                      )}
 
-    {showsLocation && (
-      <>
-        <span
-          aria-hidden="true"
-          className="text-slate-300"
-        >
-          •
-        </span>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="
+                            flex
+                            min-w-0
+                            items-center
+                            gap-1
+                          "
+                        >
+                          <span
+                            className="
+                              truncate
+                              text-[11px]
+                              font-bold
+                              text-slate-700
+                            "
+                          >
+                            {providerName}
+                          </span>
 
-        <span
-          className="
-            inline-flex
-            min-w-0
-            items-center
-            gap-1
-          "
-        >
-          <MapPin
-            aria-hidden="true"
-            className="
-              h-3.5
-              w-3.5
-              shrink-0
-            "
-          />
+                          {verified && (
+                            <CircleCheck
+                              aria-label="Provider terverifikasi"
+                              className="
+                                h-3.5
+                                w-3.5
+                                shrink-0
+                                text-indigo-600
+                              "
+                            />
+                          )}
+                        </div>
 
-          <span className="truncate">
-            {listing.locationName}
-          </span>
-        </span>
-      </>
-    )}
+                        <div
+                          className="
+                            mt-0.5
+                            flex
+                            min-w-0
+                            items-center
+                            gap-1.5
+                            text-[9px]
+                            font-medium
+                            text-slate-400
+                          "
+                        >
+                          <span
+                            className="
+                              inline-flex
+                              shrink-0
+                              items-center
+                              gap-1
+                            "
+                          >
+                            {listing.serviceMode ===
+                            ServiceMode.OFFLINE ? (
+                              <MapPin
+                                aria-hidden="true"
+                                className="h-3 w-3"
+                              />
+                            ) : (
+                              <Globe2
+                                aria-hidden="true"
+                                className="h-3 w-3"
+                              />
+                            )}
 
-    {listing.provider.rating !==
-      null && (
-      <>
-        <span
-          aria-hidden="true"
-          className="text-slate-300"
-        >
-          •
-        </span>
+                            {getServiceModeLabel(
+                              listing.serviceMode,
+                            )}
+                          </span>
 
-        <span
-          className="
-            inline-flex
-            items-center
-            gap-1
-          "
-        >
-          <Star
-            aria-hidden="true"
-            className="h-3.5 w-3.5"
-          />
+                          {showsLocation && (
+                            <>
+                              <span
+                                aria-hidden="true"
+                                className="text-slate-300"
+                              >
+                                ·
+                              </span>
 
-          {listing.provider.rating.toFixed(
-            1,
-          )}
+                              <span className="min-w-0 truncate">
+                                {listing.locationName}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-          {listing.provider
-            .totalReviews !==
-            null && (
-            <span>
-              (
-              {
-                listing.provider
-                  .totalReviews
-              }
-              )
-            </span>
-          )}
-        </span>
-      </>
-    )}
-  </div>
+                    <p
+                      className={
+                        isDesktop
+                          ? `
+                              mt-3
+                              line-clamp-2
+                              text-xs
+                              leading-5
+                              text-slate-500
+                            `
+                          : `
+                              mt-2.5
+                              line-clamp-2
+                              text-[10px]
+                              leading-3.75
+                              text-slate-500
+                            `
+                      }
+                    >
+                      {listing.description}
+                    </p>
 
-  <div
-    className="
-      mt-5
-      flex
-      items-end
-      justify-between
-      gap-4
-      border-t
-      border-slate-100
-      pt-4
-    "
-  >
-    <div>
-      <p
-        className="
-          text-[9px]
-          font-bold
-          tracking-wide
-          text-slate-400
-          uppercase
-        "
-      >
-        Mulai dari
-      </p>
+                    <div
+                      className="
+                        mt-auto
+                        flex
+                        items-end
+                        justify-between
+                        gap-3
+                        pt-3
+                      "
+                    >
+                      <div className="min-w-0">
+                        <p
+                          className="
+                            text-[9px]
+                            font-semibold
+                            text-slate-400
+                          "
+                        >
+                          Mulai dari
+                        </p>
 
-      <p
-        className="
-          mt-0.5
-          text-base
-          font-black
-          tracking-tight
-          text-slate-950
-        "
-      >
-        {PRICE_FORMATTER.format(
-          listing.priceFrom,
-        )}
-      </p>
-    </div>
+                        <p
+                          className={
+                            isDesktop
+                              ? `
+                                  mt-0.5
+                                  truncate
+                                  text-xl
+                                  font-black
+                                  tracking-tight
+                                  text-orange-600
+                                `
+                              : `
+                                  mt-0.5
+                                  truncate
+                                  text-sm
+                                  font-black
+                                  tracking-tight
+                                  text-orange-600
+                                `
+                          }
+                        >
+                          {PRICE_FORMATTER.format(
+                            listing.priceFrom,
+                          )}
+                        </p>
+                      </div>
 
-    <span
-      className="
-        inline-flex
-        items-center
-        gap-1
-        text-[11px]
-        font-bold
-        text-indigo-600
-      "
-    >
-      Lihat detail
+                      <span
+                        className={
+                          isDesktop
+                            ? `
+                                inline-flex
+                                shrink-0
+                                items-center
+                                gap-1.5
+                                rounded-2xl
+                                bg-linear-to-r
+                                from-indigo-600
+                                via-violet-600
+                                to-fuchsia-600
+                                px-4
+                                py-2.5
+                                text-xs
+                                font-bold
+                                text-white
+                                shadow-[0_8px_20px_rgba(99,102,241,0.25)]
+                              `
+                            : `
+                                inline-flex
+                                shrink-0
+                                items-center
+                                gap-1
+                                rounded-xl
+                                bg-linear-to-r
+                                from-indigo-600
+                                via-violet-600
+                                to-fuchsia-600
+                                px-2.5
+                                py-2
+                                text-[9px]
+                                font-bold
+                                text-white
+                                shadow-sm
+                              `
+                        }
+                      >
+                        Lihat detail
 
-      <ArrowRight
-        aria-hidden="true"
-        className="
-          h-3.5
-          w-3.5
-          transition
-          group-hover:translate-x-0.5
-        "
-      />
-    </span>
-  </div>
-</div>
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="
+                            h-3.5
+                            w-3.5
+                            transition
+                            group-hover:translate-x-0.5
+                          "
+                        />
+                      </span>
+                    </div>
+                  </div>
                 </Link>
               );
             })}
