@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
@@ -13,6 +14,9 @@ import { recordCampaignClickAction } from "@/features/campaigns/actions";
 export default function NotificationsPage() {
   const router = useRouter();
 
+  const [openingNotificationId, setOpeningNotificationId] =
+    useState<string | null>(null);
+
   const {
     notifications,
     loading,
@@ -24,23 +28,36 @@ export default function NotificationsPage() {
 
   const hasUnread = notifications.some((notification) => !notification.is_read);
 
-  async function handleRead(notification: Notification) {
-    try {
-      await readNotification(notification.id);
-    } catch (error) {
-      console.error("Gagal menandai notification sebagai read:", error);
+  function handleRead(notification: Notification) {
+    const redirectUrl =
+      notification.redirect_url;
 
-      return;
+    if (redirectUrl) {
+      setOpeningNotificationId(
+        notification.id,
+      );
     }
 
-    try {
-      await recordCampaignClickAction(notification.id);
-    } catch (error) {
-      console.error("Gagal mencatat campaign click:", error);
-    }
+    void readNotification(
+      notification.id,
+    ).catch((error) => {
+      console.error(
+        "Gagal menandai notification sebagai read:",
+        error,
+      );
+    });
 
-    if (notification.redirect_url) {
-      router.push(notification.redirect_url);
+    void recordCampaignClickAction(
+      notification.id,
+    ).catch((error) => {
+      console.error(
+        "Gagal mencatat campaign click:",
+        error,
+      );
+    });
+
+    if (redirectUrl) {
+      router.push(redirectUrl);
     }
   }
 
@@ -49,6 +66,9 @@ export default function NotificationsPage() {
       notifications={notifications}
       loading={loading}
       onRead={handleRead}
+      openingNotificationId={
+        openingNotificationId
+      }
       onMarkAllRead={readAllNotifications}
       hasUnread={hasUnread}
       onLoadMore={loadMore}

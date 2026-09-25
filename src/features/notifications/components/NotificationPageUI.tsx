@@ -25,6 +25,8 @@ interface Props {
   onMarkAllRead: () => Promise<void>;
 
   onRead: (notification: Notification) => void;
+
+  openingNotificationId: string | null;
 }
 
 export default function NotificationPageUI({
@@ -35,6 +37,7 @@ export default function NotificationPageUI({
   onLoadMore,
   onMarkAllRead,
   onRead,
+  openingNotificationId,
 }: Props) {
   const [activeFilter, setActiveFilter] = useState<NotificationCategoryValue>(
     NotificationCategory.ALL,
@@ -121,6 +124,10 @@ export default function NotificationPageUI({
               key={notification.id}
               notification={notification}
               onRead={onRead}
+              isOpening={
+                openingNotificationId ===
+                notification.id
+              }
             />
           ))}
         </div>
