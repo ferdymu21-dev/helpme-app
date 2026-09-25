@@ -196,6 +196,30 @@ function getPublicationActionLabel(
   }
 }
 
+function getPublicationActionDescription(
+  status: ProviderServiceListing["status"],
+): string | null {
+  switch (status) {
+    case ServiceListingStatus.DRAFT:
+      return "Publikasikan jasa agar dapat ditemukan dan diminta oleh pelanggan.";
+
+    case ServiceListingStatus.PAYMENT_PENDING:
+      return "Selesaikan pembayaran agar proses publikasi jasa dapat dilanjutkan.";
+
+    case ServiceListingStatus.ACTIVE:
+      return "Perpanjang masa aktif jasa selama 30 hari agar tetap dapat ditemukan pelanggan.";
+
+    case ServiceListingStatus.PAUSED:
+      return "Perpanjang masa aktif jasa selama 30 hari meskipun jasa sedang dijeda.";
+
+    case ServiceListingStatus.EXPIRED:
+      return "Perpanjang jasa agar kembali aktif dan dapat ditemukan oleh pelanggan.";
+
+    case ServiceListingStatus.BLOCKED:
+    case ServiceListingStatus.ARCHIVED:
+      return null;
+  }
+}
 function getModeLabel(mode: ProviderServiceListing["serviceMode"]): string {
   switch (mode) {
     case ServiceMode.ONLINE:
@@ -359,6 +383,9 @@ export default function PreviewServiceListingPageUI({
 
   const publicationActionLabel = getPublicationActionLabel(listing.status);
 
+  const publicationActionDescription =
+    getPublicationActionDescription(listing.status);
+
   const formattedExpiresAt = formatDate(listing.expiresAt);
 
   const actionBusy = publicationBusy || lifecycleBusy;
@@ -462,7 +489,7 @@ export default function PreviewServiceListingPageUI({
         text-slate-500
       "
             >
-              Atur publikasi dan preview jasa
+              Publikasikan, perpanjang, dan atur status jasa
             </p>
           </div>
         </header>
@@ -512,7 +539,7 @@ export default function PreviewServiceListingPageUI({
         text-indigo-950
       "
               >
-                Kelola publikasi jasa
+                Siapkan jasa untuk pelanggan
               </p>
 
               <p
@@ -523,8 +550,8 @@ export default function PreviewServiceListingPageUI({
         text-indigo-700
       "
               >
-                Atur status publikasi, perpanjangan, dan lihat tampilan jasa
-                yang akan dilihat pelanggan.
+                Cek status, lakukan publikasi, lalu lihat tampilan jasa
+                seperti yang akan dilihat pelanggan.
               </p>
             </div>
           </div>
@@ -792,13 +819,36 @@ export default function PreviewServiceListingPageUI({
               "
             >
               {publicationActionLabel && (
-                <button
+                <>
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-indigo-100
+                      bg-indigo-50/70
+                      px-4
+                      py-3.5
+                    "
+                  >
+                    <p className="text-[10px] font-black tracking-wide text-indigo-500 uppercase">
+                      Langkah berikutnya
+                    </p>
+
+                    {publicationActionDescription && (
+                      <p className="mt-1 text-xs leading-5 text-indigo-800">
+                        {publicationActionDescription}
+                      </p>
+                    )}
+                  </div>
+
+                  <button
                   type="button"
                   disabled={actionBusy}
                   onClick={onPublication}
                   className="
           inline-flex
-          min-h-11
+          min-h-12
+          w-full
           items-center
           justify-center
           gap-2
@@ -834,7 +884,8 @@ export default function PreviewServiceListingPageUI({
                       {publicationActionLabel}
                     </>
                   )}
-                </button>
+                  </button>
+                </>
               )}
 
               <div
