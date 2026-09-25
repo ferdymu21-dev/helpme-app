@@ -9,6 +9,8 @@ interface ServiceListingActionBarProps {
 
   previewDisabled?: boolean;
 
+  previewLabel?: string;
+
   submitLabel: string;
 
   loadingLabel: string;
@@ -21,6 +23,7 @@ export default function ServiceListingActionBar({
   loading,
   disabled = false,
   previewDisabled = false,
+  previewLabel = "Preview",
   submitLabel,
   loadingLabel,
   onPreview,
@@ -74,7 +77,7 @@ export default function ServiceListingActionBar({
           "
           >
             <Eye size={17} strokeWidth={2} />
-            Preview
+            {previewLabel}
           </button>
         )}
 
@@ -134,18 +137,21 @@ export default function ServiceListingActionBar({
               type="button"
               disabled={isPreviewDisabled}
               onClick={onPreview}
-              aria-label="Preview jasa"
+              aria-label={previewLabel}
               className="
               flex
               h-12
               min-w-12
               items-center
               justify-center
+              gap-2
               rounded-xl
               border
               border-slate-200
               bg-white
-              px-4
+              px-3
+              text-[11px]
+              font-bold
               text-slate-700
               transition
               active:scale-[0.98]
@@ -154,6 +160,7 @@ export default function ServiceListingActionBar({
             "
             >
               <Eye size={18} strokeWidth={2} />
+              {previewLabel}
             </button>
           )}
 

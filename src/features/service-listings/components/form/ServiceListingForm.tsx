@@ -89,6 +89,8 @@ interface ServiceListingFormProps {
   onDeleteImage:
     (imageId: string) => void;
 
+  previewLabel?: string;
+
   onPreview?: () => void;
 }
 
@@ -116,6 +118,7 @@ export default function ServiceListingForm({
   onUploadCover,
   onUploadPortfolio,
   onDeleteImage,
+  previewLabel,
   onPreview,
 }: ServiceListingFormProps) {
   return (
@@ -229,6 +232,7 @@ export default function ServiceListingForm({
         }
         submitLabel={submitLabel}
         loadingLabel={loadingLabel}
+        previewLabel={previewLabel}
         onPreview={onPreview}
       />
     </form>

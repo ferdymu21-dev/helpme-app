@@ -345,7 +345,7 @@ export function useEditServiceListingPage(listingId: string) {
     );
 
     setErrorMessage(
-      "Simpan perubahan terlebih dahulu sebelum membuka preview agar preview menampilkan versi terbaru.",
+      "Simpan perubahan terlebih dahulu sebelum melanjutkan ke Kelola & Publikasikan agar data terbaru tersimpan.",
     );
 
     return;

@@ -511,8 +511,7 @@ export default function EditServiceListingPageUI({
             text-amber-700
           "
               >
-                Simpan perubahan agar data terbaru dapat ditampilkan pada
-                preview.
+                Simpan perubahan, lalu lanjutkan ke Kelola & Publikasikan untuk mengecek dan mempublikasikan jasa.
               </p>
             </div>
           </div>
@@ -644,6 +643,7 @@ export default function EditServiceListingPageUI({
           onUploadCover={onUploadCover}
           onUploadPortfolio={onUploadPortfolio}
           onDeleteImage={onDeleteImage}
+          previewLabel="Kelola & Publikasikan"
           onPreview={onPreview}
         />
       </div>
