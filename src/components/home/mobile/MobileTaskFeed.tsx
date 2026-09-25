@@ -1,8 +1,13 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 
-import { getTaskCategoryDefinition } from "@/features/tasks/constants/task-categories";
+import {
+  getTaskCategoryDefinition,
+  getTaskCategoryHeroImage,
+} from "@/features/tasks/constants/task-categories";
 
 import { TASK_FEED_FILTERS } from "@/features/tasks/constants/task-feed-filters";
 
@@ -451,98 +456,131 @@ export default function MobileTaskFeed({
 
               const CategoryIcon = category.icon;
 
+              const heroImage = getTaskCategoryHeroImage(task.category);
+
               return (
                 <Link
                   key={task.id}
                   href={`/tasks/${task.id}`}
                   className={`
-    group
-    relative
-    block
-    overflow-hidden
-    rounded-[22px]
-    border
-    p-4
-    transition
-    active:scale-[0.985]
+                    group
+                    block
+                    overflow-hidden
+                    rounded-[22px]
+                    border
+                    bg-white
+                    shadow-[0_10px_30px_rgba(15,23,42,0.06)]
+                    transition
+                    duration-200
+                    active:scale-[0.985]
 
-    ${
-      task.is_urgent
-        ? `
-          border-rose-200
-          bg-linear-to-br
-          from-rose-100/80
-          via-white
-          to-white
-          shadow-[0_8px_24px_rgba(225,29,72,0.07)]
-        `
-        : `
-          border-slate-200
-          bg-white
-          shadow-[0_8px_22px_rgba(15,23,42,0.04)]
-        `
-    }
-  `}
+                    ${
+                      task.is_urgent
+                        ? `
+                            border-rose-200
+                            shadow-[0_12px_32px_rgba(225,29,72,0.08)]
+                          `
+                        : `
+                            border-slate-200/80
+                          `
+                    }
+                  `}
                 >
-                  {/* TOP */}
+                  {/* COVER */}
                   <div
                     className="
-                      flex
-                      items-start
-                      justify-between
-                      gap-3
+                      relative
+                      h-32
+                      overflow-hidden
+                      bg-slate-100
                     "
                   >
+                    <Image
+                      src={heroImage}
+                      alt={`Kategori ${category.label}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 420px"
+                      className="
+                        object-cover
+                        transition
+                        duration-300
+                        group-hover:scale-[1.02]
+                      "
+                    />
+
                     <div
                       className="
+                        absolute
+                        inset-0
+                        bg-linear-to-t
+                        from-slate-950/50
+                        via-slate-950/5
+                        to-transparent
+                      "
+                    />
+
+                    {/* CATEGORY */}
+                    <div
+                      className="
+                        absolute
+                        top-3
+                        left-3
                         inline-flex
-                        h-6
+                        h-7
                         items-center
                         gap-1.5
                         rounded-full
-                        bg-indigo-50
-                        px-2
+                        border
+                        border-white/70
+                        bg-white/90
+                        px-2.5
                         text-[9px]
                         font-bold
-                        text-indigo-700
+                        text-slate-700
+                        shadow-sm
+                        backdrop-blur-md
                       "
                     >
-                      <CategoryIcon className="h-2.5 w-2.5" strokeWidth={2} />
+                      <CategoryIcon
+                        className="h-3 w-3 text-indigo-600"
+                        strokeWidth={2}
+                      />
 
                       {category.label}
                     </div>
 
+                    {/* STATUS */}
                     <div
                       className="
+                        absolute
+                        top-3
+                        right-3
                         flex
-                        flex-wrap
                         items-center
-                        justify-end
-                        gap-1
+                        gap-1.5
                       "
                     >
                       {task.is_urgent && (
                         <span
                           className="
                             inline-flex
-                            h-6
+                            h-7
                             items-center
                             gap-1
                             rounded-full
-                            bg-red-100
-                            px-2
+                            bg-rose-500
+                            px-2.5
                             text-[9px]
                             font-black
-                            text-red-700
+                            text-white
+                            shadow-sm
                           "
                         >
                           <Flame
-                            className="
-                              h-2.5
-                              w-2.5
-                            "
+                            className="h-3 w-3"
                             strokeWidth={2.2}
                           />
+
                           Mendesak
                         </span>
                       )}
@@ -550,14 +588,18 @@ export default function MobileTaskFeed({
                       <span
                         className="
                           inline-flex
-                          h-6
+                          h-7
                           items-center
                           rounded-full
-                          bg-emerald-50
-                          px-2
+                          border
+                          border-white/70
+                          bg-white/90
+                          px-2.5
                           text-[9px]
                           font-bold
                           text-emerald-700
+                          shadow-sm
+                          backdrop-blur-md
                         "
                       >
                         {getStatusLabel(task.status)}
@@ -565,146 +607,257 @@ export default function MobileTaskFeed({
                     </div>
                   </div>
 
-                  {/* TITLE */}
-                  <h3
-                    className="
-                      mt-2
-                      line-clamp-2
-                      text-[15px]
-                      font-black
-                      leading-5
-                      tracking-tight
-                      text-slate-950
-                    "
-                  >
-                    {task.title}
-                  </h3>
-
-                  {/* META */}
-                  <div
-                    className="
-    mt-2
-    space-y-2
-    border-t
-    border-slate-300
-    pt-3
-  "
-                  >
-                    {/* LOCATION */}
-                    <div
+                  {/* CONTENT */}
+                  <div className="p-3.5">
+                    <h3
                       className="
-      flex
-      min-w-0
-      items-center
-      gap-1.5
-      text-[10px]
-      text-slate-700
-    "
-                    >
-                      <MapPin
-                        className="h-3 w-3 shrink-0 text-slate-400"
-                        strokeWidth={2.5}
-                      />
-
-                      <span className="truncate">{location}</span>
-                    </div>
-
-                    {/* SCHEDULE */}
-                    {task.scheduled_at && (
-                      <div
-                        className="
-        flex
-        flex-wrap
-        items-center
-        gap-x-3
-        gap-y-1.5
-        text-slate-700
-      "
-                      >
-                        <span className="inline-flex items-center text-[10px] gap-1">
-                          <CalendarDays className="h-3 w-3" strokeWidth={2} />
-
-                          {new Date(task.scheduled_at).toLocaleDateString(
-                            "id-ID",
-                            {
-                              day: "numeric",
-                              month: "short",
-                            },
-                          )}
-                        </span>
-
-                        <span className="inline-flex items-center text-[10px] gap-1.5">
-                          <Clock3 className="h-3 w-3" strokeWidth={2.5} />
-
-                          {new Date(task.scheduled_at).toLocaleTimeString(
-                            "id-ID",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* DISTANCE */}
-                    <div className="flex items-center gap-1.5 text-[10.5px] text-slate-700">
-                      <Navigation
-                        className="h-3 w-3 shrink-0"
-                        strokeWidth={2.5}
-                      />
-                      {task.distance_km.toFixed(1)} km dari kamu
-                    </div>
-                  </div>
-
-                  {/* BOTTOM */}
-                  <div
-                    className="
-                      mt-4
-                      flex
-                      items-end
-                      justify-between
-                      gap-3
-                    "
-                  >
-                    <div>
-                      <p
-                        className="
-                          text-[11.5px]
-                          font-bold
-                          text-slate-700
-                        "
-                      >
-                        Budget
-                      </p>
-
-                      <p
-                        className="
-                          mt-0.5
-                          text-[17px]
-                          font-black
-                          tracking-tight
-                          text-emerald-500
-                        "
-                      >
-                        Rp
-                        {task.budget.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-
-                    <div
-                      className="
-                        flex
-                        h-8
-                        w-8
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-slate-50
-                        text-slate-400
+                        line-clamp-2
+                        text-[14px]
+                        font-black
+                        leading-4.5
+                        tracking-tight
+                        text-slate-950
                       "
                     >
-                      <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                      {task.title}
+                    </h3>
+
+                    {task.description && (
+                      <p
+                        className="
+                          mt-1
+                          line-clamp-1
+                          text-[9.5px]
+                          leading-3.5
+                          text-slate-500
+                        "
+                      >
+                        {task.description}
+                      </p>
+                    )}
+
+                    {/* META */}
+                    <div
+                      className="
+                        mt-2.5
+                        space-y-1.5
+                      "
+                    >
+                      {/* LOCATION + DISTANCE */}
+                      <div
+                        className="
+                          flex
+                          min-w-0
+                          items-center
+                          justify-between
+                          gap-2
+                          rounded-xl
+                          bg-slate-50
+                          px-2.5
+                          py-1.5
+                          text-[9px]
+                          text-slate-600
+                        "
+                      >
+                        <span
+                          className="
+                            flex
+                            min-w-0
+                            items-center
+                            gap-1.5
+                          "
+                        >
+                          <MapPin
+                            className="
+                              h-3
+                              w-3
+                              shrink-0
+                              text-indigo-500
+                            "
+                            strokeWidth={2}
+                          />
+
+                          <span className="truncate">
+                            {location}
+                          </span>
+                        </span>
+
+                        <span
+                          className="
+                            inline-flex
+                            shrink-0
+                            items-center
+                            gap-1
+                            text-slate-500
+                          "
+                        >
+                          <Navigation
+                            className="
+                              h-3
+                              w-3
+                              shrink-0
+                              text-indigo-500
+                            "
+                            strokeWidth={2}
+                          />
+
+                          {task.distance_km.toFixed(
+                            1,
+                          )}{" "}
+                          km dari kamu
+                        </span>
+                      </div>
+
+                      {/* DATE + TIME */}
+                      {task.scheduled_at && (
+                        <div
+                          className="
+                            grid
+                            grid-cols-2
+                            gap-1.5
+                          "
+                        >
+                          <div
+                            className="
+                              flex
+                              items-center
+                              gap-1.5
+                              rounded-xl
+                              bg-slate-50
+                              px-2.5
+                              py-1.5
+                              text-[9px]
+                              text-slate-600
+                            "
+                          >
+                            <CalendarDays
+                              className="
+                                h-3
+                                w-3
+                                shrink-0
+                                text-indigo-500
+                              "
+                              strokeWidth={2}
+                            />
+
+                            <span className="truncate">
+                              {new Date(
+                                task.scheduled_at,
+                              ).toLocaleDateString(
+                                "id-ID",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                },
+                              )}
+                            </span>
+                          </div>
+
+                          <div
+                            className="
+                              flex
+                              items-center
+                              gap-1.5
+                              rounded-xl
+                              bg-slate-50
+                              px-2.5
+                              py-1.5
+                              text-[9px]
+                              text-slate-600
+                            "
+                          >
+                            <Clock3
+                              className="
+                                h-3
+                                w-3
+                                shrink-0
+                                text-indigo-500
+                              "
+                              strokeWidth={2}
+                            />
+
+                            <span>
+                              {new Date(
+                                task.scheduled_at,
+                              ).toLocaleTimeString(
+                                "id-ID",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* FOOTER */}
+                    <div
+                      className="
+                        mt-3
+                        flex
+                        items-end
+                        justify-between
+                        gap-3
+                        border-t
+                        border-slate-100
+                        pt-3
+                      "
+                    >
+                      <div className="min-w-0">
+                        <p
+                          className="
+                            text-[10px]
+                            font-semibold
+                            text-slate-400
+                          "
+                        >
+                          Budget
+                        </p>
+
+                        <p
+                          className="
+                            mt-0.5
+                            truncate
+                            text-[16px]
+                            font-black
+                            tracking-tight
+                            text-green-500
+                          "
+                        >
+                          Rp
+                          {task.budget.toLocaleString(
+                            "id-ID",
+                          )}
+                        </p>
+                      </div>
+
+                      <span
+                        className="
+                          inline-flex
+                          shrink-0
+                          items-center
+                          gap-1.5
+                          rounded-xl
+                          bg-linear-to-r
+                          from-indigo-600
+                          via-violet-600
+                          to-fuchsia-600
+                          px-2.5
+                          py-2
+                          text-[9px]
+                          font-bold
+                          text-white
+                          shadow-[0_8px_18px_rgba(99,102,241,0.24)]
+                        "
+                      >
+
+                        <ChevronRight
+                          className="h-3.5 w-3.5"
+                          strokeWidth={2}
+                        />
+                      </span>
                     </div>
                   </div>
                 </Link>
