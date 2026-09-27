@@ -38,6 +38,10 @@ import { ServiceMode } from "./constants/service-mode";
 
 import type { ServiceModeValue } from "./constants/service-mode";
 
+import ServiceSaveButton from "./components/ServiceSaveButton";
+
+import { useSavedServiceListings } from "./hooks/useSavedServiceListings";
+
 import { useServiceDiscovery } from "./hooks/useServiceDiscovery";
 
 import { getServiceListingMediaPublicUrl } from "./utils/service-listing-media-url";
@@ -149,6 +153,9 @@ function isProviderVerified(verificationStatus: string | null): boolean {
 
 function ServiceDiscoveryPageContent() {
   const discovery = useServiceDiscovery();
+
+  const saved =
+    useSavedServiceListings();
 
   const [filtersOpen, setFiltersOpen] = useState(true);
 
@@ -844,11 +851,38 @@ function ServiceDiscoveryPageContent() {
                   listing.locationName;
 
                 return (
-                  <Link
+
+
+                  <article
+
+
                     key={listing.id}
-                    href={`/services/${listing.id}`}
+
+
+                    className="
+
+
+                      relative
+
+
+                      min-w-0
+
+
+                    "
+
+
+                  >
+
+
+                    <Link
+
+
+                      href={`/services/${listing.id}`}
                     className="
     group
+    block
+    h-full
+    w-full
     overflow-hidden
     rounded-2xl
     border
@@ -1236,12 +1270,56 @@ function ServiceDiscoveryPageContent() {
                         </span>
                       </div>
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
+                      </Link>
 
-            {discovery.totalPages > 1 && (
+
+                      <div
+
+                        className="
+
+                          absolute
+
+                          right-4
+        top-4
+
+                          z-20
+
+                        "
+
+                      >
+
+                        <ServiceSaveButton
+                          listingId={listing.id}
+                          isSaved={
+                            saved.isSaved(
+                              listing.id,
+                            )
+                          }
+                          isPending={
+                            saved.isPending(
+                              listing.id,
+                            )
+                          }
+
+                          isAuthenticated={
+                            saved.isAuthenticated
+                          }
+                          loadingState={
+                            saved.authLoading ||
+                            saved.loading
+                          }
+                          size="SMALL"
+                          onToggle={
+                            saved.toggleSaved
+                          }
+                        />
+                      </div>
+                    </article>
+                  );
+                  })}
+                  </div>
+
+                  {discovery.totalPages > 1 && (
               <nav
                 aria-label="Pagination jasa"
                 className="

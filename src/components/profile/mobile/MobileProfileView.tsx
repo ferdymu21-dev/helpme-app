@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ChevronRight,
   BriefcaseBusiness,
+  Bookmark,
   ClipboardList,
   CreditCard,
   Flag,
@@ -67,6 +68,13 @@ const ACTIVITY_MENU = [
     href: "/my-services",
     icon: BriefcaseBusiness,
   },
+  {
+    label: "Jasa Tersimpan",
+    description: "Lihat jasa yang Anda simpan",
+    href: "/saved-services",
+    icon: Bookmark,
+  },
+
   {
     label: "Riwayat Task",
     description: "Lihat task yang pernah Anda jalankan",

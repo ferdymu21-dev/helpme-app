@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
@@ -29,6 +29,10 @@ import { ServiceMode } from "./constants/service-mode";
 import type { ProviderServiceListingMedia } from "./types/service-listing-media.types";
 
 import ServiceListingReportAction from "./components/ServiceListingReportAction";
+
+import ServiceSaveButton from "./components/ServiceSaveButton";
+
+import { useSavedServiceListings } from "./hooks/useSavedServiceListings";
 
 import type { PublicServiceListingDetail } from "./types/service-listing-read.types";
 
@@ -276,6 +280,9 @@ export default function ServiceListingDetailPageUI({
   const lastScrollYRef =
     useRef(0);
 
+  const saved =
+    useSavedServiceListings();
+
   useEffect(() => {
     lastScrollYRef.current =
       window.scrollY;
@@ -451,6 +458,39 @@ export default function ServiceListingDetailPageUI({
               Detail Jasa
             </p>
           </div>
+
+          <div
+            className="
+              ml-auto
+              shrink-0
+            "
+          >
+            <ServiceSaveButton
+              listingId={listing.id}
+              isSaved={
+                saved.isSaved(
+                  listing.id,
+                )
+              }
+              isPending={
+                saved.isPending(
+                  listing.id,
+                )
+              }
+              isAuthenticated={
+                saved.isAuthenticated
+              }
+              loadingState={
+                saved.authLoading ||
+                saved.loading
+              }
+              variant="LABEL"
+              onToggle={
+                saved.toggleSaved
+              }
+            />
+          </div>
+
         </div>
 
         <div

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import {
+  Bookmark,
   ChevronRight,
   ClipboardList,
   CreditCard,
@@ -18,6 +19,12 @@ interface Props {
 
 const ACTIVITY_ACTIONS = [
   {
+    title: "Jasa Tersimpan",
+    subtitle:
+      "Akses kembali jasa yang ingin Anda gunakan nanti.",
+    href: "/saved-services",
+    icon: Bookmark,
+  },  {
     title: "Riwayat Task",
     subtitle:
       "Lihat seluruh task yang pernah dijalankan.",
@@ -79,8 +86,9 @@ export default function DesktopQuickActions({
           className="
             mt-4
             grid
-            grid-cols-3
+            grid-cols-2
             gap-4
+            xl:grid-cols-4
           "
         >
           {ACTIVITY_ACTIONS.map(
