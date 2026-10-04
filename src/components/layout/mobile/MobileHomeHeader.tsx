@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { useAuthStore } from "@/store/auth.store";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -32,6 +32,68 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
   const { hasUnread, unreadCount } = useNotificationBadge();
 
   const router = useRouter();
+
+  const [
+    isHeaderVisible,
+    setIsHeaderVisible,
+  ] = useState(true);
+
+  const lastScrollYRef =
+    useRef(0);
+
+  useEffect(() => {
+    lastScrollYRef.current =
+      Math.max(window.scrollY, 0);
+
+    function handleScroll() {
+      const currentScrollY =
+        Math.max(window.scrollY, 0);
+
+      if (currentScrollY <= 80) {
+        setIsHeaderVisible(true);
+
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      const delta =
+        currentScrollY -
+        lastScrollYRef.current;
+
+      if (delta >= 12) {
+        setIsHeaderVisible(false);
+
+        lastScrollYRef.current =
+          currentScrollY;
+
+        return;
+      }
+
+      if (delta <= -12) {
+        setIsHeaderVisible(true);
+
+        lastScrollYRef.current =
+          currentScrollY;
+      }
+    }
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
+  }, []);
 
     useEffect(() => {
     if (!userId) {
@@ -111,167 +173,235 @@ export default function MobileHomeHeader({ onOpenSupport }: Props) {
 
   return (
     <header
-  className="
+  className={`
     sticky
     top-0
     z-30
-    border-b
-    border-slate-200/80
-    bg-white/90
-    backdrop-blur-xl
-  "
+    px-3
+    pt-3
+    transition-all
+    duration-300
+    ease-out
+    will-change-transform
+
+    ${
+      isHeaderVisible
+        ? "translate-y-0 opacity-100"
+        : "-translate-y-[calc(100%+0.75rem)] pointer-events-none opacity-0"
+    }
+  `}
 >
-      <div
+  <div
+    className="
+      mx-auto
+      flex
+      h-15
+      max-w-300
+      items-center
+      justify-between
+      rounded-3xl
+      border
+      border-white/90
+      bg-linear-to-r
+      from-white
+      via-white/95
+      to-indigo-50/80
+      px-4
+      shadow-[0_10px_30px_rgba(15,23,42,0.08)]
+      backdrop-blur-xl
+      sm:px-5
+    "
+  >
+    {/* LOGO */}
+    <Link
+      href="/home"
+      aria-label="HelpMe"
+      className="
+        shrink-0
+        transition
+        active:scale-[0.98]
+      "
+    >
+      <Image
+        src="/logo_brand.svg"
+        alt="HelpMe"
+        width={112}
+        height={32}
+        priority
         className="
-  mx-auto
-  flex
-  h-18
-  max-w-300
-  items-center
-  justify-between
-  px-5
-"
+          h-auto
+          w-28
+        "
+      />
+    </Link>
+
+    {/* ACTIONS */}
+    <div
+      className="
+        flex
+        shrink-0
+        items-center
+        gap-2.5
+      "
+    >
+      {/* SUPPORT */}
+      <button
+        type="button"
+        onClick={onOpenSupport}
+        aria-label="Support HelpMe"
+        title="Support HelpMe"
+        className="
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-slate-200/80
+          bg-white
+          shadow-[0_6px_18px_rgba(15,23,42,0.07)]
+          transition-all
+          duration-200
+          hover:-translate-y-0.5
+          hover:border-indigo-200
+          hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)]
+          active:scale-95
+        "
       >
-        {/* LEFT */}
         <Image
-          src="/logo_brand.svg"
-          alt="HelpMe Logo"
-          width={120}
-          height={34}
-          priority
-          className="h-auto w-30"
+          src="/icons/support.svg"
+          alt=""
+          width={22}
+          height={22}
+          className="object-contain"
+          aria-hidden="true"
         />
+      </button>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onOpenSupport}
-            className="
-  flex
-  h-10
-  w-10
-  items-center
-  justify-center
-  rounded-full
-  border
-  border-slate-200
-  bg-white
-  shadow-sm
-  transition
-  hover:border-pink-200
-  hover:bg-pink-50
-  active:scale-95
-"
-            title="Support HelpMe"
-          >
-            <Image
-              src="/icons/support.svg"
-              alt="Support HelpMe"
-              width={24}
-              height={24}
-              className="object-contain"
-            />
-          </button>
+      {/* NOTIFICATION */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() =>
+            router.push("/notifications")
+          }
+          aria-label="Notifikasi"
+          title="Notifikasi"
+          className="
+            relative
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-full
+            border
+            border-slate-200/80
+            bg-white
+            shadow-[0_6px_18px_rgba(15,23,42,0.07)]
+            transition-all
+            duration-200
+            hover:-translate-y-0.5
+            hover:border-indigo-200
+            hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)]
+            active:scale-95
+          "
+        >
+          <Image
+            src="/icons/notif.svg"
+            alt=""
+            width={22}
+            height={22}
+            className="object-contain"
+            aria-hidden="true"
+          />
 
-          {/* NOTIFICATION */}
-          <div className="relative">
-            <button
-              onClick={() => router.push("/notifications")}
+          {hasUnread && (
+            <span
               className="
-  relative
-  flex
-  h-10
-  w-10
-  items-center
-  justify-center
-  rounded-full
-  border
-  border-slate-200
-  bg-white
-  shadow-sm
-  transition
-  hover:bg-slate-50
-  active:scale-95
-"
+                absolute
+                -right-0.5
+                -top-0.5
+                flex
+                min-h-4.5
+                min-w-4.5
+                items-center
+                justify-center
+                rounded-full
+                bg-red-500
+                px-1
+                text-[9px]
+                font-black
+                leading-none
+                text-white
+                ring-2
+                ring-white
+              "
             >
-              <Image
-                src="/icons/notif.svg"
-                alt="Notifications"
-                width={24}
-                height={24}
-                className="object-contain"
-              />
-
-              {hasUnread && (
-                <span
-                  className="
-absolute
--right-1
--top-1
-flex
-min-h-5
-min-w-5
-items-center
-justify-center
-rounded-full
-bg-red-500
-px-1
-text-[10px]
-font-bold
-leading-none
-text-white
-"
-                >
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* PROFILE */}
-          <Link href="/profile">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Profile"
-                className="
-  h-10
-  w-10
-  rounded-full
-  border-2
-  border-white
-  object-cover
-  shadow-sm
-  ring-1
-  ring-slate-200
-"
-              />
-            ) : (
-              <div
-                className="
-  flex
-  h-10
-  w-10
-  items-center
-  justify-center
-  rounded-full
-  border-2
-  border-white
-  bg-indigo-100
-  text-xs
-  font-black
-  text-indigo-700
-  shadow-sm
-  ring-1
-  ring-slate-200
-"
-              >
-                {initials}
-              </div>
-            )}
-          </Link>
-        </div>
+              {unreadCount > 99
+                ? "99+"
+                : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
-    </header>
+
+      {/* PROFILE */}
+      <Link
+        href="/profile"
+        aria-label="Profil saya"
+        title="Profil saya"
+        className="
+          shrink-0
+          rounded-full
+          transition
+          active:scale-95
+        "
+      >
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt="Profile"
+            className="
+              h-10
+              w-10
+              rounded-full
+              border-2
+              border-white
+              bg-slate-100
+              object-cover
+              shadow-[0_6px_18px_rgba(15,23,42,0.08)]
+              ring-1
+              ring-indigo-100
+            "
+          />
+        ) : (
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              border-2
+              border-white
+              bg-indigo-50
+              text-xs
+              font-black
+              text-indigo-700
+              shadow-[0_6px_18px_rgba(15,23,42,0.08)]
+              ring-1
+              ring-indigo-100
+            "
+          >
+            {initials}
+          </div>
+        )}
+      </Link>
+    </div>
+  </div>
+</header>
   );
 }
