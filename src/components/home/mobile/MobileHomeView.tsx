@@ -83,7 +83,21 @@ export default function MobileHomeView({
   onFeedChange,
 }: Props) {
   return (
-    <div className="min-h-screen bg-slate-50 pb-32 lg:hidden">
+    <div
+      className={`
+        min-h-screen
+        pb-32
+        lg:hidden
+        bg-linear-to-br
+        transition-colors
+        duration-300
+        ${
+          activeFeed === "services"
+            ? "from-amber-50 via-slate-50 to-white"
+            : "from-indigo-50 via-slate-50 to-white"
+        }
+      `}
+    >
       <MobileHomeHeader onOpenSupport={onOpenSupport} />
 
       {pendingPaymentLoading ? (

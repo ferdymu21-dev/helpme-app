@@ -131,20 +131,20 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
               className={
                 isDesktop
                   ? "text-xl font-black tracking-tight text-slate-950"
-                  : "text-base font-black tracking-tight text-slate-950"
+                  : "text-[12px] font-black tracking-tight text-slate-950"
               }
             >
-              Jasa untukmu
+              Jasa Untukmu
             </h2>
 
             <p
               className={
                 isDesktop
                   ? "mt-1.5 max-w-xl text-sm leading-6 text-slate-500"
-                  : "mt-1 max-w-xs text-[10px] leading-4 text-slate-500"
+                  : "mt-0.5 max-w-xs text-[10px] leading-3 text-slate-500"
               }
             >
-              Temukan layanan yang sesuai dengan kebutuhanmu.
+              Temukan layanan sesuai dengan kebutuhanmu.
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default function ServiceHomeFeed({ variant }: ServiceHomeFeedProps) {
             via-violet-600
             to-fuchsia-600
             px-3
-            text-[10px]
+            text-[9px]
             font-semibold
             text-white
             transition
