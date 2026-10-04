@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import Link from "next/link";
+
 import {
   AlertCircle,
   CheckCircle2,
@@ -81,6 +83,16 @@ export default function RegisterForm() {
     setConfirmationEmail,
   ] = useState("");
 
+  const [
+    privacyAcknowledged,
+    setPrivacyAcknowledged
+  ] = useState(false);
+
+  const [
+    privacyError,
+    setPrivacyError
+  ] = useState("");
+
   function clearFieldError(
     field: keyof RegisterFormValues,
   ) {
@@ -99,6 +111,15 @@ export default function RegisterForm() {
 
     setFormError("");
     setFieldErrors({});
+    setPrivacyError("");
+
+    if (!privacyAcknowledged) {
+      setPrivacyError(
+        "Silakan baca dan pahami Kebijakan Privasi HelpMe terlebih dahulu.",
+      );
+
+      return;
+    }
 
     const result =
       registerSchema.safeParse({
@@ -287,11 +308,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <form
-      onSubmit={handleRegister}
-      className="space-y-5"
-      noValidate
-    >
+    <form onSubmit={handleRegister} className="space-y-5" noValidate>
       {formError && (
         <div
           role="alert"
@@ -358,23 +375,15 @@ export default function RegisterForm() {
             type="text"
             value={fullName}
             onChange={(event) => {
-              setFullName(
-                event.target.value,
-              );
+              setFullName(event.target.value);
 
-              clearFieldError(
-                "full_name",
-              );
+              clearFieldError("full_name");
             }}
             placeholder="Nama lengkap Anda"
             autoComplete="name"
             required
             disabled={loading}
-            aria-invalid={
-              Boolean(
-                fieldErrors.full_name,
-              )
-            }
+            aria-invalid={Boolean(fieldErrors.full_name)}
             className="
               w-full
               rounded-2xl
@@ -449,24 +458,16 @@ export default function RegisterForm() {
             type="email"
             value={email}
             onChange={(event) => {
-              setEmail(
-                event.target.value,
-              );
+              setEmail(event.target.value);
 
-              clearFieldError(
-                "email",
-              );
+              clearFieldError("email");
             }}
             placeholder="nama@email.com"
             autoComplete="email"
             inputMode="email"
             required
             disabled={loading}
-            aria-invalid={
-              Boolean(
-                fieldErrors.email,
-              )
-            }
+            aria-invalid={Boolean(fieldErrors.email)}
             className="
               w-full
               rounded-2xl
@@ -538,30 +539,18 @@ export default function RegisterForm() {
 
           <input
             id="register-password"
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(event) => {
-              setPassword(
-                event.target.value,
-              );
+              setPassword(event.target.value);
 
-              clearFieldError(
-                "password",
-              );
+              clearFieldError("password");
             }}
             placeholder="Minimal 8 karakter"
             autoComplete="new-password"
             required
             disabled={loading}
-            aria-invalid={
-              Boolean(
-                fieldErrors.password,
-              )
-            }
+            aria-invalid={Boolean(fieldErrors.password)}
             className="
               w-full
               rounded-2xl
@@ -589,17 +578,10 @@ export default function RegisterForm() {
 
           <button
             type="button"
-            onClick={() =>
-              setShowPassword(
-                (current) =>
-                  !current,
-              )
-            }
+            onClick={() => setShowPassword((current) => !current)}
             disabled={loading}
             aria-label={
-              showPassword
-                ? "Sembunyikan kata sandi"
-                : "Tampilkan kata sandi"
+              showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
             }
             className="
               absolute
@@ -623,15 +605,9 @@ export default function RegisterForm() {
             "
           >
             {showPassword ? (
-              <EyeOff
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
             ) : (
-              <Eye
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <Eye className="h-5 w-5" aria-hidden="true" />
             )}
           </button>
         </div>
@@ -691,30 +667,18 @@ export default function RegisterForm() {
 
           <input
             id="register-confirm-password"
-            type={
-              showConfirmPassword
-                ? "text"
-                : "password"
-            }
+            type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
             onChange={(event) => {
-              setConfirmPassword(
-                event.target.value,
-              );
+              setConfirmPassword(event.target.value);
 
-              clearFieldError(
-                "confirm_password",
-              );
+              clearFieldError("confirm_password");
             }}
             placeholder="Ulangi kata sandi"
             autoComplete="new-password"
             required
             disabled={loading}
-            aria-invalid={
-              Boolean(
-                fieldErrors.confirm_password,
-              )
-            }
+            aria-invalid={Boolean(fieldErrors.confirm_password)}
             className="
               w-full
               rounded-2xl
@@ -742,12 +706,7 @@ export default function RegisterForm() {
 
           <button
             type="button"
-            onClick={() =>
-              setShowConfirmPassword(
-                (current) =>
-                  !current,
-              )
-            }
+            onClick={() => setShowConfirmPassword((current) => !current)}
             disabled={loading}
             aria-label={
               showConfirmPassword
@@ -776,15 +735,9 @@ export default function RegisterForm() {
             "
           >
             {showConfirmPassword ? (
-              <EyeOff
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
             ) : (
-              <Eye
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
+              <Eye className="h-5 w-5" aria-hidden="true" />
             )}
           </button>
         </div>
@@ -797,9 +750,74 @@ export default function RegisterForm() {
               text-red-600
             "
           >
-            {
-              fieldErrors.confirm_password
+            {fieldErrors.confirm_password}
+          </p>
+        )}
+      </div>
+
+      {/* PRIVACY POLICY */}
+      <div
+        className="
+    rounded-2xl
+    border
+    border-slate-200
+    bg-slate-50
+    px-4
+    py-3.5
+  "
+      >
+        <div className="flex items-start gap-3">
+          <input
+            id="register-privacy"
+            type="checkbox"
+            checked={privacyAcknowledged}
+            onChange={(event) => {
+              setPrivacyAcknowledged(event.target.checked);
+              setPrivacyError("");
+            }}
+            disabled={loading}
+            required
+            aria-invalid={Boolean(privacyError)}
+            aria-describedby={
+              privacyError ? "register-privacy-error" : undefined
             }
+            className="
+        mt-1
+        h-4
+        w-4
+        shrink-0
+        rounded
+        border-slate-300
+        text-primary-600
+        focus:ring-primary-500
+      "
+          />
+
+          <div className="text-sm leading-6 text-slate-600">
+            <label htmlFor="register-privacy" className="cursor-pointer">
+              Saya telah membaca dan memahami{" "}
+            </label>
+            <Link
+              href="/privacy"
+              className="
+          font-semibold
+          text-primary-600
+          transition
+          hover:text-primary-500
+        "
+            >
+              Kebijakan Privasi HelpMe
+            </Link>
+            .
+          </div>
+        </div>
+
+        {privacyError && (
+          <p
+            id="register-privacy-error"
+            className="mt-2 pl-7 text-sm text-red-600"
+          >
+            {privacyError}
           </p>
         )}
       </div>
@@ -842,9 +860,7 @@ export default function RegisterForm() {
           />
         )}
 
-        {loading
-          ? "Membuat akun..."
-          : "Buat akun HelpMe"}
+        {loading ? "Membuat akun..." : "Buat akun HelpMe"}
       </button>
     </form>
   );
