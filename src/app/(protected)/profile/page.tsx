@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import MobileProfileView from "@/components/profile/mobile/MobileProfileView";
-import DesktopProfileView from "@/components/profile/desktop/DesktopProfileView";
+
 
 import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 
@@ -297,10 +297,7 @@ export default function ProfilePage() {
     <>
       <MobileProfileView
         profile={profile}
-      />
-
-      <DesktopProfileView
-        profile={profile}
+        mobileFirstOnDesktop
       />
     </>
   );

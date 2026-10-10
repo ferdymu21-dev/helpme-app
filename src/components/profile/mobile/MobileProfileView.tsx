@@ -16,6 +16,7 @@ import {
   ClipboardList,
   CreditCard,
   Flag,
+  LayoutDashboard,
   MapPin,
   MessageSquareText,
   Pencil,
@@ -26,6 +27,8 @@ import {
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import ReportUserModal from "@/features/reports/components/ReportUserModal";
+
+import { useAuthStore } from "@/store/auth.store";
 
 interface Props {
   profile: {
@@ -59,6 +62,7 @@ interface Props {
   profileUserId?: string;
 
   isPublicProfile?: boolean;
+  mobileFirstOnDesktop?: boolean;
 }
 
 const ACTIVITY_MENU = [
@@ -99,8 +103,11 @@ export default function MobileProfileView({
   profile,
   profileUserId,
   isPublicProfile = false,
+  mobileFirstOnDesktop = false,
 }: Props) {
   const router = useRouter();
+
+  const role = useAuthStore((state) => state.role);
 
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -113,8 +120,11 @@ export default function MobileProfileView({
     <main
       className={`
         bg-slate-50
-        lg:hidden
-
+        ${
+          mobileFirstOnDesktop
+            ? "relative mx-auto min-h-screen w-full max-w-md lg:shadow-xl lg:ring-1 lg:ring-slate-200"
+            : "lg:hidden"
+        }
         ${isPublicProfile ? "pb-6" : "pb-32"}
       `}
     >
@@ -701,13 +711,45 @@ export default function MobileProfileView({
         )}
       </div>
 
+      {!isPublicProfile && role === "ADMIN" && (
+        <Link
+          href="/admin"
+          className="
+            mx-5
+            mt-3
+            flex
+            items-center
+            gap-3
+            rounded-3xl
+            bg-slate-950
+            px-4
+            py-4
+            text-white
+            shadow-sm
+            transition
+            hover:bg-slate-900
+          "
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10">
+            <LayoutDashboard className="h-4.5 w-4.5" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold">Admin Dashboard</p>
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-300">
+              Kelola administrasi HelpMe
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" strokeWidth={2} />
+        </Link>
+      )}
+
       <ReportUserModal
         open={showReportModal}
         onClose={() => setShowReportModal(false)}
         reportedUserId={profileUserId || ""}
       />
 
-      <MobileBottomNavbar />
+      <MobileBottomNavbar forceVisible={mobileFirstOnDesktop && !isPublicProfile} />
     </main>
   );
 }
