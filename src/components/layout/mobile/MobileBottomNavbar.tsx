@@ -60,7 +60,11 @@ const menus = [
   },
 ];
 
-export default function MobileBottomNavbar() {
+export default function MobileBottomNavbar({
+  forceVisible = false,
+}: {
+  forceVisible?: boolean;
+}) {
   const userId = useAuthStore((state) => state.user?.id ?? null);
 
   const [hasUnread, setHasUnread] = useState(false);
@@ -177,7 +181,7 @@ export default function MobileBottomNavbar() {
 
   return (
     <div
-      className="
+      className={`
         fixed
         bottom-0
         left-1/2
@@ -192,8 +196,8 @@ export default function MobileBottomNavbar() {
         p-0
         shadow-[0_20px_50px_rgba(15,23,42,0.12)]
         backdrop-blur
-        md:hidden
-      "
+        ${forceVisible ? "" : "md:hidden"}
+      `}
     >
       <div className="grid grid-cols-5 gap-2">
         {menus.map((menu) => {

@@ -14,8 +14,6 @@ import type { HomeFeedValue } from "@/components/home/HomeFeedSelector";
 
 import MobileHomeView from "@/components/home/mobile/MobileHomeView";
 
-import DesktopHomeView from "@/components/home/desktop/DesktopHomeView";
-
 import PaymentRoot from "@/features/payments/components/PaymentRoot";
 
 import PaymentResultDialog from "@/features/payments/components/dialog/PaymentResultDialog";
@@ -30,8 +28,6 @@ interface Coordinates {
   latitude: number;
   longitude: number;
 }
-
-type HomeViewport = "MOBILE" | "DESKTOP";
 
 function getLocationErrorMessage(error: GeolocationPositionError) {
   switch (error.code) {
@@ -58,8 +54,6 @@ function HomePageContent() {
   searchParams.get("feed") === "jasa"
     ? "services"
     : "tasks";
-
-  const [viewport, setViewport] = useState<HomeViewport | null>(null);
 
   const [openSupport, setOpenSupport] = useState(false);
 
@@ -92,33 +86,6 @@ function HomePageContent() {
   const requestIdRef = useRef(0);
 
   const searchDebounceRef = useRef<number | null>(null);
-
-  /* =========================
-     RESPONSIVE VIEW
-  ========================= */
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-
-    function updateViewport() {
-      setViewport(mediaQuery.matches ? "DESKTOP" : "MOBILE");
-    }
-
-    /*
-     * Jalankan melalui callback browser
-     * agar state tidak diubah langsung
-     * secara sinkron dari body effect.
-     */
-    const timeoutId = window.setTimeout(updateViewport, 0);
-
-    mediaQuery.addEventListener("change", updateViewport);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-
-      mediaQuery.removeEventListener("change", updateViewport);
-    };
-  }, []);
 
   /* =========================
    GET HELPER LOCATION
@@ -508,43 +475,14 @@ function HomePageContent() {
 
   return (
     <>
-      {viewport === "MOBILE" ? (
-        <MobileHomeView {...feedProps} />
-      ) : viewport === "DESKTOP" ? (
-        <DesktopHomeView {...feedProps} />
-      ) : (
-        <main
-          className="
-            flex
-            min-h-screen
-            items-center
-            justify-center
-            bg-slate-50
-            text-sm
-            text-slate-500
-          "
-        >
-          Menyiapkan tampilan...
-        </main>
-      )}
+      <MobileHomeView {...feedProps} />
 
-      {/*
-       * Hanya SATU PaymentRoot untuk
-       * Mobile + Desktop.
-       *
-       * View responsive hanya menangani
-       * presentation dan callback.
-       */}
       <PaymentRoot
         supportOpen={openSupport}
         onCloseSupport={() => setOpenSupport(false)}
         onPendingPaymentChange={pendingPayment.refresh}
       />
 
-      {/*
-       * Result untuk pembayaran yang
-       * dibuka kembali dari Pending Card.
-       */}
       {resumePayment.paymentType && (
         <PaymentResultDialog
           open={resumePayment.result.status !== "IDLE"}

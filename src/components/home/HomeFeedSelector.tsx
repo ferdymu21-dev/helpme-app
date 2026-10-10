@@ -26,19 +26,14 @@ export default function HomeFeedSelector({
       className="
         px-5
         pt-5
-        lg:px-8
-        lg:pt-7
-        xl:px-10
       "
     >
-      <div className="mx-auto max-w-360">
+      <div className="w-full">
         <div
           className="
             flex
             flex-col
             gap-3
-            sm:flex-row
-            sm:items-end
             sm:justify-between
           "
         >
@@ -68,7 +63,6 @@ export default function HomeFeedSelector({
               border-slate-200
               bg-slate-100
               p-0.5
-              sm:w-60
             "
           >
             <button

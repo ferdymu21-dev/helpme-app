@@ -85,16 +85,22 @@ export default function MobileHomeView({
   return (
     <div
       className={`
+        relative
+        mx-auto
         min-h-screen
+        w-full
+        max-w-md
         pb-32
-        lg:hidden
         bg-linear-to-br
         transition-colors
         duration-300
+        lg:shadow-xl
+        lg:ring-1
+        lg:ring-slate-200
         ${
           activeFeed === "services"
-            ? "from-amber-50 via-slate-50 to-white"
-            : "from-indigo-50 via-slate-50 to-white"
+            ? "from-amber-100 via-slate-50 to-white"
+            : "from-indigo-100 via-slate-50 to-white"
         }
       `}
     >
@@ -138,7 +144,7 @@ export default function MobileHomeView({
         <ServiceHomeFeed variant="MOBILE" />
       )}
 
-      <MobileBottomNavbar />
+      <MobileBottomNavbar forceVisible />
     </div>
   );
 }
