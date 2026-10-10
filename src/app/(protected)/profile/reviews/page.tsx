@@ -8,7 +8,6 @@ import {
 import { supabase } from "@/lib/supabase/client";
 
 import MobileReviewPage from "@/components/profile/mobile/MobileReviewPage";
-import DesktopReviewPage from "@/components/profile/desktop/DesktopReviewPage";
 
 import {
   getUserReviews,
@@ -135,19 +134,6 @@ export default function ProfileReviewsPage() {
   return (
     <>
       <MobileReviewPage
-        reviews={reviews}
-        hasMore={
-          hasMoreReviews
-        }
-        loading={
-          loadingMoreReviews
-        }
-        onLoadMore={
-          loadMoreReviews
-        }
-      />
-
-      <DesktopReviewPage
         reviews={reviews}
         hasMore={
           hasMoreReviews

@@ -22,10 +22,10 @@ export default function MobileReviewPage({
   return (
     <main
       className="
-        min-h-screen
+        relative mx-auto min-h-screen w-full max-w-md
         bg-slate-50
         pb-32
-        lg:hidden
+        lg:shadow-xl lg:ring-1 lg:ring-slate-200
       "
     >
       <div className="px-6 py-7">
@@ -40,7 +40,7 @@ export default function MobileReviewPage({
       {/* =========================
           MOBILE BOTTOM NAVBAR
       ========================= */}
-      <AutoHideMobileBottomNavbar />
+      <AutoHideMobileBottomNavbar forceVisible />
     </main>
   );
 }

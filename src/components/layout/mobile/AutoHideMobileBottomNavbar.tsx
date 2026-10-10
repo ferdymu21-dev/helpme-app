@@ -8,7 +8,11 @@ import {
 
 import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
-export default function AutoHideMobileBottomNavbar() {
+export default function AutoHideMobileBottomNavbar({
+  forceVisible = false,
+}: {
+  forceVisible?: boolean;
+}) {
   const [
     isVisible,
     setIsVisible,
@@ -92,8 +96,8 @@ export default function AutoHideMobileBottomNavbar() {
   }
 
   return (
-    <div className="lg:hidden">
-      <MobileBottomNavbar />
+    <div className={forceVisible ? "" : "lg:hidden"}>
+      <MobileBottomNavbar forceVisible={forceVisible} />
     </div>
   );
 }
