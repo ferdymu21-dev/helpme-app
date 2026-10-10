@@ -51,7 +51,14 @@ export default function MobileEditProfileView({
     profile.fullName?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-32 lg:hidden">
+    <main
+      className="
+        relative mx-auto min-h-screen w-full max-w-md
+        bg-slate-50
+        pb-32
+        lg:shadow-xl lg:ring-1 lg:ring-slate-200
+      "
+    >
       <div className="px-5 py-5">
         {/* HEADER */}
         <header className="flex items-center gap-3">
@@ -538,7 +545,7 @@ export default function MobileEditProfileView({
         </section>
       </div>
 
-      <MobileBottomNavbar />
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }

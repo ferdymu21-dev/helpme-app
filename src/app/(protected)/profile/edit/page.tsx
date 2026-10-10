@@ -9,7 +9,6 @@ import {
 import { useRouter } from "next/navigation";
 
 import MobileEditProfileView from "@/components/profile/mobile/MobileEditProfileView";
-import DesktopEditProfileView from "@/components/profile/desktop/DesktopEditProfileView";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -191,19 +190,6 @@ export default function EditProfilePage() {
   return (
     <>
       <MobileEditProfileView
-        profile={profile}
-        setProfile={
-          setProfile as Dispatch<
-            SetStateAction<ProfileData>
-          >
-        }
-        loading={saving}
-        avatarPreview={avatarPreview}
-        onAvatarChange={handleAvatarChange}
-        onSave={handleSaveProfile}
-      />
-
-      <DesktopEditProfileView
         profile={profile}
         setProfile={
           setProfile as Dispatch<
