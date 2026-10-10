@@ -95,11 +95,10 @@ export default function MobileHistoryView({
   return (
     <main
       className="
-        min-h-screen
+        relative mx-auto min-h-screen w-full max-w-md
         bg-slate-50
-        p-6
-        pb-32
-        lg:hidden
+        p-6 pb-32
+        lg:shadow-xl lg:ring-1 lg:ring-slate-200
       "
     >
       {/* =========================
@@ -421,7 +420,7 @@ export default function MobileHistoryView({
       {/* =========================
           MOBILE BOTTOM NAVBAR
       ========================= */}
-      {showMobileNavbar && <MobileBottomNavbar />}
+      {showMobileNavbar && <MobileBottomNavbar forceVisible />}
     </main>
   );
 }

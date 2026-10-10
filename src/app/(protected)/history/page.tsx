@@ -14,7 +14,6 @@ import type {
 } from "@/features/tasks/types/history";
 
 import MobileHistoryView from "@/components/history/mobile/MobileHistoryView";
-import DesktopHistoryView from "@/components/history/desktop/DesktopHistoryView";
 
 function normalizeHelperHistoryTask(task: {
   id: string;
@@ -112,14 +111,6 @@ export default function HistoryPage() {
       
 
       <MobileHistoryView
-        tasks={tasks}
-        loading={loading}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        router={router}
-      />
-
-      <DesktopHistoryView
         tasks={tasks}
         loading={loading}
         activeTab={activeTab}
