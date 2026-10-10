@@ -102,17 +102,17 @@ export default function SettingsPage() {
   return (
     <main
       className="
-        min-h-screen
+        relative mx-auto min-h-screen w-full max-w-md
         bg-slate-50
-        pb-28
-        lg:pb-14
+        pb-32
+        lg:shadow-xl lg:ring-1 lg:ring-slate-200
       "
     >
       {/* BACKGROUND */}
       <div
         className="
           pointer-events-none
-          fixed
+          absolute
           inset-x-0
           top-0
           h-72
@@ -127,12 +127,9 @@ export default function SettingsPage() {
         className="
           relative
           mx-auto
-          max-w-4xl
+          w-full
           px-5
           py-5
-          sm:px-6
-          lg:px-8
-          lg:py-10
         "
       >
         {/* HEADER */}
@@ -477,9 +474,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="lg:hidden">
-        <MobileBottomNavbar />
-      </div>
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }
