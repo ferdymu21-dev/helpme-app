@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
+
 import {
   ArrowLeft,
   Bookmark,
@@ -103,10 +105,10 @@ export default function SavedServicesPageUI() {
   return (
     <main
       className="
-        min-h-screen
+        relative mx-auto min-h-screen w-full max-w-md
         bg-slate-50
-        pb-28
-        lg:pb-16
+        pb-32
+        lg:shadow-xl lg:ring-1 lg:ring-slate-200
       "
     >
       <section
@@ -119,11 +121,9 @@ export default function SavedServicesPageUI() {
         <div
           className="
             mx-auto
-            max-w-7xl
+            w-full
             px-4
             py-6
-            sm:px-6
-            lg:px-8
           "
         >
           <div
@@ -178,7 +178,7 @@ export default function SavedServicesPageUI() {
                     font-black
                     tracking-tight
                     text-slate-950
-                    sm:text-2xl
+                    sm:text-base
                   "
                 >
                   Jasa Tersimpan
@@ -187,7 +187,7 @@ export default function SavedServicesPageUI() {
 
               <p
                 className="
-                  mt-1
+                  mt-0.5
                   max-w-2xl
                   text-[11px]
                   leading-4
@@ -204,11 +204,9 @@ export default function SavedServicesPageUI() {
       <section
         className="
           mx-auto
-          max-w-7xl
+          w-full
           px-4
           py-7
-          sm:px-6
-          lg:px-8
         "
       >
         {!savedPage.loading &&
@@ -261,11 +259,7 @@ export default function SavedServicesPageUI() {
         {savedPage.loading && (
           <div
             className="
-              grid
-              grid-cols-1
-              gap-5
-              sm:grid-cols-2
-              xl:grid-cols-3
+              grid grid-cols-1 gap-5
             "
           >
             {Array.from(
@@ -455,11 +449,7 @@ export default function SavedServicesPageUI() {
             <>
               <div
                 className="
-                  grid
-                  grid-cols-1
-                  gap-5
-                  sm:grid-cols-2
-                  xl:grid-cols-3
+                  grid grid-cols-1 gap-5
                 "
               >
                 {savedPage.items.map(
@@ -871,6 +861,7 @@ export default function SavedServicesPageUI() {
             </>
           )}
       </section>
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }
