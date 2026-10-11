@@ -1,8 +1,10 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import {
   ArrowLeft,
@@ -159,14 +161,116 @@ function ServiceDiscoveryPageContent() {
 
   const [filtersOpen, setFiltersOpen] = useState(true);
 
+  const modeFilterRef = useRef<HTMLDivElement>(null);
+  const categoryFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const filterElements = [
+      modeFilterRef.current,
+      categoryFilterRef.current,
+    ].filter(
+      (element): element is HTMLDivElement => element !== null,
+    );
+
+    const cleanupFunctions = filterElements.map((filterElement) => {
+      let isDragging = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let didDrag = false;
+
+      function handleWheel(event: WheelEvent) {
+        const delta =
+          Math.abs(event.deltaX) > Math.abs(event.deltaY)
+            ? event.deltaX
+            : event.deltaY;
+
+        const maxScrollLeft =
+          filterElement.scrollWidth - filterElement.clientWidth;
+        const nextScrollLeft = Math.max(
+          0,
+          Math.min(maxScrollLeft, filterElement.scrollLeft + delta),
+        );
+
+        if (nextScrollLeft === filterElement.scrollLeft) {
+          return;
+        }
+
+        event.preventDefault();
+        filterElement.scrollLeft = nextScrollLeft;
+      }
+
+      function handleMouseDown(event: MouseEvent) {
+        if (event.button !== 0) {
+          return;
+        }
+
+        isDragging = true;
+        didDrag = false;
+        startX = event.clientX;
+        startScrollLeft = filterElement.scrollLeft;
+        filterElement.classList.add("cursor-grabbing");
+      }
+
+      function handleMouseMove(event: MouseEvent) {
+        if (!isDragging) {
+          return;
+        }
+
+        const deltaX = event.clientX - startX;
+
+        if (Math.abs(deltaX) > 4) {
+          didDrag = true;
+        }
+
+        if (!didDrag) {
+          return;
+        }
+
+        event.preventDefault();
+        filterElement.scrollLeft = startScrollLeft - deltaX;
+      }
+
+      function handleMouseUp() {
+        if (!isDragging) {
+          return;
+        }
+
+        isDragging = false;
+        filterElement.classList.remove("cursor-grabbing");
+      }
+
+      function handleClickCapture(event: MouseEvent) {
+        if (!didDrag) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        didDrag = false;
+      }
+
+      filterElement.addEventListener("wheel", handleWheel, { passive: false });
+      filterElement.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      filterElement.addEventListener("click", handleClickCapture, true);
+
+      return () => {
+        filterElement.removeEventListener("wheel", handleWheel);
+        filterElement.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+        filterElement.removeEventListener("click", handleClickCapture, true);
+        filterElement.classList.remove("cursor-grabbing");
+      };
+    });
+
+    return () => cleanupFunctions.forEach((cleanup) => cleanup());
+  }, [filtersOpen]);
+
   return (
     <main
-      className="
-    min-h-screen
-    bg-slate-50
-    pb-24
-    lg:pb-14
-  "
+      className="relative mx-auto min-h-screen w-full max-w-md bg-slate-50 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200"
     >
       <section
         className="
@@ -176,17 +280,7 @@ function ServiceDiscoveryPageContent() {
   "
       >
         <div
-          className="
-      mx-auto
-      max-w-7xl
-      px-4
-      pt-5
-      pb-6
-      sm:px-6
-      sm:pt-7
-      sm:pb-8
-      lg:px-8
-    "
+          className="mx-auto w-full px-4 pt-5 pb-6"
         >
           {/* PAGE HEADER */}
           <div
@@ -239,7 +333,6 @@ function ServiceDiscoveryPageContent() {
               font-black
               tracking-tight
               text-slate-950
-              sm:text-3xl
             "
                 >
                   Cari Jasa
@@ -251,8 +344,6 @@ function ServiceDiscoveryPageContent() {
               text-[11px]
               leading-5
               text-slate-500
-              sm:text-sm
-              sm:leading-6
             "
                 >
                   Temukan layanan yang sesuai dengan kebutuhanmu.
@@ -272,7 +363,6 @@ function ServiceDiscoveryPageContent() {
           rounded-2xl
           bg-indigo-50
           text-indigo-600
-          sm:flex
         "
             >
               <Search className="h-6 w-6" strokeWidth={2} />
@@ -366,16 +456,9 @@ function ServiceDiscoveryPageContent() {
               <>
                 {/* MODE FILTER */}
                 <div
+                  ref={modeFilterRef}
                   id="service-mode-filters"
-                  className="
-              mt-3
-              flex
-              gap-2
-              overflow-x-auto
-              pb-1
-              scrollbar-none
-              [&::-webkit-scrollbar]:hidden
-            "
+                  className="mt-3 flex gap-2 overflow-x-auto pb-1 cursor-grab select-none scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
                   {MODE_OPTIONS.map((option) => {
                     const selected = discovery.serviceMode === option.value;
@@ -426,17 +509,9 @@ function ServiceDiscoveryPageContent() {
                   </p>
 
                   <div
-                    className="
-                      flex
-                      gap-2
-                      overflow-x-auto
-                      pb-1
-                      scrollbar-none
-                      sm:flex-wrap
-                      sm:overflow-visible
-                      [&::-webkit-scrollbar]:hidden
-                    "
-                  >
+                      ref={categoryFilterRef}
+                      className="flex gap-2 overflow-x-auto pb-1 cursor-grab select-none scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
                     <button
                       type="button"
                       aria-pressed={
@@ -549,15 +624,7 @@ function ServiceDiscoveryPageContent() {
       </section>
 
       <section
-        className="
-    mx-auto
-    max-w-7xl
-    px-4
-    py-5
-    sm:px-6
-    sm:py-6
-    lg:px-8
-  "
+        className="mx-auto w-full px-4 py-5"
       >
         <div
           className="
@@ -668,9 +735,6 @@ function ServiceDiscoveryPageContent() {
             className="
     grid
     gap-4
-    sm:grid-cols-2
-    lg:gap-5
-    xl:grid-cols-3
   "
           >
             {Array.from({
@@ -828,8 +892,6 @@ function ServiceDiscoveryPageContent() {
               className="
                 grid
                 gap-4
-                sm:grid-cols-2
-                xl:grid-cols-3
               "
             >
               {discovery.items.map((listing) => {
@@ -975,7 +1037,7 @@ function ServiceDiscoveryPageContent() {
                     </div>
 
                     {/* CONTENT */}
-                    <div className="p-4 sm:p-5">
+                    <div className="p-4">
                       <h3
                         className="
         line-clamp-2
@@ -986,7 +1048,6 @@ function ServiceDiscoveryPageContent() {
         text-slate-950
         transition
         group-hover:text-indigo-700
-        sm:text-[17px]
       "
                       >
                         {listing.title}
@@ -1139,7 +1200,6 @@ function ServiceDiscoveryPageContent() {
         text-xs
         leading-5
         text-slate-500
-        sm:text-sm
       "
                       >
                         {listing.description}
@@ -1361,7 +1421,6 @@ function ServiceDiscoveryPageContent() {
                   <span
                     className="
           hidden
-          sm:inline
         "
                   >
                     Sebelumnya
@@ -1409,7 +1468,7 @@ function ServiceDiscoveryPageContent() {
       "
                 >
                   <span
-                    className="hidden sm:inline">
+                    className="hidden">
                     Berikutnya
                   </span>
 
@@ -1420,6 +1479,7 @@ function ServiceDiscoveryPageContent() {
           </>
         )}
       </section>
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }
@@ -1429,17 +1489,7 @@ export default function ServiceDiscoveryPageUI() {
     <Suspense
       fallback={
         <main
-          className="
-            flex
-            min-h-screen
-            items-center
-            justify-center
-            bg-slate-50
-            px-6
-            text-center
-            text-sm
-            text-slate-500
-          "
+          className="relative mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-slate-50 px-6 pb-32 text-center text-sm text-slate-500 lg:shadow-xl lg:ring-1 lg:ring-slate-200"
         >
           Menyiapkan pencarian jasa...
         </main>
