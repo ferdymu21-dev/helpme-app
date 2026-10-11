@@ -1,4 +1,8 @@
-﻿import Link from "next/link";
+import { useEffect, useRef } from "react";
+
+import Link from "next/link";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import {
   ArrowLeft,
@@ -158,25 +162,130 @@ export default function ProviderServiceRequestsPageUI({
   onPreviousPage,
   onNextPage,
 }: ProviderServiceRequestsPageUIProps) {
+  const statusFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = statusFilterRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const filterElement: HTMLDivElement = container;
+
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let didDrag = false;
+
+    function handleWheel(event: WheelEvent) {
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+
+      const maxScrollLeft =
+        filterElement.scrollWidth - filterElement.clientWidth;
+
+      const nextScrollLeft = Math.max(
+        0,
+        Math.min(
+          maxScrollLeft,
+          filterElement.scrollLeft + delta,
+        ),
+      );
+
+      if (nextScrollLeft === filterElement.scrollLeft) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = nextScrollLeft;
+    }
+
+    function handleMouseDown(event: MouseEvent) {
+      if (event.button !== 0) {
+        return;
+      }
+
+      isDragging = true;
+      didDrag = false;
+      startX = event.clientX;
+      startScrollLeft = filterElement.scrollLeft;
+
+      filterElement.classList.add("cursor-grabbing");
+    }
+
+    function handleMouseMove(event: MouseEvent) {
+      if (!isDragging) {
+        return;
+      }
+
+      const deltaX = event.clientX - startX;
+
+      if (Math.abs(deltaX) > 4) {
+        didDrag = true;
+      }
+
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = startScrollLeft - deltaX;
+    }
+
+    function handleMouseUp() {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      filterElement.classList.remove("cursor-grabbing");
+    }
+
+    function handleClickCapture(event: MouseEvent) {
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      didDrag = false;
+    }
+
+    filterElement.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+    filterElement.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    filterElement.addEventListener("click", handleClickCapture, true);
+
+    return () => {
+      filterElement.removeEventListener("wheel", handleWheel);
+      filterElement.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      filterElement.removeEventListener(
+        "click",
+        handleClickCapture,
+        true,
+      );
+      filterElement.classList.remove("cursor-grabbing");
+    };
+  }, []);
+
   return (
   <main
     className="
-      min-h-screen
+      relative mx-auto min-h-screen w-full max-w-md
       bg-slate-50/70
-      px-4
-      pb-10
-      pt-6
-      sm:px-6
-      lg:px-8
+      px-4 pb-32 pt-6
+      lg:shadow-xl lg:ring-1 lg:ring-slate-200
     "
   >
-    <div
-      className="
-        mx-auto
-        w-full
-        max-w-5xl
-      "
-    >
+    <div className="mx-auto w-full">
       <header
   className="
     flex
@@ -225,7 +334,7 @@ export default function ProviderServiceRequestsPageUI({
         font-black
         tracking-tight
         text-slate-950
-        sm:text-3xl
+        sm:text-base
       "
     >
       Permintaan Jasa
@@ -233,7 +342,7 @@ export default function ProviderServiceRequestsPageUI({
 
     <p
       className="
-        mt-2
+        mt-0.5
         max-w-xl
         text-[11px]
         leading-4
@@ -247,10 +356,15 @@ export default function ProviderServiceRequestsPageUI({
 </header>
 
       <div
+        ref={statusFilterRef}
         className="
           -mx-4
           mt-6
           overflow-x-auto
+          scrollbar-none
+          [&::-webkit-scrollbar]:hidden
+          cursor-grab
+          select-none
           px-4
           pb-1
           sm:mx-0
@@ -689,7 +803,6 @@ export default function ProviderServiceRequestsPageUI({
                         gap-2.5
                         text-xs
                         text-slate-500
-                        sm:grid-cols-2
                       "
                     >
                       <div
@@ -1004,6 +1117,7 @@ export default function ProviderServiceRequestsPageUI({
         </div>
       )}
     </div>
+      <MobileBottomNavbar forceVisible />
   </main>
 );
 }
