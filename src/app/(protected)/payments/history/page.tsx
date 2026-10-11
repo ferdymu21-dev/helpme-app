@@ -37,13 +37,18 @@ export default async function PaymentHistoryPage() {
   return (
     <main
       className="
+        relative
         mx-auto
         min-h-screen
-        max-w-5xl
-        px-6
-        pt-6
+        w-full
+        max-w-md
+        bg-slate-50
+        px-4
+        pt-5
         pb-32
-        lg:pb-6
+        lg:shadow-xl
+        lg:ring-1
+        lg:ring-slate-200
       "
     >
       <PaymentHistoryHeader />

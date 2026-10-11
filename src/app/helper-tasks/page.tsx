@@ -7,7 +7,6 @@ import {
 } from "react";
 
 import MobileHelperTasksView from "@/components/helper-tasks/mobile/MobileHelperTasksView";
-import DesktopHelperTasksView from "@/components/helper-tasks/desktop/DesktopHelperTasksView";
 
 import { getHelperTasks } from "@/features/tasks/services/client/task.client";
 
@@ -229,15 +228,5 @@ export default function HelperTasksPage() {
     completedCount,
   };
 
-  return (
-    <>
-      <MobileHelperTasksView
-        {...viewProps}
-      />
-
-      <DesktopHelperTasksView
-        {...viewProps}
-      />
-    </>
-  );
+  return <MobileHelperTasksView {...viewProps} />;
 }

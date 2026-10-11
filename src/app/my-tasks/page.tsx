@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import MobileMyTasksView from "@/components/my-tasks/mobile/MobileMyTasksView";
-import DesktopMyTasksView from "@/components/my-tasks/desktop/DesktopMyTasksView";
 
 import { getMyTasks } from "@/features/tasks/services/client/task.client";
 
@@ -129,11 +128,5 @@ export default function MyTasksPage() {
     completedCount,
   };
 
-  return (
-    <>
-      <MobileMyTasksView {...viewProps} />
-
-      <DesktopMyTasksView {...viewProps} />
-    </>
-  );
+  return <MobileMyTasksView {...viewProps} />;
 }

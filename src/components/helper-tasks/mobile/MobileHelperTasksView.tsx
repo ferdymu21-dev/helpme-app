@@ -68,72 +68,25 @@ export default function MobileHelperTasksView({
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-32 lg:hidden">
+    <main className="relative mx-auto min-h-screen w-full max-w-md bg-slate-50 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200">
       {/* CONTAINER */}
-      <div className="mx-auto max-w-5xl px-6 py-7">
+      <div className="mx-auto w-full px-4 py-5">
         {/* HEADER */}
-<div>
-  <div className="relative flex h-10 items-center">
-    {/* BACK TO HOME */}
-    <Link
-      href="/home"
-      aria-label="Kembali ke halaman utama"
-      className="
-        relative
-        z-10
-        inline-flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        rounded-full
-        border
-        border-slate-200
-        bg-white
-        text-slate-700
-        shadow-sm
-        transition
-        hover:bg-slate-50
-        active:scale-95
-      "
-    >
-      <ArrowLeft
-        className="h-5 w-5"
-        strokeWidth={2}
-      />
-    </Link>
-
-    {/* TITLE */}
-    <h1
-      className="
-        pointer-events-none
-        absolute
-        left-1/2
-        -translate-x-1/2
-        whitespace-nowrap
-        text-base
-        font-black
-        tracking-tight
-        text-slate-900
-      "
-    >
-      Task Helper
-    </h1>
-  </div>
-
-  {/* SUBTITLE */}
-  <p
-    className="
-      mt-4
-      text-center
-      text-xs
-      leading-5
-      text-slate-500
-    "
-  >
-    Pantau tugas yang sedang kamu kerjakan.
-  </p>
-</div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/home"
+            aria-label="Kembali ke halaman utama"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95"
+          >
+            <ArrowLeft className="h-5 w-5" strokeWidth={2} />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base font-black tracking-tight text-slate-900">Tugas Saya</h1>
+            <p className="mt-0.5 text-xs leading-4 text-slate-500">
+              Pantau tugas yang sedang kamu kerjakan.
+            </p>
+          </div>
+        </div>
 
         {/* STATS */}
         <div className="mt-7 grid grid-cols-4 gap-1">
@@ -552,7 +505,7 @@ export default function MobileHelperTasksView({
         </div>
       </div>
 
-      <MobileBottomNavbar />
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }
