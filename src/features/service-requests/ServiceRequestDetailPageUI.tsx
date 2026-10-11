@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
+
 import {
   ArrowLeft,
   CalendarDays,
@@ -164,8 +166,8 @@ export default function ServiceRequestDetailPageUI({
 }: ServiceRequestDetailPageUIProps) {
   if (loading && !detail) {
     return (
-      <main className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl animate-pulse">
+      <main className="relative mx-auto min-h-screen w-full max-w-md bg-slate-50/70 px-4 py-6 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200">
+        <div className="mx-auto w-full animate-pulse">
           <div className="h-10 w-40 rounded-xl bg-slate-200" />
 
           <div className="mt-6 h-72 rounded-[28px] bg-white" />
@@ -178,7 +180,7 @@ export default function ServiceRequestDetailPageUI({
 
   if (loadErrorMessage) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <main className="relative mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-slate-50 px-4 py-10 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200">
         <div className="w-full max-w-lg rounded-[28px] border border-red-200 bg-white p-7 text-center shadow-sm">
           <h1 className="text-xl font-bold text-slate-950">
             Detail permintaan belum dapat dimuat
@@ -203,7 +205,7 @@ export default function ServiceRequestDetailPageUI({
 
   if (notFound || !detail) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <main className="relative mx-auto flex min-h-screen w-full max-w-md items-center justify-center bg-slate-50 px-4 py-10 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200">
         <div className="w-full max-w-lg rounded-[28px] border border-slate-200 bg-white p-7 text-center shadow-sm">
           <h1 className="text-xl font-bold text-slate-950">
             Permintaan Jasa tidak ditemukan
@@ -239,8 +241,8 @@ export default function ServiceRequestDetailPageUI({
   );
 
   return (
-    <main className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+    <main className="relative mx-auto min-h-screen w-full max-w-md bg-slate-50/70 px-4 py-6 pb-32 lg:shadow-xl lg:ring-1 lg:ring-slate-200">
+      <div className="mx-auto w-full">
         <header
   className="
     flex
@@ -286,12 +288,12 @@ export default function ServiceRequestDetailPageUI({
   <div className="min-w-0">
     <h1
       className="
-        mt-1
+        mt-0.5
         text-base
         font-black
         tracking-tight
         text-slate-950
-        sm:text-2xl
+        sm:text-base
       "
     >
       Detail Permintaan
@@ -299,9 +301,9 @@ export default function ServiceRequestDetailPageUI({
 
     <p
       className="
-        mt-1
+        mt-0.5
         text-[11px]
-        leading-4
+        leading-3
         text-slate-500
       "
     >
@@ -312,7 +314,7 @@ export default function ServiceRequestDetailPageUI({
   </div>
 </header>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mt-6 grid grid-cols-1 gap-5">
           <div className="space-y-5">
             <section
   className="
@@ -653,14 +655,7 @@ export default function ServiceRequestDetailPageUI({
     </h2>
   </div>
 
-  <div
-    className="
-      mt-5
-      grid
-      gap-3
-      sm:grid-cols-2
-    "
-  >
+  <div className="mt-5 grid gap-3">
     <div
       className="
         flex
@@ -1529,6 +1524,7 @@ export default function ServiceRequestDetailPageUI({
           </aside>
         </div>
       </div>
+      <MobileBottomNavbar forceVisible />
     </main>
   );
 }
