@@ -1,4 +1,8 @@
+import { useEffect, useRef } from "react";
+
 import Link from "next/link";
+
+import MobileBottomNavbar from "@/components/layout/mobile/MobileBottomNavbar";
 
 import {
   ArrowLeft,
@@ -223,8 +227,6 @@ function ServiceListingSkeleton() {
       className="
         grid
         gap-4
-        md:grid-cols-2
-        lg:gap-5
       "
     >
       {Array.from({
@@ -301,6 +303,120 @@ export default function MyServicesPageUI({
   onNextPage,
 }: MyServicesPageUIProps) {
 
+  const statusFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = statusFilterRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const filterElement: HTMLDivElement = container;
+
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let didDrag = false;
+
+    function handleWheel(event: WheelEvent) {
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+
+      const maxScrollLeft =
+        filterElement.scrollWidth - filterElement.clientWidth;
+
+      const nextScrollLeft = Math.max(
+        0,
+        Math.min(
+          maxScrollLeft,
+          filterElement.scrollLeft + delta,
+        ),
+      );
+
+      if (nextScrollLeft === filterElement.scrollLeft) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = nextScrollLeft;
+    }
+
+    function handleMouseDown(event: MouseEvent) {
+      if (event.button !== 0) {
+        return;
+      }
+
+      isDragging = true;
+      didDrag = false;
+      startX = event.clientX;
+      startScrollLeft = filterElement.scrollLeft;
+
+      filterElement.classList.add("cursor-grabbing");
+    }
+
+    function handleMouseMove(event: MouseEvent) {
+      if (!isDragging) {
+        return;
+      }
+
+      const deltaX = event.clientX - startX;
+
+      if (Math.abs(deltaX) > 4) {
+        didDrag = true;
+      }
+
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = startScrollLeft - deltaX;
+    }
+
+    function handleMouseUp() {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      filterElement.classList.remove("cursor-grabbing");
+    }
+
+    function handleClickCapture(event: MouseEvent) {
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      didDrag = false;
+    }
+
+    filterElement.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+    filterElement.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    filterElement.addEventListener("click", handleClickCapture, true);
+
+    return () => {
+      filterElement.removeEventListener("wheel", handleWheel);
+      filterElement.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      filterElement.removeEventListener(
+        "click",
+        handleClickCapture,
+        true,
+      );
+      filterElement.classList.remove("cursor-grabbing");
+    };
+  }, []);
+
   const actionRequiredCount =
   statusCounts.paymentPendingCount +
   statusCounts.expiredCount +
@@ -350,33 +466,28 @@ const statusFilters: Array<{
   return (
   <main
     className="
+      relative
+      mx-auto
       min-h-screen
+      w-full
+      max-w-md
       bg-slate-50
       px-4
       py-6
-      pb-24
-      sm:px-6
-      sm:py-8
-      lg:px-8
-      lg:pb-14
+      pb-32
+      lg:shadow-xl
+      lg:ring-1
+      lg:ring-slate-200
     "
   >
-    <div
-      className="
-        mx-auto
-        max-w-6xl
-      "
-    >
+    <div className="w-full">
       {/* HEADER */}
       <div
   className="
-    flex
-    flex-col
-    gap-5
-    sm:flex-row
-    sm:items-end
-    sm:justify-between
-  "
+          flex
+          flex-col
+          gap-5
+        "
 >
   <div
     className="
@@ -423,7 +534,6 @@ const statusFilters: Array<{
           font-black
           tracking-tight
           text-slate-950
-          sm:text-3xl
         "
       >
         Jasa Saya
@@ -450,9 +560,6 @@ const statusFilters: Array<{
     w-full
     grid-cols-2
     gap-2
-    sm:flex
-    sm:w-auto
-    sm:items-center
   "
 >
   <Link
@@ -653,14 +760,17 @@ const statusFilters: Array<{
 
 {/* STATUS FILTER */}
 <div
+  ref={statusFilterRef}
   className="
     -mx-4
     mt-4
     overflow-x-auto
     px-4
     pb-1
-    sm:mx-0
-    sm:px-0
+    cursor-grab
+    select-none
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden
   "
 >
   <div
@@ -1022,8 +1132,6 @@ const statusFilters: Array<{
               mt-5
               grid
               gap-4
-              md:grid-cols-2
-              lg:gap-5
             "
           >
             {items.map((listing) => {
@@ -1124,7 +1232,7 @@ const statusFilters: Array<{
                   </div>
 
                   {/* CONTENT */}
-                  <div className="p-4 sm:p-5">
+                  <div className="p-4">
                     <p
                       className="
                         text-[10px]
@@ -1488,6 +1596,7 @@ const statusFilters: Array<{
           </nav>
         )}
     </div>
+    <MobileBottomNavbar forceVisible />
   </main>
 );
 }
