@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import Image from "next/image";
 
 import Link from "next/link";
@@ -80,6 +82,111 @@ export default function MobileTaskFeed({
   onPreviousPage,
   onNextPage,
 }: Props) {
+
+  const categoryFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = categoryFilterRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const filterElement: HTMLDivElement = container;
+
+    let isDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let didDrag = false;
+
+    function handleWheel(event: WheelEvent) {
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+
+      const maxScrollLeft =
+        filterElement.scrollWidth - filterElement.clientWidth;
+
+      const nextScrollLeft = Math.max(
+        0,
+        Math.min(maxScrollLeft, filterElement.scrollLeft + delta),
+      );
+
+      if (nextScrollLeft === filterElement.scrollLeft) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = nextScrollLeft;
+    }
+
+    function handleMouseDown(event: MouseEvent) {
+      if (event.button !== 0) {
+        return;
+      }
+
+      isDragging = true;
+      didDrag = false;
+      startX = event.clientX;
+      startScrollLeft = filterElement.scrollLeft;
+      filterElement.classList.add("cursor-grabbing");
+    }
+
+    function handleMouseMove(event: MouseEvent) {
+      if (!isDragging) {
+        return;
+      }
+
+      const deltaX = event.clientX - startX;
+
+      if (Math.abs(deltaX) > 4) {
+        didDrag = true;
+      }
+
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      filterElement.scrollLeft = startScrollLeft - deltaX;
+    }
+
+    function handleMouseUp() {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      filterElement.classList.remove("cursor-grabbing");
+    }
+
+    function handleClickCapture(event: MouseEvent) {
+      if (!didDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      didDrag = false;
+    }
+
+    filterElement.addEventListener("wheel", handleWheel, { passive: false });
+    filterElement.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    filterElement.addEventListener("click", handleClickCapture, true);
+
+    return () => {
+      filterElement.removeEventListener("wheel", handleWheel);
+      filterElement.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      filterElement.removeEventListener("click", handleClickCapture, true);
+      filterElement.classList.remove("cursor-grabbing");
+    };
+  }, []);
+
   return (
     <section
       className="
@@ -187,6 +294,7 @@ export default function MobileTaskFeed({
 
       {/* FILTER */}
       <div
+        ref={categoryFilterRef}
         className="
           -mx-5
           mt-4
@@ -195,8 +303,11 @@ export default function MobileTaskFeed({
           overflow-x-auto
           px-5
           pb-2
+          cursor-grab
+          select-none
           scrollbar-hide
           scrollbar-none
+          [scrollbar-width:none]
           [&::-webkit-scrollbar]:hidden
         "
       >
