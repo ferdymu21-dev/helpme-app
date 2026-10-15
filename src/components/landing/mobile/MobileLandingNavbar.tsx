@@ -11,6 +11,7 @@ import Link from "next/link";
 import {
   CircleHelp,
   Grid2X2,
+  PhoneCall,
   LogIn,
   Menu,
   ShieldCheck,
@@ -37,6 +38,11 @@ const navigationItems = [
     href: "/services",
     label: "Cari Jasa",
     icon: Search,
+  },
+  {
+    href: "/siaga",
+    label: "HelpMe Siaga",
+    icon: PhoneCall,
   },
   {
     href: "/my-services/new",

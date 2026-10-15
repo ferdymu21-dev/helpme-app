@@ -16,6 +16,10 @@ const navigationItems = [
     href: "/services",
   },
   {
+    label: "HelpMe Siaga",
+    href: "/siaga",
+  },
+  {
     label: "Pembayaran",
     href: "#pembayaran",
   },

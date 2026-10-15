@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ArrowUpRight, BriefcaseBusiness, Plus } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, PhoneCall, Plus } from "lucide-react";
 
 export default function MobileQuickActions() {
   return (
@@ -231,6 +231,56 @@ export default function MobileQuickActions() {
           </div>
         </Link>
       </div>
-    </section>
+          <Link
+        href="/siaga"
+        className="
+          group
+          mt-4
+          flex
+          min-h-20
+          items-center
+          gap-3
+          rounded-[22px]
+          border
+          border-rose-200
+          bg-rose-50
+          px-4
+          py-4
+          text-left
+          transition
+          hover:border-rose-300
+          hover:bg-rose-100
+          active:scale-[0.99]
+        "
+      >
+        <span
+          className="
+            flex
+            h-11
+            w-11
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            bg-rose-600
+            text-white
+          "
+        >
+          <PhoneCall className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-black text-rose-950">
+            HelpMe Siaga
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-rose-800">
+            Akses cepat ke layanan darurat resmi.
+          </span>
+        </span>
+        <ArrowUpRight
+          className="h-5 w-5 shrink-0 text-rose-700 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          aria-hidden="true"
+        />
+      </Link>
+</section>
   );
 }
