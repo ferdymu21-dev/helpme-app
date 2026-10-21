@@ -239,24 +239,24 @@ export default function SiagaMap({
         )}
       </MapContainer>
 
-      <div className="pointer-events-none absolute bottom-3 left-3 z-1000 flex flex-wrap gap-2 rounded-lg border border-white/80 bg-white/95 p-2 text-[8px] font-semibold shadow-sm backdrop-blur">
+      <div className="pointer-events-none absolute bottom-1 right-1 z-1000 flex flex-wrap gap-1.5 rounded-lg border border-white/80 bg-white/95 px-1 py-1 text-[8px] font-semibold shadow-sm backdrop-blur">
         <span className="inline-flex items-center gap-1.5 text-slate-700">
           <span
-            className="h-2.5 w-2.5 rounded-full border border-violet-900 bg-violet-500"
+            className="h-2 w-2 rounded-full border border-violet-900 bg-violet-500"
             aria-hidden="true"
           />
           Anda
         </span>
         <span className="inline-flex items-center gap-1.5 text-slate-700">
           <span
-            className="h-2.5 w-2.5 rounded-full bg-blue-600"
+            className="h-2 w-2 rounded-full bg-blue-600"
             aria-hidden="true"
           />
           Lokasi peta
         </span>
         <span className="inline-flex items-center gap-1.5 text-slate-700">
           <span
-            className="h-2.5 w-2.5 rounded-full bg-emerald-600"
+            className="h-2 w-2 rounded-full bg-emerald-600"
             aria-hidden="true"
           />
           Terverifikasi

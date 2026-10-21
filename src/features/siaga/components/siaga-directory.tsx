@@ -7,16 +7,21 @@ import type { FormEvent } from "react";
 import {
   Building2,
   Clock3,
+  CloudLightning,
   ExternalLink,
-  List,
+  Flame,
+  HeartPulse,
+  LifeBuoy,
   LocateFixed,
   MapPin,
   MessageCircle,
+  MoreHorizontal,
   PhoneCall,
   Route,
   Search,
   ShieldCheck,
   Tag,
+  UsersRound,
 } from "lucide-react";
 import type {
   SiagaMapItem,
@@ -25,12 +30,36 @@ import type {
 } from "./siaga-map";
 
 const CATEGORY_OPTIONS = [
-  { value: "AMBULANCE_MEDICAL", label: "Ambulans & Medis" },
-  { value: "FIRE_RESCUE", label: "Pemadam Kebakaran" },
-  { value: "DISASTER_RELIEF", label: "Bantuan Bencana" },
-  { value: "SEARCH_RESCUE", label: "Pencarian & Penyelamatan" },
-  { value: "COMMUNITY_SUPPORT", label: "Dukungan Komunitas" },
-  { value: "OTHER", label: "Layanan Lainnya" },
+  {
+    value: "AMBULANCE_MEDICAL",
+    label: "Ambulans & Medis",
+    icon: HeartPulse,
+  },
+  {
+    value: "FIRE_RESCUE",
+    label: "Pemadam Kebakaran",
+    icon: Flame,
+  },
+  {
+    value: "DISASTER_RELIEF",
+    label: "Bantuan Bencana",
+    icon: CloudLightning,
+  },
+  {
+    value: "SEARCH_RESCUE",
+    label: "Pencarian & Penyelamatan",
+    icon: LifeBuoy,
+  },
+  {
+    value: "COMMUNITY_SUPPORT",
+    label: "Dukungan Komunitas",
+    icon: UsersRound,
+  },
+  {
+    value: "OTHER",
+    label: "Layanan Lainnya",
+    icon: MoreHorizontal,
+  },
 ] as const;
 
 const COST_LABELS: Record<string, string> = {
@@ -326,6 +355,48 @@ function categoryLabel(value: string): string {
   );
 }
 
+function categoryIcon(value: string) {
+  const classes = "h-2.5 w-2.5 shrink-0";
+
+  if (
+    value === "AMBULANCE" ||
+    value === "MEDICAL" ||
+    value === "AMBULANCE_MEDICAL"
+  ) {
+    return <HeartPulse className={classes} aria-hidden="true" />;
+  }
+
+  if (value === "SECURITY") {
+    return <ShieldCheck className={classes} aria-hidden="true" />;
+  }
+
+  if (value === "FIRE_RESCUE") {
+    return <Flame className={classes} aria-hidden="true" />;
+  }
+
+  if (value === "DISASTER_RELIEF") {
+    return <CloudLightning className={classes} aria-hidden="true" />;
+  }
+
+  if (value === "SEARCH_RESCUE") {
+    return <LifeBuoy className={classes} aria-hidden="true" />;
+  }
+
+  if (value === "COMMUNITY_SUPPORT") {
+    return <UsersRound className={classes} aria-hidden="true" />;
+  }
+
+  return <MoreHorizontal className={classes} aria-hidden="true" />;
+}
+
+function ServiceCategoryBadge({ value }: { value: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-800">
+      {categoryIcon(value)}
+      {categoryLabel(value)}
+    </span>
+  );
+}
 export default function SiagaDirectory() {
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
@@ -888,22 +959,35 @@ export default function SiagaDirectory() {
 
       <div className="mt-3" role="group" aria-label="Filter kategori layanan">
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {CATEGORY_OPTIONS.map((category) => (
-            <button
-              key={category.value}
-              type="button"
-              aria-pressed={appliedCategory === category.value}
-              onClick={() => selectCategory(category.value)}
-              className={
-                "shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " +
-                (appliedCategory === category.value
-                  ? "border-rose-700 bg-rose-500 text-white"
-                  : "border-rose-200 bg-white text-slate-600 hover:border-rose-300")
-              }
-            >
-              {category.label}
-            </button>
-          ))}
+          {CATEGORY_OPTIONS.map((category) => {
+            const CategoryIcon = category.icon;
+
+            return (
+              <button
+                key={category.value}
+                type="button"
+                aria-pressed={appliedCategory === category.value}
+                onClick={() => selectCategory(category.value)}
+                className={
+                  "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-1 text-[10.5px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " +
+                  (appliedCategory === category.value
+                    ? "border-rose-700 bg-rose-500 text-white"
+                    : "border-rose-200 bg-white text-rose-600 hover:border-rose-300")
+                }
+              >
+                <CategoryIcon
+                  className={
+                    "items-center h-3 w-3 shrink-0 " +
+                    (appliedCategory === category.value
+                      ? "text-white"
+                      : "text-rose-500")
+                  }
+                  aria-hidden="true"
+                />
+                <span>{category.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -922,30 +1006,14 @@ export default function SiagaDirectory() {
           />
         </div>
 
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-1000 flex items-start justify-between gap-2">
+        <div className="ml-9 pointer-events-none absolute inset-x-3 top-3 z-1000 flex items-start justify-between gap-2">
           <button
             type="button"
             onClick={findInArea}
-            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 px-3 py-2 text-xs font-bold text-slate-800 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 px-2.5 py-1 text-[11px] font-bold text-slate-800 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <LocateFixed className="h-3.5 w-3.5 text-blue-700" aria-hidden="true" />
-            Cari di area ini
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              document
-                .getElementById("siaga-directory-results")
-                ?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                })
-            }
-            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 px-3 py-2 text-xs font-bold text-slate-800 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            <List className="h-4 w-4" aria-hidden="true" />
-            Daftar
+            <LocateFixed className="-ml-1 h-3 w-3 text-blue-700" aria-hidden="true" />
+            Terdekat
           </button>
         </div>
       </div>
@@ -956,7 +1024,7 @@ export default function SiagaDirectory() {
       >
         {placesStatus === "loading" && (
           <p role="status" className="mb-3 text-xs text-slate-500">
-            Mencari tempat umum dari Geoapify...
+            Mencari tempat di peta...
           </p>
         )}
         {placesStatus === "error" && (
@@ -972,7 +1040,7 @@ export default function SiagaDirectory() {
               onClick={retryPlaces}
               className="mt-2 rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
             >
-              Coba muat tempat umum lagi
+              Coba muat lagi
             </button>
           </div>
         )}
@@ -1024,9 +1092,7 @@ export default function SiagaDirectory() {
                               <MapPin className="h-2 w-2" aria-hidden="true" />
                               Lokasi peta
                             </span>
-                            <span className="inline-flex rounded-full bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-800">
-                              ⚙ {categoryLabel(place.category)}
-                            </span>
+                            <ServiceCategoryBadge value={place.category} />
                           </div>
 
                           <h4 className="mt-1 text-[13px] font-semibold leading-4 text-[#142653] sm:text-sm">
@@ -1198,9 +1264,7 @@ export default function SiagaDirectory() {
                             Terverifikasi
                           </span>
 
-                          <span className="inline-flex rounded-full bg-blue-50 px-1 py-0.5 text-[9px] font-semibold text-blue-800">
-                            ⚙ {categoryLabel(item.serviceCategory)}
-                          </span>
+                          <ServiceCategoryBadge value={item.serviceCategory} />
                         </div>
 
                         {/* layanan */}
