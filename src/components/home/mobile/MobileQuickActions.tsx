@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ArrowUpRight, BriefcaseBusiness, PhoneCall, Plus } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, ShieldCheck, Plus } from "lucide-react";
 
 export default function MobileQuickActions() {
   return (
@@ -50,7 +50,7 @@ export default function MobileQuickActions() {
             bg-linear-to-br
             from-indigo-600
             to-violet-600
-            p-4
+            p-5
             text-white
             shadow-[0_10px_24px_rgba(79,70,229,0.18)]
             transition
@@ -110,11 +110,12 @@ export default function MobileQuickActions() {
               />
             </div>
 
-            <div className="mt-auto pt-5">
+            <div className="mt-auto pt-3">
               <h3
                 className="
-                  text-sm
-                  font-black
+                  text-[12px]
+                  font-semibold
+                  text-white
                 "
               >
                 Butuh Bantuan?
@@ -209,8 +210,8 @@ export default function MobileQuickActions() {
             <div className="mt-auto pt-5">
               <h3
                 className="
-                  text-sm
-                  font-black
+                  text-[12px]
+                  font-semibold
                   text-slate-900
                 "
               >
@@ -231,11 +232,11 @@ export default function MobileQuickActions() {
           </div>
         </Link>
       </div>
-          <Link
+        <Link
         href="/siaga"
         className="
           group
-          mt-4
+          mt-3
           flex
           min-h-20
           items-center
@@ -243,10 +244,11 @@ export default function MobileQuickActions() {
           rounded-[22px]
           border
           border-rose-200
-          bg-rose-50
+          bg-red-400
           px-4
           py-4
           text-left
+          shadow-[0_8px_22px_rgba(15,23,42,0.04)]
           transition
           hover:border-rose-300
           hover:bg-rose-100
@@ -266,14 +268,14 @@ export default function MobileQuickActions() {
             text-white
           "
         >
-          <PhoneCall className="h-5 w-5" aria-hidden="true" />
+          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-black text-rose-950">
             HelpMe Siaga
           </span>
-          <span className="mt-1 block text-xs leading-5 text-rose-800">
-            Akses cepat ke layanan darurat resmi.
+          <span className="mt-1 block text-xs leading-5 text-slate-600">
+            Akses cepat ke layanan darurat.
           </span>
         </span>
         <ArrowUpRight

@@ -1,5 +1,6 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { adminSupabase } from "@/lib/supabase/admin";
 import {
   createServerSupabaseClient,
 } from "@/lib/supabase/server";
@@ -378,8 +379,67 @@ export async function GET(
         mapPublicDirectoryItem(row),
     );
 
+    // Lookup media hanya dilakukan untuk organisasi yang sudah lolos
+    // RPC direktori publik. Bucket penyimpanan tetap privat.
+    const organizationIds = Array.from(
+      new Set(items.map((item) => item.organizationId)),
+    );
+    const profileImageUrlByOrganizationId = new Map<string, string>();
+
+    if (organizationIds.length > 0) {
+      const {
+        data: organizationMediaRows,
+        error: organizationMediaError,
+      } = await adminSupabase
+        .from("emergency_organizations")
+        .select("id, profile_image_path")
+        .in("id", organizationIds);
+
+      if (organizationMediaError) {
+        // Kegagalan foto tidak boleh menggagalkan direktori layanan.
+        console.warn(
+          "GET /api/siaga/directory organization image lookup failed:",
+          organizationMediaError,
+        );
+      } else {
+        await Promise.all(
+          (organizationMediaRows ?? []).map(async (organization) => {
+            const storagePath = organization.profile_image_path;
+
+            if (
+              typeof storagePath !== "string" ||
+              storagePath.trim().length === 0
+            ) {
+              return;
+            }
+
+            const {
+              data: signedMedia,
+              error: signedMediaError,
+            } = await adminSupabase.storage
+              .from("emergency-organization-media")
+              .createSignedUrl(storagePath, 3600);
+
+            if (
+              !signedMediaError &&
+              typeof signedMedia?.signedUrl === "string"
+            ) {
+              profileImageUrlByOrganizationId.set(
+                organization.id,
+                signedMedia.signedUrl,
+              );
+            }
+          }),
+        );
+      }
+    }
+
     return jsonNoStore({
-      items,
+      items: items.map((item) => ({
+        ...item,
+        profileImageUrl:
+          profileImageUrlByOrganizationId.get(item.organizationId) ?? null,
+      })),
     });
   } catch (error) {
     if (

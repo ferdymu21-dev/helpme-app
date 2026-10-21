@@ -32,6 +32,16 @@ export const AdminNavigation: AdminNavigationItem[] = [
   },
 
   {
+    id: "siaga-providers",
+    label: "HelpMe Siaga",
+    description: "Verifikasi organisasi dan layanan darurat",
+    href: "/admin/siaga",
+    icon: ShieldCheck,
+    enabled: true,
+    showOnDashboard: true,
+  },
+
+  {
     id: "verification",
 
     label: "Verification",

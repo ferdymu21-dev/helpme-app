@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { adminSupabase } from "@/lib/supabase/admin";
 
@@ -905,6 +905,194 @@ export async function POST(
       {
         message:
           "Gagal memproses pendaftaran organisasi Siaga.",
+      },
+      500,
+    );
+  }
+}
+
+export async function GET(
+  request: Request,
+): Promise<NextResponse> {
+  try {
+    const user = await requireSiagaApiUser(request);
+
+    const {
+      data: organizations,
+      error: organizationError,
+    } = await adminSupabase
+      .from("emergency_organizations")
+      .select(
+        "id, organization_name, organization_type, registration_identifier, description, official_phone, official_whatsapp, contact_email, website_url, public_address, district, city, province, coverage_description, latitude, longitude, coordinates_public, profile_image_path, cover_image_path, verification_status, created_at, updated_at",
+      )
+      .eq("created_by", user.id)
+      .order("created_at", { ascending: false });
+
+    if (organizationError) {
+      console.error(
+        "GET /api/siaga/provider/organizations organization query failed:",
+        organizationError.code,
+      );
+
+      const unavailableCodes = [
+        "42P01",
+        "PGRST204",
+        "PGRST205",
+      ];
+
+      return jsonNoStore(
+        {
+          message:
+            "Data organisasi Siaga sementara tidak tersedia.",
+        },
+        unavailableCodes.includes(organizationError.code)
+          ? 503
+          : 500,
+      );
+    }
+
+    const organizationRows = organizations ?? [];
+
+    if (organizationRows.length === 0) {
+      return jsonNoStore({ items: [] });
+    }
+
+    const organizationIds = organizationRows.map(
+      (organization) => organization.id,
+    );
+
+    const {
+      data: services,
+      error: serviceError,
+    } = await adminSupabase
+      .from("emergency_provider_services")
+      .select(
+        "id, organization_id, name, category, description, public_phone, public_whatsapp, service_area, cost_type, operating_hours, review_status, is_active, created_at, updated_at",
+      )
+      .in("organization_id", organizationIds)
+      .order("created_at", { ascending: false });
+
+    if (serviceError) {
+      console.error(
+        "GET /api/siaga/provider/organizations service query failed:",
+        serviceError.code,
+      );
+
+      const unavailableCodes = [
+        "42P01",
+        "PGRST204",
+        "PGRST205",
+      ];
+
+      return jsonNoStore(
+        {
+          message:
+            "Data layanan Siaga sementara tidak tersedia.",
+        },
+        unavailableCodes.includes(serviceError.code)
+          ? 503
+          : 500,
+      );
+    }
+
+    const serviceRows = services ?? [];
+
+    const signedMediaByOrganizationId = new Map<
+      string,
+      { profileImageUrl: string; coverImageUrl: string }
+    >();
+
+    await Promise.all(
+      organizationRows.map(async (organization) => {
+        const [profileResult, coverResult] = await Promise.all([
+          typeof organization.profile_image_path === "string" && organization.profile_image_path
+            ? adminSupabase.storage
+                .from("emergency-organization-media")
+                .createSignedUrl(organization.profile_image_path, 3600)
+            : Promise.resolve(null),
+          typeof organization.cover_image_path === "string" && organization.cover_image_path
+            ? adminSupabase.storage
+                .from("emergency-organization-media")
+                .createSignedUrl(organization.cover_image_path, 3600)
+            : Promise.resolve(null),
+        ]);
+
+        signedMediaByOrganizationId.set(organization.id, {
+          profileImageUrl: profileResult && !profileResult.error
+            ? profileResult.data.signedUrl
+            : "",
+          coverImageUrl: coverResult && !coverResult.error
+            ? coverResult.data.signedUrl
+            : "",
+        });
+      }),
+    );
+
+    return jsonNoStore({
+      items: organizationRows.map((organization) => ({
+        id: organization.id,
+        organizationName: organization.organization_name,
+        organizationType: organization.organization_type,
+        registrationIdentifier: organization.registration_identifier,
+        officialPhone: organization.official_phone,
+        officialWhatsapp: organization.official_whatsapp,
+        contactEmail: organization.contact_email,
+        websiteUrl: organization.website_url,
+        publicAddress: organization.public_address,
+        district: organization.district,
+        coverageDescription: organization.coverage_description,
+        latitude: organization.latitude,
+        longitude: organization.longitude,
+        coordinatesPublic: organization.coordinates_public,
+        description: organization.description,
+        city: organization.city,
+        province: organization.province,
+        verificationStatus: organization.verification_status,
+        profileImageUrl: signedMediaByOrganizationId.get(organization.id)?.profileImageUrl ?? "",
+        coverImageUrl: signedMediaByOrganizationId.get(organization.id)?.coverImageUrl ?? "",
+        createdAt: organization.created_at,
+        updatedAt: organization.updated_at,
+        services: serviceRows
+          .filter(
+            (service) =>
+              service.organization_id === organization.id,
+          )
+          .map((service) => ({
+            id: service.id,
+            name: service.name,
+            category: service.category,
+            description: service.description,
+            publicPhone: service.public_phone,
+            publicWhatsapp: service.public_whatsapp,
+            serviceArea: service.service_area,
+            costType: service.cost_type,
+            operatingHours: service.operating_hours,
+            reviewStatus: service.review_status,
+            isActive: service.is_active,
+            createdAt: service.created_at,
+            updatedAt: service.updated_at,
+          })),
+      })),
+    });
+  } catch (error) {
+    if (error instanceof SiagaApiError) {
+      return jsonNoStore(
+        {
+          message: error.message,
+        },
+        error.code === "UNAUTHORIZED" ? 401 : 400,
+      );
+    }
+
+    console.error(
+      "GET /api/siaga/provider/organizations failed:",
+      error instanceof Error ? error.name : "Unknown error",
+    );
+
+    return jsonNoStore(
+      {
+        message:
+          "Gagal mengambil organisasi penyedia Siaga.",
       },
       500,
     );
