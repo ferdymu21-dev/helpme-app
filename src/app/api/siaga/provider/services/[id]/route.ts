@@ -19,7 +19,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ALLOWED_CATEGORIES = ["AMBULANCE", "MEDICAL", "FIRE_RESCUE", "DISASTER_RELIEF", "SEARCH_RESCUE", "COMMUNITY_SUPPORT", "OTHER"] as const;
+const ALLOWED_CATEGORIES = [
+  "AMBULANCE",
+  "MEDICAL",
+  "FIRE_RESCUE",
+  "DISASTER_RELIEF",
+  "SEARCH_RESCUE",
+  "COMMUNITY_SUPPORT",
+  "SECURITY",
+  "OTHER",
+] as const;
 const ALLOWED_COST_TYPES = ["FREE", "PAID", "DONATION", "VARIES", "UNKNOWN"] as const;
 
 function readText(body: Record<string, unknown>, key: string, maxLength: number): string | null {

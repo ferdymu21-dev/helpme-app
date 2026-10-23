@@ -45,12 +45,23 @@ const ProviderLocationPicker = dynamic(
 );
 
 const ORGANIZATION_TYPES = [
-  ["AMBULANCE_PROVIDER", "Penyedia ambulans"],
+  ["GOVERNMENT_AGENCY", "Instansi pemerintah"],
+  ["FOUNDATION", "Yayasan"],
+  ["SOCIAL_ORGANIZATION", "Organisasi sosial"],
   ["HEALTHCARE_FACILITY", "Fasilitas kesehatan"],
-  ["DISASTER_RELIEF", "Bantuan kebencanaan"],
-  ["SEARCH_AND_RESCUE", "Pencarian dan penyelamatan"],
   ["COMMUNITY_ORGANIZATION", "Organisasi komunitas"],
   ["OTHER", "Lainnya"],
+] as const;
+
+const LEGACY_ORGANIZATION_TYPES = [
+  ["AMBULANCE_PROVIDER", "Penyedia ambulans"],
+  ["DISASTER_RELIEF", "Bantuan kebencanaan"],
+  ["SEARCH_AND_RESCUE", "Pencarian dan penyelamatan"],
+] as const;
+
+const ORGANIZATION_TYPE_LABELS = [
+  ...ORGANIZATION_TYPES,
+  ...LEGACY_ORGANIZATION_TYPES,
 ] as const;
 
 const SERVICE_CATEGORIES = [
@@ -60,6 +71,7 @@ const SERVICE_CATEGORIES = [
   ["DISASTER_RELIEF", "Bantuan kebencanaan"],
   ["SEARCH_RESCUE", "Pencarian dan penyelamatan"],
   ["COMMUNITY_SUPPORT", "Dukungan komunitas"],
+  ["SECURITY", "Keamanan"],
   ["OTHER", "Lainnya"],
 ] as const;
 
@@ -1279,7 +1291,7 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
                         {organization.organizationName}
                       </h3>
                       <p className="mt-1 text-[12px] font-semibold text-slate-700">
-                        {ORGANIZATION_TYPES.find(([value]) => value === organization.organizationType)?.[1] ?? organization.organizationType}
+                        {ORGANIZATION_TYPE_LABELS.find(([value]) => value === organization.organizationType)?.[1] ?? organization.organizationType}
                       </p>
                       <p className="mt-1 text-[11px] font-semibold text-slate-700">
                         {[organization.district, organization.city, organization.province].filter(Boolean).join(", ") || "Lokasi belum dilengkapi"}
@@ -1417,7 +1429,7 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
                         <div className="min-w-0">
                           <p className="text-[12px] font-bold tracking-wide text-black/80">Jenis organisasi</p>
                           <p className="mt-1 wrap-break-word text-[11px] text-slate-800">
-                            {ORGANIZATION_TYPES.find(([value]) => value === organization.organizationType)?.[1] ?? organization.organizationType}
+                            {ORGANIZATION_TYPE_LABELS.find(([value]) => value === organization.organizationType)?.[1] ?? organization.organizationType}
                           </p>
                         </div>
                         {organization.registrationIdentifier ? (
@@ -1569,6 +1581,13 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
                           }
                           className={inputClassName}
                         >
+                          {LEGACY_ORGANIZATION_TYPES.map(([value, label]) =>
+                            value === organizationForm.organizationType ? (
+                              <option key={value} value={value}>
+                                {label} (jenis lama)
+                              </option>
+                            ) : null,
+                          )}
                           {ORGANIZATION_TYPES.map(([value, label]) => (
                             <option key={value} value={value}>
                               {label}

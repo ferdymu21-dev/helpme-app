@@ -36,6 +36,11 @@ const CATEGORY_OPTIONS = [
     icon: HeartPulse,
   },
   {
+    value: "SECURITY",
+    label: "Polisi",
+    icon: ShieldCheck,
+  },
+  {
     value: "FIRE_RESCUE",
     label: "Pemadam Kebakaran",
     icon: Flame,
@@ -346,7 +351,7 @@ function categoryLabel(value: string): string {
   }
 
   if (value === "SECURITY") {
-    return "Keamanan";
+    return "Polisi";
   }
 
   return (
@@ -855,7 +860,54 @@ export default function SiagaDirectory() {
     event.preventDefault();
     setPartnerStatus("loading");
     setFeedPage(1);
-    setAppliedSearch(searchInput.trim().slice(0, 100));
+
+    const nextSearch = searchInput.trim().slice(0, 100);
+    const normalized = nextSearch
+      .toLocaleLowerCase("id-ID")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    let inferredCategory: string | null = null;
+
+    if (
+      /\b(ambulans|ambulance|ambulan|rumah sakit|rsud|klinik|puskesmas|dokter|medis|kesehatan|hospital)\b/.test(
+        normalized,
+      )
+    ) {
+      inferredCategory = "AMBULANCE_MEDICAL";
+    } else if (
+      /\b(polisi|polsek|polres|kepolisian|kantor polisi)\b/.test(normalized)
+    ) {
+      inferredCategory = "SECURITY";
+    } else if (
+      /\b(pemadam|kebakaran|damkar|fire station)\b/.test(normalized)
+    ) {
+      inferredCategory = "FIRE_RESCUE";
+    } else if (
+      /\b(bantuan bencana|bencana alam|disaster relief)\b/.test(normalized)
+    ) {
+      inferredCategory = "DISASTER_RELIEF";
+    } else if (
+      normalized === "sar" ||
+      /\b(search and rescue|pencarian dan penyelamatan|tim penyelamat)\b/.test(
+        normalized,
+      )
+    ) {
+      inferredCategory = "SEARCH_RESCUE";
+    } else if (
+      /\b(dukungan komunitas|pusat komunitas|balai warga|balai masyarakat)\b/.test(
+        normalized,
+      )
+    ) {
+      inferredCategory = "COMMUNITY_SUPPORT";
+    }
+
+    setAppliedSearch(nextSearch);
+
+    if (inferredCategory !== null) {
+      setAppliedCategory(inferredCategory);
+    }
+
     setPartnerRequestVersion((current) => current + 1);
     setPlacesRequestVersion((current) => current + 1);
   }
