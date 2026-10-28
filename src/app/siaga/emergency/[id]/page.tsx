@@ -779,8 +779,8 @@ export default function EmergencyHelpDetailPage() {
             />
 
             <div className="relative">
-              <div className="flex items-center gap-2 text-xs font-extrabold tracking-[0.12em] text-rose-50 sm:text-sm">
-                <ShieldAlert className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <div className="flex items-center gap-1 text-[10px] font-bold tracking-[0.12em] text-rose-50 sm:text-sm">
+                <ShieldAlert className="h-3 w-3 shrink-0" aria-hidden="true" />
                 BANTUAN DARURAT
                 <span className="inline-flex items-center gap-1 rounded-full bg-red-200 px-1.5 py-1 text-[10px] font-bold text-red-600">
                   <ShieldAlert className="h-3 w-3" aria-hidden="true" />
