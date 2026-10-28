@@ -89,4 +89,11 @@ export const NotificationTypeCategoryMap = {
   [NotificationType.URGENT_TASK_FAILED]: NotificationCategory.PAYMENT,
 
   [NotificationType.URGENT_TASK_CANCELLED]: NotificationCategory.PAYMENT,
+
+  /* =========================
+       SIAGA COMMUNITY EMERGENCY
+     ========================= */
+  [NotificationType.SIAGA_EMERGENCY_HELP_JOINED]: NotificationCategory.SYSTEM,
+  [NotificationType.SIAGA_EMERGENCY_HELP_CLOSED]: NotificationCategory.SYSTEM,
+  [NotificationType.SIAGA_EMERGENCY_HELP_CONFIRM]: NotificationCategory.SYSTEM,
 } as const;

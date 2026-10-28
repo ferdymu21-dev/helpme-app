@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 
@@ -82,6 +82,22 @@ export default function MobileTaskFeed({
   onPreviousPage,
   onNextPage,
 }: Props) {
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    const initialUpdate = window.setTimeout(() => {
+      setCurrentTime(Date.now());
+    }, 0);
+
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearTimeout(initialUpdate);
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const categoryFilterRef = useRef<HTMLDivElement>(null);
 
@@ -307,7 +323,6 @@ export default function MobileTaskFeed({
           select-none
           scrollbar-hide
           scrollbar-none
-          [scrollbar-width:none]
           [&::-webkit-scrollbar]:hidden
         "
       >
@@ -569,10 +584,105 @@ export default function MobileTaskFeed({
 
               const heroImage = getTaskCategoryHeroImage(task.category);
 
+              if (task.is_emergency) {
+                const requestHref = `/siaga/emergency/${task.emergency_help_request_id ?? task.id}`;
+                const createdAt = new Date(task.created_at).getTime();
+const elapsedMinutes = currentTime > 0 && Number.isFinite(createdAt)
+                  ? Math.max(0, Math.floor((currentTime - createdAt) / 60000))
+                  : 0;
+                const timeAgo =
+                  elapsedMinutes < 1
+                    ? "Baru saja"
+                    : elapsedMinutes < 60
+                      ? `${elapsedMinutes} menit lalu`
+                      : elapsedMinutes < 1440
+                        ? `${Math.floor(elapsedMinutes / 60)} jam lalu`
+                        : `${Math.floor(elapsedMinutes / 1440)} hari lalu`;
+                const distanceLabel = !Number.isFinite(task.distance_km)
+                  ? "Jarak tidak tersedia"
+                  : task.distance_km < 1
+                    ? `${Math.round(task.distance_km * 1000)} m dari kamu`
+                    : `${task.distance_km.toLocaleString("id-ID", {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      })} km dari kamu`;
+
+                return (
+                  <Link
+                    key={task.id}
+                    href={requestHref}
+                    aria-label={`Lihat permintaan bantuan: ${task.title}`}
+                    className="block w-full text-left relative min-w-0 overflow-hidden rounded-[20px] border-2 border-rose-200 bg-linear-to-br from-red-700 via-rose-500 to-red-500 p-3.5 shadow-[0_8px_24px_rgba(225,29,72,0.15)] transition-all hover:border-rose-600 hover:shadow-[0_8px_30px_rgba(225,29,72,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 sm:p-4"
+                  >
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-700 sm:text-[10px]">
+                          HelpMe Siaga
+                        </span>
+                      </div>
+
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-semibold text-amber-700 sm:text-[10px]">
+                        <Clock3 className="h-3 w-3" aria-hidden="true" />
+                        Menunggu bantuan
+                      </span>
+                    </div>
+
+                    <h3 className="mt-3 line-clamp-2 text-[15px] font-semibold leading-5 tracking-tight text-rose-50 sm:text-base">
+                      {task.title}
+                    </h3>
+
+                    <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-rose-100 sm:text-xs">
+                      {task.description || "Seseorang membutuhkan bantuan di sekitar lokasi ini."}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-rose-100 sm:text-[11px]">
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <MapPin
+                          className="h-3.5 w-3.5 shrink-0 text-rose-100"
+                          aria-hidden="true"
+                        />
+                        <span>Lokasi sekitar</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock3
+                          className="h-3.5 w-3.5 shrink-0 text-rose-100"
+                          aria-hidden="true"
+                        />
+                        {timeAgo}
+                      </span>
+
+                      <span className="inline-flex items-center gap-1.5">
+                        <Navigation
+                          className="h-3.5 w-3.5 shrink-0 text-rose-100"
+                          aria-hidden="true"
+                        />
+                        {distanceLabel}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center gap-1 rounded-lg bg-rose-50 px-2.5 py-2 text-[9.5px] leading-1 text-rose-600 sm:text-[11px]">
+                      <CircleAlert
+                        className="h-3.5 w-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        Untuk kondisi tertentu, hubungi layanan darurat resmi.
+                      </span>
+                    </div>
+
+                  </Link>
+                );
+              }
+
               return (
                 <Link
                   key={task.id}
-                  href={`/tasks/${task.id}`}
+                  href={
+                    task.is_emergency
+                      ? `/siaga/emergency/${task.emergency_help_request_id ?? task.id}`
+                      : `/tasks/${task.id}`
+                  }
                   className={`
                     group
                     block
@@ -586,7 +696,7 @@ export default function MobileTaskFeed({
                     active:scale-[0.985]
 
                     ${
-                      task.is_urgent
+                      task.is_emergency || task.is_urgent
                         ? `
                             border-rose-200
                             shadow-[0_12px_32px_rgba(225,29,72,0.08)]
@@ -601,7 +711,7 @@ export default function MobileTaskFeed({
                   <div
                     className="
                       relative
-                      h-32
+                      h-24
                       overflow-hidden
                       bg-slate-100
                     "
@@ -687,11 +797,7 @@ export default function MobileTaskFeed({
                             shadow-sm
                           "
                         >
-                          <Flame
-                            className="h-3 w-3"
-                            strokeWidth={2.2}
-                          />
-
+                          <Flame className="h-3 w-3" strokeWidth={2.2} />
                           Mendesak
                         </span>
                       )}
@@ -720,12 +826,18 @@ export default function MobileTaskFeed({
 
                   {/* CONTENT */}
                   <div className="p-3.5">
+                    {task.is_emergency && (
+                      <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-rose-600 px-2 py-1 text-[9px] font-black tracking-wide text-white">
+                        <CircleAlert className="h-3 w-3" aria-hidden="true" />
+                        BANTUAN DARURAT
+                      </span>
+                    )}
                     <h3
                       className="
                         line-clamp-2
-                        text-[14px]
+                        text-[15px]
                         font-black
-                        leading-4.5
+                        leading-4
                         tracking-tight
                         text-slate-950
                       "
@@ -750,11 +862,11 @@ export default function MobileTaskFeed({
                     {/* META */}
                     <div
                       className="
-                        mt-2.5
+                        mt-2
                         space-y-1.5
                       "
                     >
-                      {/* LOCATION + DISTANCE */}
+                      {/* LOCATION */}
                       <div
                         className="
                           flex
@@ -766,7 +878,7 @@ export default function MobileTaskFeed({
                           bg-slate-50
                           px-2.5
                           py-1.5
-                          text-[9px]
+                          text-[10px]
                           text-slate-600
                         "
                       >
@@ -789,43 +901,20 @@ export default function MobileTaskFeed({
                           />
 
                           <span className="truncate">
-                            {location}
+                            {task.is_emergency ? "Lokasi sekitar" : location}
                           </span>
-                        </span>
-
-                        <span
-                          className="
-                            inline-flex
-                            shrink-0
-                            items-center
-                            gap-1
-                            text-slate-500
-                          "
-                        >
-                          <Navigation
-                            className="
-                              h-3
-                              w-3
-                              shrink-0
-                              text-indigo-500
-                            "
-                            strokeWidth={2}
-                          />
-
-                          {task.distance_km.toFixed(
-                            1,
-                          )}{" "}
-                          km dari kamu
                         </span>
                       </div>
 
-                      {/* DATE + TIME */}
+                      {/* DATE + TIME + DISTANCE*/}
                       {task.scheduled_at && (
                         <div
                           className="
                             grid
-                            grid-cols-2
+                            grid-cols-3
                             gap-1.5
+                            w-full
+                            overflow-hidden
                           "
                         >
                           <div
@@ -835,10 +924,12 @@ export default function MobileTaskFeed({
                               gap-1.5
                               rounded-xl
                               bg-slate-50
-                              px-2.5
-                              py-1.5
-                              text-[9px]
+                              px-2
+                              py-1
+                              text-[10px]
                               text-slate-600
+                              min-w-0
+                              overflow-hidden
                             "
                           >
                             <CalendarDays
@@ -852,9 +943,7 @@ export default function MobileTaskFeed({
                             />
 
                             <span className="truncate">
-                              {new Date(
-                                task.scheduled_at,
-                              ).toLocaleDateString(
+                              {new Date(task.scheduled_at).toLocaleDateString(
                                 "id-ID",
                                 {
                                   day: "numeric",
@@ -871,10 +960,12 @@ export default function MobileTaskFeed({
                               gap-1.5
                               rounded-xl
                               bg-slate-50
-                              px-2.5
-                              py-1.5
-                              text-[9px]
+                              px-2
+                              py-1
+                              text-[10px]
                               text-slate-600
+                              min-w-0
+                              overflow-hidden
                             "
                           >
                             <Clock3
@@ -888,15 +979,44 @@ export default function MobileTaskFeed({
                             />
 
                             <span>
-                              {new Date(
-                                task.scheduled_at,
-                              ).toLocaleTimeString(
+                              {new Date(task.scheduled_at).toLocaleTimeString(
                                 "id-ID",
                                 {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                 },
                               )}
+                            </span>
+                          </div>
+
+                          <div
+                            className="
+                              flex
+                              items-center
+                              gap-1.5
+                              rounded-xl
+                             bg-slate-50
+                              px-2
+                              py-1
+                              text-[10px]
+                             text-slate-600
+                             min-w-0
+                             overflow-hidden
+                            "
+                          >
+                            <Navigation
+                              className="
+                              h-2.5
+                              w-2.5
+                              shrink-0
+                              text-indigo-500
+                            "
+                              strokeWidth={2}
+                            />
+                            <span className="truncate whitespace-nowrap">
+                              {task.is_emergency && task.distance_km < 1
+                                ? `${Math.round(task.distance_km * 1000)} M dari kamu`
+                                : `${task.distance_km.toFixed(1)} KM dari kamu`}
                             </span>
                           </div>
                         </div>
@@ -906,14 +1026,14 @@ export default function MobileTaskFeed({
                     {/* FOOTER */}
                     <div
                       className="
-                        mt-3
+                        mt-1
                         flex
                         items-end
                         justify-between
                         gap-3
                         border-t
                         border-slate-100
-                        pt-3
+                        pt-2
                       "
                     >
                       <div className="min-w-0">
@@ -921,7 +1041,7 @@ export default function MobileTaskFeed({
                           className="
                             text-[10px]
                             font-semibold
-                            text-slate-400
+                            text-slate-500
                           "
                         >
                           Budget
@@ -937,9 +1057,10 @@ export default function MobileTaskFeed({
                             text-green-500
                           "
                         >
-                          Rp
-                          {task.budget.toLocaleString(
-                            "id-ID",
+                          {task.is_emergency ? (
+                            "Bantuan warga"
+                          ) : (
+                            <>Rp{task.budget.toLocaleString("id-ID")}</>
                           )}
                         </p>
                       </div>
@@ -950,11 +1071,11 @@ export default function MobileTaskFeed({
                           shrink-0
                           items-center
                           gap-1.5
-                          rounded-xl
+                          rounded-[20px]
                           bg-linear-to-r
-                          from-indigo-600
-                          via-violet-600
-                          to-fuchsia-600
+                          from-indigo-400
+                          via-violet-400
+                          to-fuchsia-400
                           px-2.5
                           py-2
                           text-[9px]
@@ -963,11 +1084,7 @@ export default function MobileTaskFeed({
                           shadow-[0_8px_18px_rgba(99,102,241,0.24)]
                         "
                       >
-
-                        <ChevronRight
-                          className="h-3.5 w-3.5"
-                          strokeWidth={2}
-                        />
+                        <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
                       </span>
                     </div>
                   </div>

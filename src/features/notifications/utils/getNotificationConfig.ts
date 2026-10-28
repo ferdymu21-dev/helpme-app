@@ -222,6 +222,35 @@ export function getNotificationConfig(
            DEFAULT
         ========================= */
 
+    case "SIAGA_EMERGENCY_HELP_JOINED":
+      return {
+        icon: UserRoundPlus,
+        iconColor: "text-rose-600",
+        backgroundColor: "bg-rose-100",
+        ...badge,
+        badge: "Siaga",
+        badgeColor: "text-rose-700",
+      };
+
+    case "SIAGA_EMERGENCY_HELP_CLOSED":
+      return {
+        icon: CircleX,
+        iconColor: "text-rose-600",
+        backgroundColor: "bg-rose-100",
+        ...badge,
+        badge: "Siaga",
+        badgeColor: "text-rose-700",
+      };
+
+    case "SIAGA_EMERGENCY_HELP_CONFIRM":
+      return {
+        icon: Clock3,
+        iconColor: "text-amber-600",
+        backgroundColor: "bg-amber-100",
+        ...badge,
+        badge: "Siaga",
+        badgeColor: "text-amber-700",
+      };
     default:
       return {
         icon: Bell,

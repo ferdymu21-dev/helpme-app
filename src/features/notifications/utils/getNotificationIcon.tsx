@@ -75,6 +75,14 @@ export function getNotificationIcon(type: NotificationTypeValue) {
     case NotificationType.URGENT_TASK_CANCELLED:
       return <Ban size={22} className="text-slate-500" />;
 
+    case NotificationType.SIAGA_EMERGENCY_HELP_JOINED:
+      return <UserRoundPlus size={22} className="text-rose-600" />;
+
+    case NotificationType.SIAGA_EMERGENCY_HELP_CLOSED:
+      return <CircleX size={22} className="text-rose-600" />;
+
+    case NotificationType.SIAGA_EMERGENCY_HELP_CONFIRM:
+      return <Clock3 size={22} className="text-amber-600" />;
     default:
       return <Bell size={22} className="text-slate-500" />;
   }

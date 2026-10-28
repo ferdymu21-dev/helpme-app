@@ -38,7 +38,10 @@ interface ProviderLocationPickerProps {
   city: string;
   district: string;
   province: string;
+  title?: string;
+  mapHeight?: string;
   onConfirm: (location: LocationResult) => void;
+  onLocationChange?: () => void;
 }
 
 const SURABAYA_CENTER: [number, number] = [-7.2575, 112.7521];
@@ -170,7 +173,10 @@ export default function ProviderLocationPicker({
   city,
   district,
   province,
+  title = "Lokasi penyedia layanan",
+  mapHeight = "h-80",
   onConfirm,
+  onLocationChange,
 }: ProviderLocationPickerProps) {
   const initialLatitude = Number(latitude);
   const initialLongitude = Number(longitude);
@@ -208,6 +214,7 @@ export default function ProviderLocationPicker({
 
   const chooseMapPoint = useCallback(
     async (pointLatitude: number, pointLongitude: number) => {
+      onLocationChange?.();
       const requestId = ++requestNumber.current;
 
       setDraft({
@@ -267,7 +274,7 @@ export default function ProviderLocationPicker({
         }
       }
     },
-    [],
+    [onLocationChange],
   );
 
   const searchLocations = async () => {
@@ -277,6 +284,8 @@ export default function ProviderLocationPicker({
       setMessage("Ketik minimal 3 karakter untuk mencari lokasi.");
       return;
     }
+
+    onLocationChange?.();
 
     const requestId = ++requestNumber.current;
     setSearching(true);
@@ -336,11 +345,14 @@ export default function ProviderLocationPicker({
   return (
     <section className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div>
-        <h3 className="font-bold text-slate-900">Lokasi penyedia layanan</h3>
-        <p className="mt-1 text-[12px] leading-4 text-slate-600">Pilih lokasi pada peta atau cari alamat di bawah.</p>
+        <h3 className="font-bold text-slate-900">{title}</h3>
+        <p className="mt-1 text-[12px] leading-4 text-slate-600">
+          Pilih lokasi pada peta atau cari alamat di bawah.
+        </p>
       </div>
-
-<div className="relative h-80 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+      <div
+        className={`relative ${mapHeight} overflow-hidden rounded-xl border border-slate-200 bg-slate-100`}
+      >
         <div className="pointer-events-none absolute left-15 top-3 z-1000 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-2 py-1 text-[10px] text-slate-700 shadow-sm">
           <MapPin className="h-3 w-3 text-indigo-600" />
           Ketuk peta untuk menempatkan pin
@@ -352,7 +364,9 @@ export default function ProviderLocationPicker({
           className="z-0 h-full w-full"
         >
           <TileLayer
-            attribution={'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}
+            attribution={
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
@@ -379,13 +393,15 @@ export default function ProviderLocationPicker({
           )}
         </MapContainer>
       </div>
-
-<div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex items-center gap-2 rounded-full border border-rose-200 bg-white p-1.5 pl-3 transition focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-100">
         <input
           type="search"
           value={query}
           maxLength={150}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            onLocationChange?.();
+            setQuery(event.target.value);
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault();
@@ -394,24 +410,22 @@ export default function ProviderLocationPicker({
           }}
           placeholder="Cari nama tempat, jalan, atau alamat..."
           aria-label="Cari alamat atau nama tempat"
-          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="min-w-0 flex-1 border-0 bg-transparent px-0 py-1 text-[12px] text-slate-800 outline-none placeholder:text-slate-400 focus:ring-0"
         />
-
         <button
           type="button"
           disabled={searching}
           onClick={() => void searchLocations()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          aria-label="Cari lokasi"
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white transition hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {searching ? (
             <LoaderCircle className="h-4 w-4 animate-spin" />
           ) : (
             <Search className="h-4 w-4" />
           )}
-          Cari
         </button>
       </div>
-
       {results.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           {results.map((result) => (
@@ -420,6 +434,7 @@ export default function ProviderLocationPicker({
               key={result.id}
               onClick={() => {
                 requestNumber.current += 1;
+                onLocationChange?.();
                 setResolvingAddress(false);
                 setDraft(result);
                 setQuery(result.address);
@@ -437,7 +452,8 @@ export default function ProviderLocationPicker({
             </button>
           ))}
         </div>
-      )}      {draft ? (
+      )}{" "}
+      {draft ? (
         <div className="rounded-xl border border-indigo-100 bg-white p-3">
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
@@ -453,12 +469,11 @@ export default function ProviderLocationPicker({
           </div>
         </div>
       ) : (
-        <p className="text-xs leading-5 text-slate-500">
+        <p className="text-[10.5px] leading-4 text-slate-500">
           Belum ada titik yang dipilih. Peta dibuka di area Surabaya; ini hanya
           titik awal peta, bukan lokasi organisasi Anda.
         </p>
       )}
-
       {message && (
         <p
           role="status"
@@ -472,16 +487,13 @@ export default function ProviderLocationPicker({
           {message}
         </p>
       )}
-
       <button
         type="button"
         disabled={!draft || resolvingAddress}
         onClick={confirmLocation}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
-        {resolvingAddress && (
-          <LoaderCircle className="h-4 w-4 animate-spin" />
-        )}
+        {resolvingAddress && <LoaderCircle className="h-4 w-4 animate-spin" />}
         Gunakan lokasi ini
       </button>
     </section>

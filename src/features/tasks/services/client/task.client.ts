@@ -114,25 +114,27 @@ export async function getTasks({
   const safeSearch =
     search.trim();
 
-  const { data, error } =
-    await supabase.rpc(
+  const feedParams = {
+    p_latitude: latitude,
+    p_longitude: longitude,
+    p_page: safePage,
+    p_page_size: safePageSize,
+    p_category: category === "Semua" ? null : category,
+    p_search: safeSearch.length > 0 ? safeSearch : null,
+    p_urgent_only: urgentOnly,
+  };
+
+  let { data, error } = await supabase.rpc(
+    "get_home_task_feed",
+    feedParams,
+  );
+
+  if (error?.code === "PGRST202") {
+    ({ data, error } = await supabase.rpc(
       "get_nearby_open_tasks_feed",
-      {
-        p_latitude: latitude,
-        p_longitude: longitude,
-        p_page: safePage,
-        p_page_size: safePageSize,
-        p_category:
-          category === "Semua"
-            ? null
-            : category,
-        p_search:
-          safeSearch.length > 0
-            ? safeSearch
-            : null,
-        p_urgent_only: urgentOnly,
-      },
-    );
+      feedParams,
+    ));
+  }
 
   if (error) {
     throw error;

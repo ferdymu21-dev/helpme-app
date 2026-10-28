@@ -8,9 +8,12 @@ import {
   PhoneCall,
   ShieldAlert,
   ShieldCheck,
+  Siren,
 } from "lucide-react";
 
 import SiagaHeader from "@/features/siaga/components/siaga-header";
+
+import EmergencyActivityPortal from "@/features/siaga/components/emergency-activity-portal";
 
 import SiagaDirectory from "@/features/siaga/components/siaga-directory";
 
@@ -57,6 +60,8 @@ export default function SiagaPage() {
       <SiagaHeader />
 
       <div className="-mt-8 mx-auto max-w-5xl px-4 pb-10 pt-28 sm:px-6 sm:pb-12 sm:pt-32 lg:px-8">
+        <EmergencyActivityPortal />
+
         <section
           className="mb-3 sm:mb-4"
           aria-labelledby="siaga-emergency-notice-title"
@@ -75,9 +80,9 @@ export default function SiagaPage() {
               </span>
 
               <p className="mt-1 text-[10px] leading-3.5 text-slate-600 sm:text-sm sm:leading-4">
-                Gunakan HelpMe Siaga saat ada keadaan darurat. Hubungi nomor darurat di bawah hanya
-                untuk kejadian nyata yang membutuhkan penanganan - bukan untuk
-                uji coba, lelucon, atau laporan palsu.
+                Gunakan HelpMe Siaga saat ada keadaan darurat. Hubungi nomor
+                darurat di bawah hanya untuk kejadian nyata yang membutuhkan
+                penanganan - bukan untuk uji coba, lelucon, atau laporan palsu.
               </p>
             </div>
           </div>
@@ -89,8 +94,8 @@ export default function SiagaPage() {
           aria-labelledby="siaga-emergency-title"
         >
           <div className="flex items-center gap-3 px-1 py-1 sm:px-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-sm shadow-rose-900/10">
-              <PhoneCall className="h-5 w-5" aria-hidden="true" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm shadow-rose-900/10">
+              <PhoneCall className="h-4 w-4" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
               <h2
@@ -139,7 +144,7 @@ export default function SiagaPage() {
                       aria-label={`Hubungi ${service.name} melalui nomor ${service.number}`}
                       aria-describedby={`emergency-description-${service.number}`}
                       title={`Hubungi ${service.number}`}
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-sm transition hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 active:scale-[0.97] sm:h-10 sm:w-10"
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm transition hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 active:scale-[0.97] sm:h-10 sm:w-10"
                     >
                       <PhoneCall className="h-3.5 w-3.5" aria-hidden="true" />
                     </a>
@@ -159,6 +164,33 @@ export default function SiagaPage() {
             })}
           </div>
         </section>
+
+        <Link
+          href="/siaga/emergency/new"
+          aria-label="Buat permintaan bantuan warga sekitar"
+          className="group mt-2 flex w-full items-center gap-3 rounded-[22px] border border-rose-100 bg-red-600 p-4 text-left shadow-[0_6px_22px_rgba(225,29,72,0.06)] transition hover:border-rose-200 hover:bg-rose-50/50 hover:shadow-[0_10px_28px_rgba(225,29,72,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 sm:gap-4 sm:p-5"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-rose-600 transition group-hover:bg-rose-100 sm:h-12 sm:w-12">
+            <Siren className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+          </span>
+
+          <div className="min-w-0 flex-1">
+            <h2
+              id="siaga-community-cta-title"
+              className="text-[14px] font-semibold text-white/90 sm:text-lg"
+            >
+              Minta Bantuan Orang Sekitar
+            </h2>
+            <p className="mt-0.5 text-[9.5px] leading-3.5 text-slate-200 sm:text-sm sm:leading-4">
+              Cari pertolongan darurat dari pengguna HelpMe di sekitar lokasi
+              Anda. Untuk kondisi tertentu, tetap hubungi layanan darurat resmi.
+            </p>
+          </div>
+
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-100 transition group-hover:bg-rose-600 group-hover:text-white">
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </span>
+        </Link>
 
         <SiagaDirectory />
 
@@ -253,9 +285,7 @@ export default function SiagaPage() {
         </section>
 
         <footer className="pb-4 pt-7 text-center text-[11px] leading-5 text-slate-500 sm:text-xs">
-          <p className="font-bold text-slate-600">
-            HelpMe Siaga
-          </p>
+          <p className="font-bold text-slate-600">HelpMe Siaga</p>
           <p className="mt-1">
             Akses nomor darurat resmi tersedia tanpa login.
           </p>

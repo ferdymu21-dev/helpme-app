@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Image from "next/image";
 
 import Link from "next/link";
@@ -24,6 +26,7 @@ import {
   MapPin,
   Navigation,
   Search,
+  ShieldAlert,
   Sparkles,
 } from "lucide-react";
 
@@ -93,6 +96,22 @@ export default function DesktopTaskFeed({
   onPreviousPage,
   onNextPage,
 }: Props) {
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    const initialUpdate = window.setTimeout(() => {
+      setCurrentTime(Date.now());
+    }, 0);
+
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearTimeout(initialUpdate);
+      window.clearInterval(intervalId);
+    };
+  }, []);
   return (
     <section className="px-8 pt-9 pb-20 xl:px-10">
       <div className="mx-auto max-w-360">
@@ -483,10 +502,108 @@ export default function DesktopTaskFeed({
 
                 const heroImage = getTaskCategoryHeroImage(task.category);
 
+                if (task.is_emergency) {
+                  const requestHref = `/siaga/emergency/${task.emergency_help_request_id ?? task.id}`;
+                  const createdAt = new Date(task.created_at).getTime();
+const elapsedMinutes = currentTime > 0 && Number.isFinite(createdAt)
+                    ? Math.max(0, Math.floor((currentTime - createdAt) / 60000))
+                    : 0;
+                  const timeAgo =
+                    elapsedMinutes < 1
+                      ? "Baru saja"
+                      : elapsedMinutes < 60
+                        ? `${elapsedMinutes} menit lalu`
+                        : elapsedMinutes < 1440
+                          ? `${Math.floor(elapsedMinutes / 60)} jam lalu`
+                          : `${Math.floor(elapsedMinutes / 1440)} hari lalu`;
+                  const distanceLabel = !Number.isFinite(task.distance_km)
+                    ? "Jarak tidak tersedia"
+                    : task.distance_km < 1
+                      ? `${Math.round(task.distance_km * 1000)} m dari kamu`
+                      : `${task.distance_km.toLocaleString("id-ID", {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 1,
+                        })} km dari kamu`;
+
+                  return (
+                    <Link
+                      key={task.id}
+                      href={requestHref}
+                      aria-label={`Lihat permintaan bantuan: ${task.title}`}
+                      className="block w-full text-left relative min-w-0 overflow-hidden rounded-[20px] border border-rose-100 border-l-4 border-l-rose-500 bg-linear-to-br from-white via-white to-rose-50/70 p-3.5 shadow-[0_8px_24px_rgba(225,29,72,0.07)] transition-colors hover:border-rose-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 sm:p-4"
+                    >
+                      <div className="flex min-w-0 items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-500 shadow-sm">
+                            <ShieldAlert
+                              className="h-4 w-4 text-white"
+                              strokeWidth={2.2}
+                              aria-hidden="true"
+                            />
+                          </span>
+                          <span className="inline-flex items-center rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold text-white sm:text-[11px]">
+                            HelpMe Siaga
+                          </span>
+                        </div>
+
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-semibold text-amber-700 sm:text-[10px]">
+                          <Clock3 className="h-3 w-3" aria-hidden="true" />
+                          Menunggu bantuan
+                        </span>
+                      </div>
+
+                      <h3 className="mt-3 line-clamp-2 text-[15px] font-extrabold leading-5 tracking-tight text-slate-900 sm:text-base">
+                        {task.title}
+                      </h3>
+
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-600 sm:text-xs">
+                        {task.description || "Seseorang membutuhkan bantuan di sekitar lokasi ini."}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-slate-600 sm:text-[11px]">
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <MapPin
+                            className="h-3.5 w-3.5 shrink-0 text-slate-500"
+                            aria-hidden="true"
+                          />
+                          <span>Lokasi sekitar</span>
+                        </span>
+
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock3
+                            className="h-3.5 w-3.5 shrink-0 text-slate-500"
+                            aria-hidden="true"
+                          />
+                          {timeAgo}
+                        </span>
+
+                        <span className="inline-flex items-center gap-1.5">
+                          <Navigation
+                            className="h-3.5 w-3.5 shrink-0 text-slate-500"
+                            aria-hidden="true"
+                          />
+                          {distanceLabel}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex items-start gap-2 rounded-lg bg-rose-50 px-2.5 py-2 text-[10px] leading-4 text-rose-600 sm:text-[11px]">
+                        <CircleAlert
+                          className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          Untuk kondisi yang mengancam nyawa, hubungi layanan darurat resmi.
+                        </span>
+                      </div>
+
+                    </Link>
+                  );
+                }
+
                 return (
                   <Link
                     key={task.id}
-                    href={`/tasks/${task.id}`}
+                    href={task.is_emergency ? `/siaga/emergency/${task.emergency_help_request_id ?? task.id}` : `/tasks/${task.id}`}
                     className={`
                       group
                       flex
@@ -502,7 +619,7 @@ export default function DesktopTaskFeed({
                       hover:-translate-y-0.5
 
                       ${
-                        task.is_urgent
+                        task.is_emergency || task.is_urgent
                           ? `
                               border-rose-200
                               hover:border-rose-300
@@ -657,6 +774,13 @@ export default function DesktopTaskFeed({
                         </span>
                       </div>
 
+                      {task.is_emergency && (
+                        <span className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-black tracking-wide text-white shadow-sm">
+                          <CircleAlert className="h-3.5 w-3.5" aria-hidden="true" />
+                          BANTUAN DARURAT
+                        </span>
+                      )}
+
                       {/* TITLE */}
                       <h3
                         className="
@@ -680,7 +804,7 @@ export default function DesktopTaskFeed({
                             mt-1.5
                             line-clamp-2
                             text-[11px]
-                            leading-[17px]
+                            leading-4.25
                             text-slate-500
                           "
                         >
@@ -725,7 +849,7 @@ export default function DesktopTaskFeed({
                             />
 
                             <span className="truncate">
-                              {location}
+                              {task.is_emergency ? "Lokasi sekitar" : location}
                             </span>
                           </span>
 
@@ -746,10 +870,10 @@ export default function DesktopTaskFeed({
                               strokeWidth={2}
                             />
 
-                            {task.distance_km.toFixed(
-                              1,
-                            )}{" "}
-                            km
+                            {task.is_emergency && task.distance_km < 1
+                              ? `${Math.round(task.distance_km * 1000)} m`
+                              : `${task.distance_km.toFixed(1)} km`}
+                            {task.is_emergency ? " dari kamu" : ""}
                           </span>
                         </div>
 
@@ -854,10 +978,7 @@ export default function DesktopTaskFeed({
                               text-orange-600
                             "
                           >
-                            Rp
-                            {task.budget.toLocaleString(
-                              "id-ID",
-                            )}
+                            {task.is_emergency ? "Bantuan warga" : <>Rp{task.budget.toLocaleString("id-ID")}</>}
                           </p>
                         </div>
 

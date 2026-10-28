@@ -25,6 +25,10 @@ export interface NearbyTask {
 
   scheduled_at: string | null;
   is_urgent: boolean;
+  item_type?: "TASK" | "EMERGENCY_HELP";
+  emergency_help_request_id?: string | null;
+  is_emergency?: boolean;
+  helper_count?: number;
 
   completion_proof_photo: string | null;
   completed_at: string | null;
