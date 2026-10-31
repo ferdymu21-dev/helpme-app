@@ -1100,7 +1100,7 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
         </div>
 
         {mode === "registration" && (
-        <header className="relative isolate mt-5 overflow-hidden rounded-4xl bg-linear-to-br from-sky-700 via-[#0369a1] to-indigo-800 p-5 text-white shadow-[0_20px_55px_rgba(3,105,161,0.22)] sm:p-8 lg:p-9">
+        <header className="relative isolate mt-3 overflow-hidden rounded-2xl bg-linear-to-br from-sky-700 via-[#0369a1] to-indigo-800 p-3 text-white shadow-[0_20px_55px_rgba(3,105,161,0.22)] sm:p-8 lg:p-9">
           <span
             aria-hidden="true"
             className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full border border-white/10 bg-white/5"
@@ -1109,19 +1109,16 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-24 right-1/4 h-48 w-48 rounded-full bg-cyan-300/10 blur-2xl"
           />
-          <div className="relative z-10 flex items-start gap-4 sm:gap-5">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-inner backdrop-blur sm:h-16 sm:w-16">
+          <div className="relative z-5 flex items-start gap-4 sm:gap-5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-inner backdrop-blur sm:h-16 sm:w-16">
               <Store className="h-6 w-6" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-100 sm:text-sm">
+              <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-sky-100 sm:text-sm">
                 Portal Penyedia HelpMe Siaga
               </p>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl">
-                Daftarkan layanan Siaga
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-sky-50/90 sm:text-base">
-                Ajukan organisasi dan layanan untuk ditinjau admin. Pengajuan baru tidak langsung tampil di direktori publik.
+              <p className="text-[11px] leading-4 text-sky-50/90 sm:text-[13px] sm:leading-4">
+                Ajukan organisasi dan layanan untuk ditinjau admin. Pengajuan baru tidak langsung tampil di publik.
               </p>
             </div>
           </div>
@@ -1130,7 +1127,7 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
 
         {mode === "registration" && (
         <section
-          className="mt-6 rounded-2xl border border-sky-100/80 bg-white p-4 shadow-sm sm:p-5"
+          className="mt-4 rounded-2xl border border-sky-100/80 bg-white p-4 shadow-sm sm:p-5"
           aria-label="Informasi verifikasi"
         >
           <div className="flex items-start gap-3">
@@ -1151,7 +1148,7 @@ export default function SiagaProviderPage({ mode = "registration" }: { mode?: "r
         </section>
         )}
 
-{mode === "profile" && (
+        {mode === "profile" && (
         <section className="mt-0" aria-labelledby="organizations-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>

@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { ArrowUpRight, BriefcaseBusiness, ShieldCheck, Plus } from "lucide-react";
+
+import { ArrowUpRight, BriefcaseBusiness, Plus } from "lucide-react";
+
+import HelpMeSiagaHomeCard from "@/components/home/HelpMeSiagaHomeCard";
 
 export default function MobileQuickActions() {
   return (
@@ -104,46 +107,7 @@ export default function MobileQuickActions() {
           />
         </Link>
       </div>
-
-      {/* HELPME SIAGA */}
-      <Link
-        href="/siaga"
-        className="
-          group
-          mt-3
-          flex
-          min-h-20
-          items-center
-          gap-3
-          rounded-[22px]
-          border
-          border-red-700
-          bg-red-600
-          px-4
-          py-4
-          text-left
-          shadow-[0_8px_22px_rgba(15,23,42,0.04)]
-          transition
-          hover:bg-red-700
-          active:scale-[0.99]
-        "
-      >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-500 text-red-800">
-          <ShieldCheck className="h-6 w-6" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-black text-white">
-            HelpMe Siaga
-          </span>
-          <span className="mt-0.5 block text-xs leading-4 text-red-100/90">
-            Akses cepat ke layanan darurat.
-          </span>
-        </span>
-        <ArrowUpRight
-          className="h-5 w-5 shrink-0 text-white transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-          aria-hidden="true"
-        />
-      </Link>
+      <HelpMeSiagaHomeCard className="mt-2.5" />
     </section>
   );
 }
